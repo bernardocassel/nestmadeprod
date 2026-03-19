@@ -883,7 +883,7 @@ function setMode(m) {
 // ══════════════════════════════════════
 
 // Inicializar Supabase (executa após SDK carregar)
-let supabase = null;
+let _supabaseClient = null;
 let currentUser = null;
 let stripe = null;
 
@@ -893,20 +893,20 @@ function initSupabase() {
     console.warn('⚠️ NestMate: Configure as credenciais em NESTMATE_CONFIG');
     return;
   }
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  _supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   stripe = window.Stripe ? window.Stripe(STRIPE_KEY) : null;
   checkSession();
 }
 
 async function checkSession() {
-  if (!supabase) return;
-  const { data: { session } } = await supabase.auth.getSession();
+  if (!_supabaseClient) return;
+  const { data: { session } } = await _supabaseClient.auth.getSession();
   if (session) {
     currentUser = session.user;
     onUserLoggedIn(session.user);
   }
   // Escutar mudanças de auth
-  supabase.auth.onAuthStateChange((event, session) => {
+  _supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
       currentUser = session.user;
       onUserLoggedIn(session.user);
@@ -944,18 +944,18 @@ function onUserLoggedOut() {
 function showUserMenu() {
   // Menu simples de logout
   if (confirm('Deseja sair da conta?')) {
-    supabase?.auth.signOut();
+    _supabaseClient?.auth.signOut();
     go('s-land');
   }
 }
 
 // LOGIN COM GOOGLE
 async function loginWithGoogle() {
-  if (!supabase) {
+  if (!_supabaseClient) {
     toast('⚠️ Configure as credenciais primeiro', 'error');
     return;
   }
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { error } = await _supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: window.location.origin,
@@ -967,11 +967,11 @@ async function loginWithGoogle() {
 
 // LOGIN COM FACEBOOK
 async function loginWithFacebook() {
-  if (!supabase) {
+  if (!_supabaseClient) {
     toast('⚠️ Configure as credenciais primeiro', 'error');
     return;
   }
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { error } = await _supabaseClient.auth.signInWithOAuth({
     provider: 'facebook',
     options: { redirectTo: window.NESTMATE_CONFIG.APP_URL }
   });
@@ -980,8 +980,8 @@ async function loginWithFacebook() {
 
 // LOGIN COM EMAIL
 async function loginWithEmail(email, password) {
-  if (!supabase) { toast('⚠️ Configure as credenciais primeiro', 'error'); return; }
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (!_supabaseClient) { toast('⚠️ Configure as credenciais primeiro', 'error'); return; }
+  const { data, error } = await _supabaseClient.auth.signInWithPassword({ email, password });
   if (error) { toast('Erro: ' + error.message, 'error'); return; }
   go('s-browse');
 }
@@ -1002,8 +1002,8 @@ function doSignup() {
 }
 
 async function signUpWithEmail(email, password, fullName, role, nationality) {
-  if (!supabase) { toast('⚠️ Configure as credenciais primeiro', 'error'); return; }
-  const { data, error } = await supabase.auth.signUp({
+  if (!_supabaseClient) { toast('⚠️ Configure as credenciais primeiro', 'error'); return; }
+  const { data, error } = await _supabaseClient.auth.signUp({
     email, password,
     options: {
       data: { full_name: fullName, role, nationality },
@@ -1017,7 +1017,7 @@ async function signUpWithEmail(email, password, fullName, role, nationality) {
 
 // LOGOUT
 async function doLogout() {
-  await supabase?.auth.signOut();
+  await _supabaseClient?.auth.signOut();
   go('s-land');
 }
 
@@ -1034,7 +1034,7 @@ function doLogin() {
 // SUPABASE — Carregar listagens reais
 // ══════════════════════════════════════
 async function loadListingsFromDB() {
-  if (!supabase) {
+  if (!_supabaseClient) {
     renderListings(LISTINGS); // usa dados de demonstração
     return;
   }
@@ -1088,11 +1088,11 @@ function natCodeToFlag(code) {
 // SUPABASE — Criar listagem
 // ══════════════════════════════════════
 async function saveListing(data) {
-  if (!supabase || !currentUser) {
+  if (!_supabaseClient || !currentUser) {
     toast('Faça login para criar uma listagem', 'error');
     return false;
   }
-  const { error } = await supabase.from('listings').insert({
+  const { error } = await _supabaseClient.from('listings').insert({
     landlord_id: currentUser.id,
     title: data.title,
     description: data.description,
@@ -1118,13 +1118,13 @@ async function saveListing(data) {
 // STRIPE — Criar pagamento real
 // ══════════════════════════════════════
 async function createRealPayment(bookingId, amount) {
-  if (!supabase || !stripe) {
+  if (!_supabaseClient || !stripe) {
     toast('⚠️ Gateway não configurado — usando simulação', '');
     return simulatePaymentFallback();
   }
   try {
     // Chamar Edge Function que cria o PaymentIntent no servidor
-    const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+    const { data, error } = await _supabaseClient.functions.invoke('create-payment-intent', {
       body: { bookingId, amount, currency: 'aud' }
     });
     if (error) throw error;
