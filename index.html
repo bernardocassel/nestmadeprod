@@ -400,6 +400,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
       <span id="themeIcon">🌙</span>
     </button>
+    <button id="adminNavBtn" style="display:none;padding:7px 14px;border-radius:50px;font-size:.78rem;font-weight:700;border:1.5px solid var(--red);color:var(--red);background:transparent;cursor:pointer" onclick="go('s-admin');admTab('pending')">⚙️ Admin</button>
     <button class="nbtn ol t" data-en="Sign In" data-pt="Entrar" onclick="go('s-login')">Sign In</button>
     <button class="nbtn prim t" data-en="Join Free" data-pt="Cadastrar" onclick="go('s-signup')">Join Free</button>
   </div>
@@ -699,6 +700,28 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="kyc-note">🪪 <span>After signup you'll verify your identity (passport + selfie) in ~5 min. Keeps everyone safe.</span></div>
       <div class="sw-mode">Already have an account? <a onclick="go('s-login')">Sign in</a></div>
     </div>
+  </div>
+</div>
+
+<!-- ════════════ ADMIN PANEL ════════════ -->
+<div id="s-admin" class="screen">
+  <div class="ll-wrap">
+    <div class="sidebar">
+      <div style="padding:12px 11px;margin-bottom:16px;background:rgba(255,71,87,.08);border-radius:10px;border:1px solid rgba(255,71,87,.2)">
+        <div style="font-size:.7rem;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase">Admin Panel</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:2px">NestMate HQ</div>
+      </div>
+      <div class="silab">Listings</div>
+      <div class="si on" id="adm-si-pending" onclick="admTab('pending')"><span class="ico">⏳</span>Pending Review<span class="badge" id="admPendingBadge" style="display:none">0</span></div>
+      <div class="si" id="adm-si-active" onclick="admTab('active')"><span class="ico">✅</span>Active</div>
+      <div class="si" id="adm-si-all" onclick="admTab('all')"><span class="ico">📋</span>All Listings</div>
+      <div class="silab">Users</div>
+      <div class="si" id="adm-si-users" onclick="admTab('users')"><span class="ico">👥</span>All Users</div>
+      <div class="silab">Platform</div>
+      <div class="si" id="adm-si-bookings" onclick="admTab('bookings')"><span class="ico">📅</span>All Bookings</div>
+      <div class="si" onclick="go('s-browse')"><span class="ico">←</span>Back to Site</div>
+    </div>
+    <div class="ll-main" id="admMain" style="background:var(--bg)"></div>
   </div>
 </div>
 
@@ -1152,6 +1175,7 @@ function onUserLoggedIn(user) {
     joinBtn.onclick = () => showUserMenu();
   }
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
+  checkAdminRole();
 
   // Restore last screen or redirect from login/signup
   const loginScreen = document.getElementById('s-login');
