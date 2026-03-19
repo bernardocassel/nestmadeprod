@@ -632,7 +632,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="silab">Dashboard</div>
       <div class="si on" onclick="llTab('overview')"><span class="ico">📊</span>Overview</div>
       <div class="si" onclick="llTab('listings')"><span class="ico">🏠</span>My Listings</div>
-      <div class="si" onclick="llTab('applications')"><span class="ico">📥</span>Applications<span class="badge">3</span></div>
+      <div class="si" onclick="llTab('applications')"><span class="ico">📥</span>Applications<span class="badge" id="appBadge" style="display:none">0</span></div>
       <div class="si" onclick="llTab('earnings')"><span class="ico">💰</span>Earnings</div>
       <div class="si" onclick="llTab('contracts')"><span class="ico">📄</span>Contracts</div>
       <div class="si" onclick="llTab('add')"><span class="ico">➕</span>Add Listing</div>
@@ -866,10 +866,32 @@ let favs = new Set();
 // ══════════════════════════════════════
 function go(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('active');
   window.scrollTo(0, 0);
-  if (id === 's-browse') renderListings(LISTINGS);
+  if (id === 's-browse') loadListingsFromDB();
   if (id === 's-landlord') { /* dashboard loaded by goLandlord() */ }
+  // Save current screen to session storage (persists on refresh)
+  try { sessionStorage.setItem('nm-screen', id); } catch(e) {}
+}
+
+function restoreLastScreen() {
+  try {
+    const saved = sessionStorage.getItem('nm-screen');
+    const savedTab = sessionStorage.getItem('nm-ll-tab');
+    if (saved && saved !== 's-land' && document.getElementById(saved)) {
+      if (saved === 's-landlord') {
+        // Will be handled after auth check in onUserLoggedIn
+        sessionStorage.setItem('nm-pending-screen', saved);
+      } else if (saved === 's-browse') {
+        go('s-browse');
+      }
+      if (savedTab && saved === 's-landlord') {
+        sessionStorage.setItem('nm-pending-tab', savedTab);
+      }
+    }
+  } catch(e) {}
 }
 
 function setMode(m) {
@@ -981,6 +1003,12 @@ async function renderRealDashboard(m, listings) {
       .eq('landlord_id', currentUser.id);
     bookings = bk || [];
     pendingCount = bookings.filter(b => b.status === 'pending').length;
+    // Update sidebar badge
+    const badge = document.getElementById('appBadge');
+    if (badge) {
+      badge.textContent = pendingCount;
+      badge.style.display = pendingCount > 0 ? 'inline-flex' : 'none';
+    }
     earnings = bookings
       .filter(b => ['paid','checked_in','checked_out'].includes(b.status))
       .reduce((sum, b) => sum + (b.total_rent || 0), 0);
@@ -1092,6 +1120,12 @@ async function checkSession() {
   if (session) {
     currentUser = session.user;
     onUserLoggedIn(session.user);
+  } else {
+    // Not logged in — restore non-auth screens
+    try {
+      const saved = sessionStorage.getItem('nm-screen');
+      if (saved === 's-browse') go('s-browse');
+    } catch(e) {}
   }
   // Escutar mudanças de auth
   _supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -1119,16 +1153,26 @@ function onUserLoggedIn(user) {
   }
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
 
-  // If they're on the landlord screen, reload the dashboard with real data
-  const landlordScreen = document.getElementById('s-landlord');
-  if (landlordScreen?.classList.contains('active')) {
-    loadLandlordDashboard();
-  }
-  // If they were on signup/login, redirect to browse
+  // Restore last screen or redirect from login/signup
   const loginScreen = document.getElementById('s-login');
   const signupScreen = document.getElementById('s-signup');
-  if (loginScreen?.classList.contains('active') || signupScreen?.classList.contains('active')) {
+  const onAuthScreen = loginScreen?.classList.contains('active') || signupScreen?.classList.contains('active');
+
+  const pendingScreen = sessionStorage.getItem('nm-pending-screen');
+  if (pendingScreen === 's-landlord') {
+    sessionStorage.removeItem('nm-pending-screen');
+    go('s-landlord');
+    const pendingTab = sessionStorage.getItem('nm-pending-tab') || 'overview';
+    sessionStorage.removeItem('nm-pending-tab');
+    setTimeout(() => loadLandlordDashboard().then(() => {
+      if (pendingTab !== 'overview') llTab(pendingTab);
+    }), 200);
+  } else if (onAuthScreen) {
     go('s-browse');
+  } else {
+    // Already on correct screen, refresh dashboard if needed
+    const landlordScreen = document.getElementById('s-landlord');
+    if (landlordScreen?.classList.contains('active')) loadLandlordDashboard();
   }
 }
 
@@ -1705,6 +1749,7 @@ async function simulatePay(total) {
 const EARN_DATA = { months: ['Jul','Aug','Sep','Oct','Nov','Dec','Jan'], values: [820, 1240, 930, 1550, 1860, 1240, 1720] };
 
 function llTab(tab) {
+  try { sessionStorage.setItem('nm-ll-tab', tab); } catch(e) {}
   document.querySelectorAll('.si').forEach(i => i.classList.remove('on'));
   document.querySelectorAll('.si').forEach(i => {
     const ico = i.querySelector('.ico')?.textContent || '';
@@ -1726,30 +1771,9 @@ function llTab(tab) {
   else if (tab==='add') renderAddListing(m);
 }
 
-function renderOverview(m) {
-  const totalEarn = EARN_DATA.values.reduce((a,b)=>a+b,0);
-  m.innerHTML = `
-    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px">Good morning, James 👋</h1>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your NestMate summary for today.</p>
-    <div class="stats-row">
-      <div class="stat-card"><div class="ico">🏠</div><div class="sval">3</div><div class="slabel">Active listings</div><div class="sdelta">↑ 1 new this month</div></div>
-      <div class="stat-card"><div class="ico">📥</div><div class="sval">3</div><div class="slabel">Pending requests</div><div class="sdelta">↑ 2 new today</div></div>
-      <div class="stat-card"><div class="ico">💰</div><div class="sval">AU$1,720</div><div class="slabel">This month</div><div class="sdelta">↑ +38% vs last month</div></div>
-      <div class="stat-card"><div class="ico">⭐</div><div class="sval">4.8</div><div class="slabel">Your rating</div><div class="sdelta">18 reviews</div></div>
-    </div>
-    <div class="earn-chart">
-      <h3>Monthly Earnings</h3>
-      <div class="sub" style="color:var(--muted)">AU$${totalEarn.toLocaleString()} total — last 7 months</div>
-      <div class="bar-chart" id="ovBarChart"></div>
-    </div>
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:12px">Recent Activity</div>
-    ${[
-      ['📥','New request from Ana S. 🇧🇷 for Surfers Paradise room','2h ago','g'],
-      ['💰','Payment received AU$310 from Yuki T. — Week 4','Yesterday','t'],
-      ['⭐','New 5★ review from Lucas M. — "Fantastic landlord"','2 days ago',''],
-    ].map(([ico,txt,time,c])=>`<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:12px;padding:13px;display:flex;align-items:center;gap:11px;font-size:.84rem;margin-bottom:8px"><span style="font-size:1.2rem">${ico}</span><div style="flex:1">${txt}</div><span style="font-size:.72rem;color:var(--muted)">${time}</span>${c?`<span class="tag ${c}" style="font-size:.62rem">New</span>`:''}</div>`).join('')}`;
-  // render mini bar chart
-  renderBarChart('ovBarChart', EARN_DATA);
+async function renderOverview(m) {
+  // This is now called via loadLandlordDashboard which handles everything
+  await loadLandlordDashboard();
 }
 
 function renderBarChart(containerId, data) {
@@ -1767,47 +1791,81 @@ function renderBarChart(containerId, data) {
   }).join('');
 }
 
-function renderEarnings(m) {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const data12 = { months: ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan'], values: [620,740,930,1100,1380,820,1240,930,1550,1860,1240,1720] };
-  const thisMonth = 1720; const lastMonth = 1240; const change = Math.round((thisMonth-lastMonth)/lastMonth*100);
-  const total = data12.values.reduce((a,b)=>a+b,0);
-  m.innerHTML = `
-    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px">Earnings</h1>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">Track your rental income month by month.</p>
-    <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat-card"><div class="ico">📅</div><div class="sval">AU$${thisMonth.toLocaleString()}</div><div class="slabel">This month (Jan)</div><div class="sdelta">↑ +${change}% vs Dec</div></div>
-      <div class="stat-card"><div class="ico">📈</div><div class="sval">AU$${total.toLocaleString()}</div><div class="slabel">Last 12 months</div><div class="sdelta">2 active tenants</div></div>
-      <div class="stat-card"><div class="ico">🔒</div><div class="sval">AU$2,520</div><div class="slabel">In escrow (bonds)</div><div class="sdelta">Releasing on checkout</div></div>
-    </div>
-    <div class="earn-chart">
-      <h3>Revenue — Last 12 Months</h3>
-      <div class="earn-period">
-        <button class="ep on" onclick="document.querySelectorAll('.ep').forEach(e=>e.classList.remove('on'));this.classList.add('on')">12 months</button>
-        <button class="ep" onclick="document.querySelectorAll('.ep').forEach(e=>e.classList.remove('on'));this.classList.add('on')">6 months</button>
-        <button class="ep" onclick="document.querySelectorAll('.ep').forEach(e=>e.classList.remove('on'));this.classList.add('on')">3 months</button>
+async function renderEarnings(m) {
+  m.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">⏳ Loading earnings...</div>';
+
+  const header = `
+    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Earnings</h1>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">Track your rental income.</p>`;
+
+  if (!_supabaseClient || !currentUser) {
+    m.innerHTML = header + '<p style="color:var(--muted)">Please log in.</p>';
+    return;
+  }
+
+  try {
+    const { data: payments, error } = await _supabaseClient
+      .from('payments')
+      .select('*, bookings(listings(title, suburb))')
+      .eq('receiver_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const totalEarned = (payments || [])
+      .filter(p => p.status === 'completed' && p.payment_type === 'rent')
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    const thisMonth = (payments || [])
+      .filter(p => {
+        const d = new Date(p.created_at);
+        const now = new Date();
+        return p.status === 'completed' && p.payment_type === 'rent' &&
+               d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      })
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    const inEscrow = (payments || [])
+      .filter(p => p.status === 'pending' && p.payment_type === 'bond')
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    m.innerHTML = header + `
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card"><div class="ico">📅</div><div class="sval">AU$${thisMonth.toFixed(2)}</div><div class="slabel">This month</div></div>
+        <div class="stat-card"><div class="ico">💰</div><div class="sval">AU$${totalEarned.toFixed(2)}</div><div class="slabel">Total earned</div><div class="sdelta">Via NestMate escrow</div></div>
+        <div class="stat-card"><div class="ico">🔒</div><div class="sval">AU$${inEscrow.toFixed(2)}</div><div class="slabel">In escrow (bonds)</div><div class="sdelta">Released after check-in</div></div>
       </div>
-      <div class="bar-chart" id="earnBarChart" style="height:150px;gap:5px"></div>
-    </div>
-    <div class="ll-table">
-      <div class="ll-table-head" style="grid-template-columns:2.5fr 1fr 1fr 1fr">
-        <div>Transaction</div><div>Amount</div><div>Status</div><div>Date</div>
-      </div>
-      ${[
-        ['Yuki T. — Weekly rent','Broadbeach ensuite','+AU$420','Received','15 Jan','s-active'],
-        ['Maria S. — Weekly rent','Surfers Paradise room','+AU$310','Received','15 Jan','s-active'],
-        ['Arjun P. — Bond deposit','Broadbeach room','AU$840','In Escrow','1 Jan','s-pending'],
-        ['Maria S. — Weekly rent','Surfers Paradise room','+AU$310','Received','8 Jan','s-active'],
-        ['NestMate — Service fee','5% platform fee','-AU$36','Deducted','1 Jan','s-vacant'],
-        ['Pedro A. — Bond refund','End of tenancy','-AU$540','Refunded','Dec 1','s-vacant'],
-      ].map(([n,s,a,st,d,sc])=>`<div class="ll-row" style="grid-template-columns:2.5fr 1fr 1fr 1fr">
-        <div><div class="ll-name">${n}</div><div class="ll-sub">${s}</div></div>
-        <div style="font-weight:700;color:${a.startsWith('+')?'var(--lime)':a.startsWith('-')?'var(--red)':'var(--gold)'}">${a}</div>
-        <div><span class="s-badge ${sc}"><span class="s-dot"></span>${st}</span></div>
-        <div style="font-size:.78rem;color:var(--muted)">${d}</div>
-      </div>`).join('')}
-    </div>`;
-  renderBarChart('earnBarChart', data12);
+      ${!payments || payments.length === 0 ? `
+        <div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)">
+          <div style="font-size:2.5rem;margin-bottom:12px">💰</div>
+          <p style="color:var(--muted)">No payments yet. Once tenants book and pay, your earnings will appear here.</p>
+        </div>` : `
+        <div class="ll-table">
+          <div class="ll-table-head" style="grid-template-columns:2.5fr 1fr 1fr 1fr">
+            <div>Transaction</div><div>Amount</div><div>Status</div><div>Date</div>
+          </div>
+          ${payments.map(p => {
+            const listing = p.bookings?.listings;
+            const label = listing ? listing.title : p.payment_type;
+            const sub = listing ? listing.suburb : '';
+            const amt = p.amount || 0;
+            const sign = p.payment_type === 'service_fee' ? '-' : '+';
+            const color = sign === '+' ? 'var(--lime)' : 'var(--red)';
+            const date = new Date(p.created_at).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'});
+            const stClass = p.status === 'completed' ? 's-active' : p.status === 'pending' ? 's-pending' : 's-vacant';
+            return `<div class="ll-row" style="grid-template-columns:2.5fr 1fr 1fr 1fr">
+              <div><div class="ll-name">${label}</div><div class="ll-sub">${sub}</div></div>
+              <div style="font-weight:700;color:${color}">${sign}AU$${amt.toFixed(2)}</div>
+              <div><span class="s-badge ${stClass}"><span class="s-dot"></span>${p.status}</span></div>
+              <div style="font-size:.78rem;color:var(--muted)">${date}</div>
+            </div>`;
+          }).join('')}
+        </div>`}`;
+
+  } catch(e) {
+    console.error('Earnings error:', e);
+    m.innerHTML = header + '<div style="color:var(--red);padding:20px">Error loading earnings: ' + (e.message || 'Please try again') + '</div>';
+  }
 }
 
 // ══════════════════════════════════════
