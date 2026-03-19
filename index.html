@@ -2687,40 +2687,36 @@ function tglNat(el, nat) {
 // ══════════════════════════════════════
 function t(key) { return (TRANSLATIONS[LANG]||{})[key] || key; }
 
-// ══════════════════════════════════════
-// ADMIN PANEL FUNCTIONS
-// ══════════════════════════════════════
-let isAdmin = false;
+// ADMIN PANEL
+var isAdmin = false;
 
 async function checkAdminRole() {
   if (!_supabaseClient || !currentUser) return;
   try {
-    const { data, error } = await _supabaseClient
-      .from('profiles').select('role').eq('id', currentUser.id).single();
-    if (error) { console.log('Admin check error:', error); return; }
-    isAdmin = data?.role === 'admin';
-    const btn = document.getElementById('adminNavBtn');
+    var res = await _supabaseClient.from('profiles').select('role').eq('id', currentUser.id).single();
+    if (res.error) return;
+    isAdmin = res.data && res.data.role === 'admin';
+    var btn = document.getElementById('adminNavBtn');
     if (btn) btn.style.display = isAdmin ? 'inline-block' : 'none';
     if (isAdmin) loadAdminPendingCount();
-    console.log('Role check:', data?.role, '| isAdmin:', isAdmin);
-  } catch(e) { console.error('checkAdminRole error:', e); }
+    console.log('Role:', res.data && res.data.role, '| Admin:', isAdmin);
+  } catch(e) { console.error('checkAdminRole:', e); }
 }
 
 async function loadAdminPendingCount() {
   if (!_supabaseClient) return;
   try {
-    const { count } = await _supabaseClient
-      .from('listings').select('id', { count: 'exact', head: true }).eq('status', 'pending_review');
-    const badge = document.getElementById('admPendingBadge');
-    if (badge && count > 0) { badge.textContent = count; badge.style.display = 'inline-flex'; }
+    var res = await _supabaseClient.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'pending_review');
+    var badge = document.getElementById('admPendingBadge');
+    if (badge && res.count > 0) { badge.textContent = res.count; badge.style.display = 'inline-flex'; }
   } catch(e) {}
 }
 
 function admTab(tab) {
-  document.querySelectorAll('[id^="adm-si-"]').forEach(el => el.classList.remove('on'));
-  const si = document.getElementById('adm-si-' + tab);
+  document.querySelectorAll('[id^="adm-si-"]').forEach(function(el) { el.classList.remove('on'); });
+  var si = document.getElementById('adm-si-' + tab);
   if (si) si.classList.add('on');
-  const m = document.getElementById('admMain');
+  var m = document.getElementById('admMain');
   if (!m) return;
   if (tab === 'pending') admLoadListings(m, 'pending_review');
   else if (tab === 'active') admLoadListings(m, 'active');
@@ -2732,52 +2728,61 @@ function admTab(tab) {
 async function admLoadListings(m, statusFilter) {
   if (!isAdmin) { m.innerHTML = '<p style="color:var(--red);padding:20px">Access denied.</p>'; return; }
   m.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Loading...</div>';
-  let query = _supabaseClient.from('listings')
-    .select('*, profiles!landlord_id(full_name, email)')
-    .order('created_at', { ascending: false });
+  var query = _supabaseClient.from('listings').select('*, profiles!landlord_id(full_name, email)').order('created_at', { ascending: false });
   if (statusFilter) query = query.eq('status', statusFilter);
-  const { data: listings, error } = await query;
-  if (error) { m.innerHTML = '<p style="color:var(--red);padding:20px">' + error.message + '</p>'; return; }
-  const title = statusFilter === 'pending_review' ? 'Pending Review' : statusFilter === 'active' ? 'Active Listings' : 'All Listings';
-  const stClass = { pending_review:'s-pending', active:'s-active', draft:'s-vacant', paused:'s-vacant', deleted:'s-vacant' };
-  m.innerHTML = '<h1 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:20px;color:var(--text)">' + title + ' (' + (listings?.length||0) + ')</h1>' +
-    (!listings || !listings.length ? '<div style="text-align:center;padding:40px;color:var(--muted)">No listings found.</div>' :
-    listings.map(function(l) {
-      const sc = stClass[l.status] || 's-vacant';
-      const photo = l.photos && l.photos[0] ? '<img src="'+l.photos[0]+'" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">' : '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">🏠</div>';
-      const approveBtn = l.status === 'pending_review' || l.status === 'draft' ? '<button class="btn lime sm" onclick="admApprove(''+l.id+'',this)">✅ Approve</button>' : '';
-      const rejectBtn = l.status === 'pending_review' ? '<button class="btn sm" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2)" onclick="admReject(''+l.id+'',this)">❌ Reject</button>' : '';
-      const pauseBtn = l.status === 'active' ? '<button class="btn sm" style="background:rgba(255,107,53,.1);color:var(--orange);border:1px solid rgba(255,107,53,.2)" onclick="admPause(''+l.id+'',this)">⏸ Pause</button>' : '';
-      const delBtn = l.status !== 'deleted' ? '<button class="btn sm" style="background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.15)" onclick="admDelete(''+l.id+'',this)">🗑 Delete</button>' : '';
-      return '<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">' +
-        '<div style="display:flex;gap:12px;align-items:flex-start">' + photo +
-        '<div style="flex:1"><div style="font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:4px">' + l.title +
-        ' <span class="s-badge ' + sc + '"><span class="s-dot"></span>' + l.status + '</span></div>' +
-        '<div style="font-size:.76rem;color:var(--muted)">📍 ' + l.suburb + ' · AU$' + l.price_weekly + '/wk · ' + (l.profiles?.full_name||'?') + ' · ' + new Date(l.created_at).toLocaleDateString('en-AU') + '</div>' +
-        (l.description ? '<div style="font-size:.75rem;color:var(--muted);margin-top:4px;max-height:40px;overflow:hidden">' + l.description.substring(0,120) + '...</div>' : '') +
-        '</div></div>' +
-        '<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' + approveBtn + rejectBtn + pauseBtn + delBtn + '</div></div>';
-    }).join(''));
+  var res = await query;
+  if (res.error) { m.innerHTML = '<p style="color:var(--red);padding:20px">' + res.error.message + '</p>'; return; }
+  var listings = res.data || [];
+  var titles = { pending_review: 'Pending Review', active: 'Active Listings', draft: 'Draft', paused: 'Paused' };
+  var title = statusFilter ? (titles[statusFilter] || statusFilter) : 'All Listings';
+  var stClass = { pending_review: 's-pending', active: 's-active', draft: 's-vacant', paused: 's-vacant', deleted: 's-vacant' };
+  var html = '<h1 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:20px;color:var(--text)">' + title + ' (' + listings.length + ')</h1>';
+  if (!listings.length) {
+    html += '<div style="text-align:center;padding:40px;color:var(--muted)">No listings found.</div>';
+  } else {
+    for (var i = 0; i < listings.length; i++) {
+      var l = listings[i];
+      var sc = stClass[l.status] || 's-vacant';
+      var photoHtml = (l.photos && l.photos[0]) ? '<img src="' + l.photos[0] + '" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">' : '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">&#127968;</div>';
+      var landlordName = (l.profiles && l.profiles.full_name) ? l.profiles.full_name : 'Unknown';
+      var landlordEmail = (l.profiles && l.profiles.email) ? l.profiles.email : '';
+      var desc = l.description ? l.description.substring(0, 100) + '...' : '';
+      var date = new Date(l.created_at).toLocaleDateString('en-AU');
+      var btns = '';
+      if (l.status === 'pending_review' || l.status === 'draft') btns += '<button class="btn lime sm" onclick="admApprove('' + l.id + '',this)">Approve</button> ';
+      if (l.status === 'pending_review') btns += '<button class="btn sm" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2)" onclick="admReject('' + l.id + '',this)">Reject</button> ';
+      if (l.status === 'active') btns += '<button class="btn sm" style="background:rgba(255,107,53,.1);color:var(--orange);border:1px solid rgba(255,107,53,.2)" onclick="admPause('' + l.id + '',this)">Pause</button> ';
+      if (l.status !== 'deleted') btns += '<button class="btn sm" style="background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.15)" onclick="admDelete('' + l.id + '',this)">Delete</button>';
+      html += '<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">';
+      html += '<div style="display:flex;gap:12px;align-items:flex-start">' + photoHtml;
+      html += '<div style="flex:1"><div style="font-weight:700;color:var(--text)">' + l.title + ' <span class="s-badge ' + sc + '"><span class="s-dot"></span>' + l.status + '</span></div>';
+      html += '<div style="font-size:.76rem;color:var(--muted);margin-top:4px">&#128205; ' + l.suburb + ' &middot; AU$' + l.price_weekly + '/wk &middot; ' + landlordName + ' &middot; ' + date + '</div>';
+      if (desc) html += '<div style="font-size:.75rem;color:var(--muted);margin-top:4px">' + desc + '</div>';
+      html += '</div></div>';
+      if (btns) html += '<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' + btns + '</div>';
+      html += '</div>';
+    }
+  }
+  m.innerHTML = html;
 }
 
 async function admApprove(id, btn) {
   if (!isAdmin) return;
   btn.textContent = '...'; btn.disabled = true;
-  const { error } = await _supabaseClient.from('listings').update({ status: 'active' }).eq('id', id);
-  if (error) { toast('Error: ' + error.message, 'error'); btn.disabled = false; return; }
-  toast('✅ Listing approved and live!', 'lime');
+  var res = await _supabaseClient.from('listings').update({ status: 'active' }).eq('id', id);
+  if (res.error) { toast('Error: ' + res.error.message, 'error'); btn.disabled = false; return; }
+  toast('Listing approved and live!', 'lime');
   loadAdminPendingCount();
-  const activeTab = document.querySelector('[id^="adm-si-"].on')?.id.replace('adm-si-','') || 'pending';
-  admTab(activeTab);
+  var activeTab = (document.querySelector('[id^="adm-si-"].on') || {}).id;
+  admTab(activeTab ? activeTab.replace('adm-si-', '') : 'pending');
 }
 
 async function admReject(id, btn) {
   if (!isAdmin) return;
-  const reason = prompt('Reason for rejection:');
+  var reason = prompt('Reason for rejection:');
   if (reason === null) return;
   btn.textContent = '...'; btn.disabled = true;
-  const { error } = await _supabaseClient.from('listings').update({ status: 'draft' }).eq('id', id);
-  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await _supabaseClient.from('listings').update({ status: 'draft' }).eq('id', id);
   toast('Listing rejected.', '');
   loadAdminPendingCount();
   admTab('pending');
@@ -2802,41 +2807,55 @@ async function admDelete(id, btn) {
 
 async function admLoadUsers(m) {
   if (!isAdmin) return;
-  m.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Loading users...</div>';
-  const { data: users, error } = await _supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
-  if (error) { m.innerHTML = '<p style="color:var(--red);padding:20px">' + error.message + '</p>'; return; }
-  const roleColor = { admin:'var(--red)', landlord:'var(--blue)', tenant:'var(--teal)' };
-  m.innerHTML = '<h1 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:20px;color:var(--text)">All Users (' + (users?.length||0) + ')</h1>' +
-    '<div class="ll-table"><div class="ll-table-head" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr"><div>Name</div><div>Email</div><div>Role</div><div>KYC</div><div>Joined</div></div>' +
-    (users||[]).map(function(u) {
-      return '<div class="ll-row" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr">' +
-        '<div><div class="ll-name">' + (u.full_name||'—') + '</div></div>' +
-        '<div style="font-size:.76rem;color:var(--muted)">' + (u.email||'') + '</div>' +
-        '<div><span style="font-size:.72rem;font-weight:700;color:' + (roleColor[u.role]||'var(--muted)') + '">● ' + (u.role||'tenant') + '</span></div>' +
-        '<div><span class="s-badge ' + (u.kyc_status==='verified'?'s-active':'s-pending') + '"><span class="s-dot"></span>' + (u.kyc_status||'pending') + '</span></div>' +
-        '<div style="font-size:.75rem;color:var(--muted)">' + (u.created_at ? new Date(u.created_at).toLocaleDateString('en-AU') : '—') + '</div></div>';
-    }).join('') + '</div>';
+  m.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Loading...</div>';
+  var res = await _supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+  if (res.error) { m.innerHTML = '<p style="color:var(--red);padding:20px">' + res.error.message + '</p>'; return; }
+  var users = res.data || [];
+  var roleColor = { admin: 'var(--red)', landlord: 'var(--blue)', tenant: 'var(--teal)', both: 'var(--orange)' };
+  var html = '<h1 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:20px;color:var(--text)">All Users (' + users.length + ')</h1>';
+  html += '<div class="ll-table"><div class="ll-table-head" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr"><div>Name</div><div>Email</div><div>Role</div><div>KYC</div><div>Joined</div></div>';
+  for (var i = 0; i < users.length; i++) {
+    var u = users[i];
+    var rc = roleColor[u.role] || 'var(--muted)';
+    var date = u.created_at ? new Date(u.created_at).toLocaleDateString('en-AU') : '-';
+    var kyc = u.kyc_status || 'pending';
+    html += '<div class="ll-row" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr">';
+    html += '<div><div class="ll-name">' + (u.full_name || '-') + '</div></div>';
+    html += '<div style="font-size:.76rem;color:var(--muted)">' + (u.email || '') + '</div>';
+    html += '<div><span style="font-size:.72rem;font-weight:700;color:' + rc + '">' + (u.role || 'tenant') + '</span></div>';
+    html += '<div><span class="s-badge ' + (kyc === 'verified' ? 's-active' : 's-pending') + '"><span class="s-dot"></span>' + kyc + '</span></div>';
+    html += '<div style="font-size:.75rem;color:var(--muted)">' + date + '</div></div>';
+  }
+  html += '</div>';
+  m.innerHTML = html;
 }
 
 async function admLoadBookings(m) {
   if (!isAdmin) return;
-  m.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Loading bookings...</div>';
-  const { data: bookings, error } = await _supabaseClient.from('bookings')
-    .select('*, listings(title,suburb), profiles!tenant_id(full_name,email)')
-    .order('created_at', { ascending: false }).limit(50);
-  if (error) { m.innerHTML = '<p style="color:var(--red);padding:20px">' + error.message + '</p>'; return; }
-  if (!bookings || !bookings.length) { m.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No bookings yet.</div>'; return; }
-  const stClass = { pending:'s-pending', approved:'s-active', paid:'s-active', checked_in:'s-active', cancelled:'s-vacant' };
-  m.innerHTML = '<h1 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:20px;color:var(--text)">All Bookings (' + bookings.length + ')</h1>' +
-    '<div class="ll-table"><div class="ll-table-head" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr"><div>Tenant</div><div>Listing</div><div>Amount</div><div>Status</div><div>Date</div></div>' +
-    bookings.map(function(b) {
-      return '<div class="ll-row" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr">' +
-        '<div><div class="ll-name">' + (b.profiles?.full_name||'—') + '</div><div class="ll-sub">' + (b.profiles?.email||'') + '</div></div>' +
-        '<div><div class="ll-name" style="font-size:.82rem">' + (b.listings?.title||'—') + '</div></div>' +
-        '<div style="font-weight:700;color:var(--lime)">AU$' + (b.total_amount||0) + '</div>' +
-        '<div><span class="s-badge ' + (stClass[b.status]||'s-vacant') + '"><span class="s-dot"></span>' + b.status + '</span></div>' +
-        '<div style="font-size:.75rem;color:var(--muted)">' + new Date(b.created_at).toLocaleDateString('en-AU') + '</div></div>';
-    }).join('') + '</div>';
+  m.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Loading...</div>';
+  var res = await _supabaseClient.from('bookings').select('*, listings(title,suburb), profiles!tenant_id(full_name,email)').order('created_at', { ascending: false }).limit(50);
+  if (res.error) { m.innerHTML = '<p style="color:var(--red);padding:20px">' + res.error.message + '</p>'; return; }
+  var bookings = res.data || [];
+  if (!bookings.length) { m.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No bookings yet.</div>'; return; }
+  var stClass = { pending: 's-pending', approved: 's-active', paid: 's-active', checked_in: 's-active', cancelled: 's-vacant' };
+  var html = '<h1 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:20px;color:var(--text)">All Bookings (' + bookings.length + ')</h1>';
+  html += '<div class="ll-table"><div class="ll-table-head" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr"><div>Tenant</div><div>Listing</div><div>Amount</div><div>Status</div><div>Date</div></div>';
+  for (var i = 0; i < bookings.length; i++) {
+    var b = bookings[i];
+    var sc = stClass[b.status] || 's-vacant';
+    var tName = (b.profiles && b.profiles.full_name) ? b.profiles.full_name : '-';
+    var tEmail = (b.profiles && b.profiles.email) ? b.profiles.email : '';
+    var lTitle = (b.listings && b.listings.title) ? b.listings.title : '-';
+    var date = new Date(b.created_at).toLocaleDateString('en-AU');
+    html += '<div class="ll-row" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr">';
+    html += '<div><div class="ll-name">' + tName + '</div><div class="ll-sub">' + tEmail + '</div></div>';
+    html += '<div><div class="ll-name" style="font-size:.82rem">' + lTitle + '</div></div>';
+    html += '<div style="font-weight:700;color:var(--lime)">AU$' + (b.total_amount || 0) + '</div>';
+    html += '<div><span class="s-badge ' + sc + '"><span class="s-dot"></span>' + b.status + '</span></div>';
+    html += '<div style="font-size:.75rem;color:var(--muted)">' + date + '</div></div>';
+  }
+  html += '</div>';
+  m.innerHTML = html;
 }
 
 </script>
