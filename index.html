@@ -889,13 +889,26 @@ let stripe = null;
 
 function initSupabase() {
   const { SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_KEY } = window.NESTMATE_CONFIG;
-  if (SUPABASE_URL === 'https://ihsteworauuydakhrkws.supabase.co') {
+  // Only skip if still has placeholder value
+  if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
     console.warn('⚠️ NestMate: Configure as credenciais em NESTMATE_CONFIG');
     return;
   }
-  _supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  stripe = window.Stripe ? window.Stripe(STRIPE_KEY) : null;
-  checkSession();
+  try {
+    const lib = window.supabase;
+    if (!lib || !lib.createClient) {
+      console.warn('Supabase SDK not ready, retrying...');
+      setTimeout(initSupabase, 400);
+      return;
+    }
+    _supabaseClient = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    stripe = window.Stripe ? window.Stripe(STRIPE_KEY) : null;
+    console.log('✅ NestMate: Supabase connected!');
+    checkSession();
+  } catch(e) {
+    console.error('Supabase init error:', e);
+    setTimeout(initSupabase, 500);
+  }
 }
 
 async function checkSession() {
@@ -952,7 +965,8 @@ function showUserMenu() {
 // LOGIN COM GOOGLE
 async function loginWithGoogle() {
   if (!_supabaseClient) {
-    toast('⚠️ Configure as credenciais primeiro', 'error');
+    toast('⏳ Conectando... tente novamente em 2 segundos', '');
+    setTimeout(initSupabase, 100);
     return;
   }
   const { error } = await _supabaseClient.auth.signInWithOAuth({
@@ -968,7 +982,8 @@ async function loginWithGoogle() {
 // LOGIN COM FACEBOOK
 async function loginWithFacebook() {
   if (!_supabaseClient) {
-    toast('⚠️ Configure as credenciais primeiro', 'error');
+    toast('⏳ Conectando... tente novamente em 2 segundos', '');
+    setTimeout(initSupabase, 100);
     return;
   }
   const { error } = await _supabaseClient.auth.signInWithOAuth({
@@ -980,7 +995,7 @@ async function loginWithFacebook() {
 
 // LOGIN COM EMAIL
 async function loginWithEmail(email, password) {
-  if (!_supabaseClient) { toast('⚠️ Configure as credenciais primeiro', 'error'); return; }
+  if (!_supabaseClient) { toast('⏳ Aguarde, conectando...', ''); setTimeout(initSupabase, 100); return; }
   const { data, error } = await _supabaseClient.auth.signInWithPassword({ email, password });
   if (error) { toast('Erro: ' + error.message, 'error'); return; }
   go('s-browse');
@@ -1002,7 +1017,7 @@ function doSignup() {
 }
 
 async function signUpWithEmail(email, password, fullName, role, nationality) {
-  if (!_supabaseClient) { toast('⚠️ Configure as credenciais primeiro', 'error'); return; }
+  if (!_supabaseClient) { toast('⏳ Aguarde, conectando...', ''); setTimeout(initSupabase, 100); return; }
   const { data, error } = await _supabaseClient.auth.signUp({
     email, password,
     options: {
@@ -1145,8 +1160,13 @@ function simulatePaymentFallback() {
 }
 
 // Init após DOM + SDKs carregarem
+// Wait for all scripts to load before init
+window.addEventListener('load', () => {
+  initSupabase();
+});
+// Also try on DOMContentLoaded as backup
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(initSupabase, 100);
+  setTimeout(initSupabase, 800);
 });
 
 // ══════════════════════════════════════
