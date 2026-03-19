@@ -2755,18 +2755,29 @@ async function admLoadListings(m, statusFilter) {
       var landlordEmail = (l.profiles && l.profiles.email) ? l.profiles.email : '';
       var desc = l.description ? l.description.substring(0, 100) + '...' : '';
       var date = new Date(l.created_at).toLocaleDateString('en-AU');
+      var lid = l.id;
+      admListingMap = admListingMap || {};
+      admListingMap[lid] = lid;
       var btns = '';
-      if (l.status === 'pending_review' || l.status === 'draft') btns += '<button class="btn lime sm" onclick="admApprove('' + l.id + '',this)">Approve</button> ';
-      if (l.status === 'pending_review') btns += '<button class="btn sm" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2)" onclick="admReject('' + l.id + '',this)">Reject</button> ';
-      if (l.status === 'active') btns += '<button class="btn sm" style="background:rgba(255,107,53,.1);color:var(--orange);border:1px solid rgba(255,107,53,.2)" onclick="admPause('' + l.id + '',this)">Pause</button> ';
-      if (l.status !== 'deleted') btns += '<button class="btn sm" style="background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.15)" onclick="admDelete('' + l.id + '',this)">Delete</button>';
+      if (l.status === 'pending_review' || l.status === 'draft') {
+        btns += '<button class="btn lime sm" data-admid="' + lid + '" data-admaction="approve" onclick="admAction(this)">Approve</button> ';
+      }
+      if (l.status === 'pending_review') {
+        btns += '<button class="btn sm" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2)" data-admid="' + lid + '" data-admaction="reject" onclick="admAction(this)">Reject</button> ';
+      }
+      if (l.status === 'active') {
+        btns += '<button class="btn sm" style="background:rgba(255,107,53,.1);color:var(--orange);border:1px solid rgba(255,107,53,.2)" data-admid="' + lid + '" data-admaction="pause" onclick="admAction(this)">Pause</button> ';
+      }
+      if (l.status !== 'deleted') {
+        btns += '<button class="btn sm" style="background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.15)" data-admid="' + lid + '" data-admaction="delete" onclick="admAction(this)">Delete</button>';
+      }
       html += '<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">';
       html += '<div style="display:flex;gap:12px;align-items:flex-start">' + photoHtml;
       html += '<div style="flex:1"><div style="font-weight:700;color:var(--text)">' + l.title + ' <span class="s-badge ' + sc + '"><span class="s-dot"></span>' + l.status + '</span></div>';
       html += '<div style="font-size:.76rem;color:var(--muted);margin-top:4px">&#128205; ' + l.suburb + ' &middot; AU$' + l.price_weekly + '/wk &middot; ' + landlordName + ' &middot; ' + date + '</div>';
       if (desc) html += '<div style="font-size:.75rem;color:var(--muted);margin-top:4px">' + desc + '</div>';
       html += '</div></div>';
-      if (btns) html += '<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' + btns + '</div>';
+      if (btns) html += '<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)" data-lid="' + lid + '">' + btns + '</div>';
       html += '</div>';
     }
   }
@@ -2864,6 +2875,30 @@ async function admLoadBookings(m) {
   html += '</div>';
   m.innerHTML = html;
 }
+
+
+function admApproveById(id, btn) { admApprove(id, btn); }
+function admRejectById(id, btn) { admReject(id, btn); }
+function admPauseById(id, btn) { admPause(id, btn); }
+function admDeleteById(id, btn) { admDelete(id, btn); }
+
+
+var admListingMap = {};
+
+function admAction(btn) {
+  var id = btn.getAttribute('data-admid');
+  var action = btn.getAttribute('data-admaction');
+  if (!id) return;
+  if (action === 'approve') admApprove(id, btn);
+  else if (action === 'reject') admReject(id, btn);
+  else if (action === 'pause') admPause(id, btn);
+  else if (action === 'delete') admDelete(id, btn);
+}
+
+function admApproveById(id, btn) { admApprove(id, btn); }
+function admRejectById(id, btn) { admReject(id, btn); }
+function admPauseById(id, btn) { admPause(id, btn); }
+function admDeleteById(id, btn) { admDelete(id, btn); }
 
 </script>
 </body>
