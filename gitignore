@@ -1,0 +1,20 @@
+# Environment variables — NUNCA commitar
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+
+# Build outputs
+.vercel/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
