@@ -9,7 +9,7 @@
   window.NESTMATE_CONFIG = {
     SUPABASE_URL: 'https://ihsteworauuydakhrkws.supabase.co',
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imloc3Rld29yYXV1eWRha2hya3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTQzMzQsImV4cCI6MjA4OTQzMDMzNH0.EeW_LVJJXCUhRmwox8VQLg0sSnJ8BNFgtQYYDysbNJg',
-    STRIPE_KEY: 'pk_test_placeholder',
+    STRIPE_KEY: 'pk_live_51TCUnxJiXVz8DVfLBuyZxoBGh5FwfGUB7lF6kCMjoQJB2yexreIndQnRYVhMw7FyuyvR5wOhWMhhLyDgi1SJ1Zsy00rX4yGAnG',
     APP_URL: 'https://nestmadeprod.vercel.app'
   };
 </script>
@@ -1040,11 +1040,11 @@ async function loadListingsFromDB() {
   }
   const { data, error } = await supabase
     .from('listings')
-    .select(\`
+    .select(`
       *,
       profiles!landlord_id(full_name, rating_avg, rating_count, avatar_url),
       housemates(name, nationality_code, bio, avatar_emoji)
-    \`)
+    `)
     .eq('status', 'active')
     .order('created_at', { ascending: false });
 
