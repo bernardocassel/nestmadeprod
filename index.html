@@ -10,7 +10,7 @@
     SUPABASE_URL: 'https://ihsteworauuydakhrkws.supabase.co',
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imloc3Rld29yYXV1eWRha2hya3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTQzMzQsImV4cCI6MjA4OTQzMDMzNH0.EeW_LVJJXCUhRmwox8VQLg0sSnJ8BNFgtQYYDysbNJg',
     STRIPE_KEY: 'pk_test_placeholder',
-    APP_URL: window.location.origin
+    APP_URL: 'https://nestmadeprod.vercel.app'
   };
 </script>
 
@@ -652,13 +652,13 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <h2>Welcome back</h2>
       <p class="auth-sub">Sign in to NestMate</p>
       <div class="soc-btns">
-        <button class="soc-btn" onclick="doLogin()">🍎 Apple</button>
+        <button class="soc-btn" onclick="toast('Apple Sign In em breve','')">🍎 Apple</button>
         <button class="soc-btn" onclick="loginWithGoogle()">G Google</button>
         <button class="soc-btn" onclick="loginWithFacebook()">f Facebook</button>
       </div>
       <div class="divid">or with email</div>
-      <div class="fg"><label class="lbl">Email</label><input class="inp" type="email" placeholder="you@email.com"></div>
-      <div class="fg"><label class="lbl">Password</label><input class="inp" type="password" placeholder="••••••••"></div>
+      <div class="fg"><label class="lbl">Email</label><input class="inp" type="email" placeholder="you@email.com" id="loginEmail"></div>
+      <div class="fg"><label class="lbl">Password</label><input class="inp" type="password" placeholder="••••••••" id="loginPwd"></div>
       <button class="btn lime full" onclick="doLogin()"><span class="t" data-en="Sign In →" data-pt="Entrar →">Sign In →</span></button>
       <div class="sw-mode">No account? <a onclick="go('s-signup')">Join free</a></div>
     </div>
@@ -671,7 +671,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <h2>Join NestMate</h2>
       <p class="auth-sub">Find your room or list yours</p>
       <div class="soc-btns">
-        <button class="soc-btn" onclick="doLogin()">🍎 Apple</button>
+        <button class="soc-btn" onclick="toast('Apple Sign In em breve','')">🍎 Apple</button>
         <button class="soc-btn" onclick="loginWithGoogle()">G Google</button>
       </div>
       <div class="divid">or create account</div>
@@ -695,7 +695,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <option>Other</option>
         </select>
       </div>
-      <button class="btn lime full" onclick="doLogin()">Create Account →</button>
+      <button class="btn lime full" onclick="doSignup()">Create Account →</button>
       <div class="kyc-note">🪪 <span>After signup you'll verify your identity (passport + selfie) in ~5 min. Keeps everyone safe.</span></div>
       <div class="sw-mode">Already have an account? <a onclick="go('s-login')">Sign in</a></div>
     </div>
@@ -958,8 +958,8 @@ async function loginWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.NESTMATE_CONFIG.APP_URL,
-      queryParams: { access_type: 'offline', prompt: 'consent' }
+      redirectTo: window.location.origin,
+      queryParams: { access_type: 'offline', prompt: 'select_account' }
     }
   });
   if (error) toast('Erro ao conectar com Google: ' + error.message, 'error');
@@ -987,6 +987,20 @@ async function loginWithEmail(email, password) {
 }
 
 // CADASTRO COM EMAIL
+function doSignup() {
+  const email = document.querySelector('#s-signup input[type=email]')?.value;
+  const password = document.querySelector('#s-signup input[type=password]')?.value;
+  const nameInputs = document.querySelectorAll('#s-signup input[type=text]');
+  const fullName = Array.from(nameInputs).map(i => i.value).filter(Boolean).join(' ');
+  const roleSelect = document.querySelector('#s-signup select:first-of-type');
+  const natSelect = document.querySelector('#s-signup select:last-of-type');
+  const role = roleSelect?.value?.includes('Student') ? 'tenant' : 'landlord';
+  const nationality = natSelect?.value || '';
+  if (!email || !password) { toast('Preencha email e senha', 'error'); return; }
+  if (password.length < 6) { toast('Senha precisa ter ao menos 6 caracteres', 'error'); return; }
+  signUpWithEmail(email, password, fullName, role, nationality);
+}
+
 async function signUpWithEmail(email, password, fullName, role, nationality) {
   if (!supabase) { toast('⚠️ Configure as credenciais primeiro', 'error'); return; }
   const { data, error } = await supabase.auth.signUp({
