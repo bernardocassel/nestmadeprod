@@ -930,11 +930,11 @@ async function loadLandlordDashboard() {
 
 function renderFirstTimeLandlord(m) {
   const name = currentUser?.user_metadata?.full_name?.split(' ')[0] || 'there';
-  m.innerHTML = \`
+  m.innerHTML = `
     <div style="max-width:580px;margin:0 auto;padding:40px 20px;text-align:center">
       <div style="font-size:3rem;margin-bottom:16px">🏠</div>
       <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:8px;color:var(--text)">
-        Welcome, \${name}!
+        Welcome, ${name}!
       </h1>
       <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:32px">
         You don't have any listings yet.<br>
@@ -964,7 +964,7 @@ function renderFirstTimeLandlord(m) {
       </button>
       <p style="margin-top:12px;font-size:.75rem;color:var(--muted)">Free to list · No subscription required · Pay only when you earn</p>
     </div>
-  \`;
+  `;
 }
 
 async function renderRealDashboard(m, listings) {
@@ -986,34 +986,34 @@ async function renderRealDashboard(m, listings) {
       .reduce((sum, b) => sum + (b.total_rent || 0), 0);
   } catch(e) {}
 
-  m.innerHTML = \`
+  m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">
-      Good morning, \${name} 👋
+      Good morning, ${name} 👋
     </h1>
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your NestMate dashboard.</p>
     
     <div class="stats-row">
       <div class="stat-card">
         <div class="ico">🏠</div>
-        <div class="sval">\${totalListings}</div>
+        <div class="sval">${totalListings}</div>
         <div class="slabel">My listings</div>
-        <div class="sdelta">\${activeListings} active</div>
+        <div class="sdelta">${activeListings} active</div>
       </div>
       <div class="stat-card">
         <div class="ico">📥</div>
-        <div class="sval">\${pendingCount}</div>
+        <div class="sval">${pendingCount}</div>
         <div class="slabel">Pending requests</div>
-        <div class="sdelta">\${pendingCount > 0 ? '⚡ Action needed' : 'All clear'}</div>
+        <div class="sdelta">${pendingCount > 0 ? '⚡ Action needed' : 'All clear'}</div>
       </div>
       <div class="stat-card">
         <div class="ico">💰</div>
-        <div class="sval">AU$\${earnings.toLocaleString()}</div>
+        <div class="sval">AU$${earnings.toLocaleString()}</div>
         <div class="slabel">Total earned</div>
         <div class="sdelta">Via NestMate escrow</div>
       </div>
       <div class="stat-card">
         <div class="ico">⭐</div>
-        <div class="sval">\${currentUser?.user_metadata?.rating || '—'}</div>
+        <div class="sval">${currentUser?.user_metadata?.rating || '—'}</div>
         <div class="slabel">Your rating</div>
         <div class="sdelta">Build your reputation</div>
       </div>
@@ -1024,33 +1024,33 @@ async function renderRealDashboard(m, listings) {
       <button class="btn lime sm" onclick="llTab('add')">+ Add Room</button>
     </div>
 
-    \${listings.map(l => \`
+    ${listings.map(l => `
       <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px">
         <div style="width:54px;height:54px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🏠</div>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:.9rem;color:var(--text)">\${l.title}</div>
-          <div style="font-size:.76rem;color:var(--muted);margin-top:2px">📍 \${l.suburb} · AU$\${l.price_weekly}/wk · Bond AU$\${l.bond_amount}</div>
+          <div style="font-weight:600;font-size:.9rem;color:var(--text)">${l.title}</div>
+          <div style="font-size:.76rem;color:var(--muted);margin-top:2px">📍 ${l.suburb} · AU$${l.price_weekly}/wk · Bond AU$${l.bond_amount}</div>
         </div>
-        <span class="s-badge \${l.status === 'active' ? 's-active' : l.status === 'pending_review' ? 's-pending' : 's-vacant'}">
+        <span class="s-badge ${l.status === 'active' ? 's-active' : l.status === 'pending_review' ? 's-pending' : 's-vacant'}">
           <span class="s-dot"></span>
-          \${l.status === 'active' ? 'Active' : l.status === 'pending_review' ? 'Under Review' : l.status === 'draft' ? 'Draft' : l.status}
+          ${l.status === 'active' ? 'Active' : l.status === 'pending_review' ? 'Under Review' : l.status === 'draft' ? 'Draft' : l.status}
         </span>
         <button class="btn ol sm" onclick="toast('Edit coming soon','lime')">Edit</button>
       </div>
-    \`).join('')}
+    `).join('')}
 
-    \${pendingCount > 0 ? \`
+    ${pendingCount > 0 ? `
       <div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:14px;padding:16px;margin-top:12px">
-        <div style="font-weight:600;color:var(--lime);margin-bottom:4px">📥 You have \${pendingCount} pending request\${pendingCount>1?'s':''}!</div>
+        <div style="font-weight:600;color:var(--lime);margin-bottom:4px">📥 You have ${pendingCount} pending request${pendingCount>1?'s':''}!</div>
         <div style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Review and respond within 24h for best results.</div>
         <button class="btn lime sm" onclick="llTab('applications')">View Requests</button>
       </div>
-    \` : ''}
+    ` : ''}
 
     <button class="btn ol" style="width:100%;justify-content:center;margin-top:16px" onclick="llTab('add')">
       ➕ Add Another Room
     </button>
-  \`;
+  `;
 }
 
 // ══════════════════════════════════════
