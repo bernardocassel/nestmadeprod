@@ -1604,7 +1604,7 @@ function openDetail(id) {
   // Gallery
   document.getElementById('detGallery').innerHTML = `
     <div class="main-img"><img src="${l.imgs[0]}" alt="${l.title}"><span class="gallery-count">📷 ${l.imgs.length} photos</span></div>
-    ${l.imgs.slice(1,5).map(u => `<div class="sub-img"><img src="${u}" alt="" onerror="this.src='https://placehold.co/400x300/1E2733/C8F135?text=Photo'"></div>`).join('')}`;
+    ${l.imgs.slice(1,5).map(u => '<div class="sub-img"><img src="' + u + '" alt=""></div>').join('')}`;
   // Meta
   document.getElementById('detMeta').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
@@ -1939,7 +1939,7 @@ async function renderLLListings(m) {
       const img = l.photos && l.photos[0] ? l.photos[0] : '';
       const st = l.status || 'draft';
       return `<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:12px">
-        ${img ? `<img src="${img}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0" alt="" onerror="this.style.display='none'">` : '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">🏠</div>'}
+        ${img ? '<img src="' + img + '" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0" alt="">' : '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">&#127968;</div>'}
         <div style="flex:1">
           <div style="font-weight:600;font-size:.9rem;color:var(--text)">${l.title}</div>
           <div style="font-size:.76rem;color:var(--muted);margin-top:2px">📍 ${l.suburb} · AU$${l.price_weekly}/wk · Bond AU$${l.bond_amount}</div>
@@ -2690,6 +2690,13 @@ function t(key) { return (TRANSLATIONS[LANG]||{})[key] || key; }
 // ADMIN PANEL
 var isAdmin = false;
 
+function admPhotoHtml(photos) {
+  if (photos && photos[0]) {
+    return '<img src="' + photos[0] + '" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0">';
+  }
+  return '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">&#127968;</div>';
+}
+
 async function checkAdminRole() {
   if (!_supabaseClient || !currentUser) return;
   try {
@@ -2743,7 +2750,7 @@ async function admLoadListings(m, statusFilter) {
     for (var i = 0; i < listings.length; i++) {
       var l = listings[i];
       var sc = stClass[l.status] || 's-vacant';
-      var photoHtml = (l.photos && l.photos[0]) ? '<img src=' + JSON.stringify(l.photos[0]) + ' style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0">' : '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">&#127968;</div>';
+      var photoHtml = admPhotoHtml(l.photos);
       var landlordName = (l.profiles && l.profiles.full_name) ? l.profiles.full_name : 'Unknown';
       var landlordEmail = (l.profiles && l.profiles.email) ? l.profiles.email : '';
       var desc = l.description ? l.description.substring(0, 100) + '...' : '';
