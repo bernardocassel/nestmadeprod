@@ -869,13 +869,188 @@ function go(id) {
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
   if (id === 's-browse') renderListings(LISTINGS);
-  if (id === 's-landlord') llTab('overview');
+  if (id === 's-landlord') { /* dashboard loaded by goLandlord() */ }
 }
 
 function setMode(m) {
   document.querySelectorAll('.msw').forEach((b, i) => b.classList.toggle('on', (m==='tenant'&&i===0)||(m==='landlord'&&i===1)));
-  if (m === 'landlord') go('s-landlord');
+  if (m === 'landlord') goLandlord();
   else go('s-browse');
+}
+
+async function goLandlord() {
+  // Not logged in → go to signup with landlord role pre-selected
+  if (!currentUser) {
+    go('s-signup');
+    toast('Crie sua conta para listar seu imóvel!', 'lime');
+    setTimeout(() => {
+      const roleSelect = document.querySelector('#s-signup select');
+      if (roleSelect) roleSelect.value = 'Landlord (have a room to rent)';
+    }, 300);
+    return;
+  }
+  // Logged in → check if has listings
+  go('s-landlord');
+  await loadLandlordDashboard();
+}
+
+async function loadLandlordDashboard() {
+  const m = document.getElementById('llMain');
+  if (!m) return;
+
+  // Show loading state
+  m.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">⏳ Carregando...</div>';
+
+  if (!_supabaseClient || !currentUser) {
+    renderFirstTimeLandlord(m);
+    return;
+  }
+
+  try {
+    const { data: listings, error } = await _supabaseClient
+      .from('listings')
+      .select('*')
+      .eq('landlord_id', currentUser.id)
+      .neq('status', 'deleted');
+
+    if (error) throw error;
+
+    if (!listings || listings.length === 0) {
+      // First time landlord — no listings yet
+      renderFirstTimeLandlord(m);
+    } else {
+      // Has listings → show real dashboard
+      renderRealDashboard(m, listings);
+    }
+  } catch(e) {
+    console.error('Dashboard error:', e);
+    renderFirstTimeLandlord(m);
+  }
+}
+
+function renderFirstTimeLandlord(m) {
+  const name = currentUser?.user_metadata?.full_name?.split(' ')[0] || 'there';
+  m.innerHTML = \`
+    <div style="max-width:580px;margin:0 auto;padding:40px 20px;text-align:center">
+      <div style="font-size:3rem;margin-bottom:16px">🏠</div>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:8px;color:var(--text)">
+        Welcome, \${name}!
+      </h1>
+      <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:32px">
+        You don't have any listings yet.<br>
+        List your first room in a few minutes and start receiving requests from verified international students.
+      </p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:32px;text-align:left">
+        <div style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4rem;margin-bottom:8px">📷</div>
+          <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px">Add photos</div>
+          <div style="font-size:.75rem;color:var(--muted)">Minimum 3 photos required</div>
+        </div>
+        <div style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4rem;margin-bottom:8px">💰</div>
+          <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px">Set your price</div>
+          <div style="font-size:.75rem;color:var(--muted)">Weekly rent + bond amount</div>
+        </div>
+        <div style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4rem;margin-bottom:8px">✅</div>
+          <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px">Go live</div>
+          <div style="font-size:.75rem;color:var(--muted)">Reviewed in under 24h</div>
+        </div>
+      </div>
+
+      <button class="btn lime" style="width:100%;justify-content:center;font-size:1rem;padding:15px" onclick="llTab('add')">
+        ➕ List My First Room
+      </button>
+      <p style="margin-top:12px;font-size:.75rem;color:var(--muted)">Free to list · No subscription required · Pay only when you earn</p>
+    </div>
+  \`;
+}
+
+async function renderRealDashboard(m, listings) {
+  const name = currentUser?.user_metadata?.full_name?.split(' ')[0] || 'there';
+  const activeListings = listings.filter(l => l.status === 'active').length;
+  const totalListings = listings.length;
+
+  // Fetch bookings for this landlord
+  let bookings = [], earnings = 0, pendingCount = 0;
+  try {
+    const { data: bk } = await _supabaseClient
+      .from('bookings')
+      .select('*')
+      .eq('landlord_id', currentUser.id);
+    bookings = bk || [];
+    pendingCount = bookings.filter(b => b.status === 'pending').length;
+    earnings = bookings
+      .filter(b => ['paid','checked_in','checked_out'].includes(b.status))
+      .reduce((sum, b) => sum + (b.total_rent || 0), 0);
+  } catch(e) {}
+
+  m.innerHTML = \`
+    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">
+      Good morning, \${name} 👋
+    </h1>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your NestMate dashboard.</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="ico">🏠</div>
+        <div class="sval">\${totalListings}</div>
+        <div class="slabel">My listings</div>
+        <div class="sdelta">\${activeListings} active</div>
+      </div>
+      <div class="stat-card">
+        <div class="ico">📥</div>
+        <div class="sval">\${pendingCount}</div>
+        <div class="slabel">Pending requests</div>
+        <div class="sdelta">\${pendingCount > 0 ? '⚡ Action needed' : 'All clear'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="ico">💰</div>
+        <div class="sval">AU$\${earnings.toLocaleString()}</div>
+        <div class="slabel">Total earned</div>
+        <div class="sdelta">Via NestMate escrow</div>
+      </div>
+      <div class="stat-card">
+        <div class="ico">⭐</div>
+        <div class="sval">\${currentUser?.user_metadata?.rating || '—'}</div>
+        <div class="slabel">Your rating</div>
+        <div class="sdelta">Build your reputation</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--text)">My Listings</h3>
+      <button class="btn lime sm" onclick="llTab('add')">+ Add Room</button>
+    </div>
+
+    \${listings.map(l => \`
+      <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px">
+        <div style="width:54px;height:54px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🏠</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:.9rem;color:var(--text)">\${l.title}</div>
+          <div style="font-size:.76rem;color:var(--muted);margin-top:2px">📍 \${l.suburb} · AU$\${l.price_weekly}/wk · Bond AU$\${l.bond_amount}</div>
+        </div>
+        <span class="s-badge \${l.status === 'active' ? 's-active' : l.status === 'pending_review' ? 's-pending' : 's-vacant'}">
+          <span class="s-dot"></span>
+          \${l.status === 'active' ? 'Active' : l.status === 'pending_review' ? 'Under Review' : l.status === 'draft' ? 'Draft' : l.status}
+        </span>
+        <button class="btn ol sm" onclick="toast('Edit coming soon','lime')">Edit</button>
+      </div>
+    \`).join('')}
+
+    \${pendingCount > 0 ? \`
+      <div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:14px;padding:16px;margin-top:12px">
+        <div style="font-weight:600;color:var(--lime);margin-bottom:4px">📥 You have \${pendingCount} pending request\${pendingCount>1?'s':''}!</div>
+        <div style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Review and respond within 24h for best results.</div>
+        <button class="btn lime sm" onclick="llTab('applications')">View Requests</button>
+      </div>
+    \` : ''}
+
+    <button class="btn ol" style="width:100%;justify-content:center;margin-top:16px" onclick="llTab('add')">
+      ➕ Add Another Room
+    </button>
+  \`;
 }
 
 // ══════════════════════════════════════
@@ -932,18 +1107,29 @@ async function checkSession() {
 }
 
 function onUserLoggedIn(user) {
-  // Atualizar nav
   const navR = document.querySelector('.nav-r');
   const loginBtn = navR?.querySelector('.nbtn.ol');
   const joinBtn = navR?.querySelector('.nbtn.prim');
   const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-  const avatar = user.user_metadata?.avatar_url;
   if (loginBtn) loginBtn.style.display = 'none';
   if (joinBtn) {
     joinBtn.textContent = name.split(' ')[0];
+    joinBtn.style.background = 'var(--lime)';
     joinBtn.onclick = () => showUserMenu();
   }
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
+
+  // If they're on the landlord screen, reload the dashboard with real data
+  const landlordScreen = document.getElementById('s-landlord');
+  if (landlordScreen?.classList.contains('active')) {
+    loadLandlordDashboard();
+  }
+  // If they were on signup/login, redirect to browse
+  const loginScreen = document.getElementById('s-login');
+  const signupScreen = document.getElementById('s-signup');
+  if (loginScreen?.classList.contains('active') || signupScreen?.classList.contains('active')) {
+    go('s-browse');
+  }
 }
 
 function onUserLoggedOut() {
@@ -1520,9 +1706,19 @@ const EARN_DATA = { months: ['Jul','Aug','Sep','Oct','Nov','Dec','Jan'], values:
 
 function llTab(tab) {
   document.querySelectorAll('.si').forEach(i => i.classList.remove('on'));
-  document.querySelectorAll('.si').forEach(i => { if(i.textContent.toLowerCase().includes(tab.toLowerCase().split(' ')[0])||i.querySelector('.ico')?.textContent.includes(tab==='overview'?'📊':tab==='add'?'➕':tab==='earnings'?'💰':tab==='contracts'?'📄':tab==='listings'?'🏠':'📥')) i.classList.add('on'); });
+  document.querySelectorAll('.si').forEach(i => {
+    const ico = i.querySelector('.ico')?.textContent || '';
+    const txt = i.textContent.toLowerCase();
+    const match = (tab==='overview' && ico.includes('📊')) ||
+                  (tab==='listings' && ico.includes('🏠')) ||
+                  (tab==='applications' && ico.includes('📥')) ||
+                  (tab==='earnings' && ico.includes('💰')) ||
+                  (tab==='contracts' && ico.includes('📄')) ||
+                  (tab==='add' && ico.includes('➕'));
+    if(match) i.classList.add('on');
+  });
   const m = document.getElementById('llMain');
-  if (tab==='overview') renderOverview(m);
+  if (tab==='overview') loadLandlordDashboard();
   else if (tab==='listings') renderLLListings(m);
   else if (tab==='applications') renderApplications(m);
   else if (tab==='earnings') renderEarnings(m);
@@ -1749,7 +1945,7 @@ function renderAddListing(m) {
 
       <div class="form-grid" style="gap:14px;margin-top:14px">
         <div class="fg" style="margin:0"><label class="lbl">Available From</label><input class="inp" type="date" id="addDate"></div>
-        <div class="fg" style="margin:0"><label class="lbl">House Vibe</label><select class="inp"><option>🎉 Social</option><option>🤫 Quiet</option><option>📚 Study-focused</option><option>🌱 Chill</option></select></div>
+        <div class="fg" style="margin:0"><label class="lbl">House Vibe</label><select class="inp" id="addVibe"><option>🎉 Social</option><option>🤫 Quiet</option><option>📚 Study-focused</option><option>🌱 Chill</option></select></div>
       </div>
 
       <div class="fg" style="margin-top:14px">
@@ -1843,7 +2039,8 @@ function dragOver(e) { e.preventDefault(); document.getElementById('photoZone').
 function dragLeave(e) { document.getElementById('photoZone').classList.remove('dragging'); }
 function dropPhotos(e) { e.preventDefault(); document.getElementById('photoZone').classList.remove('dragging'); handlePhotos(e.dataTransfer.files); }
 
-function submitListing() {
+async function submitListing() {
+  // Validate photos
   if (uploadedPhotos.length < 3) {
     document.getElementById('photoWarn').classList.add('show');
     document.getElementById('photoZone').style.borderColor = 'var(--red)';
@@ -1851,11 +2048,134 @@ function submitListing() {
     document.getElementById('photoZone').scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-  const title = document.getElementById('addTitle')?.value;
+
+  // Validate required fields
+  const title = document.getElementById('addTitle')?.value?.trim();
+  const rent = document.getElementById('addRent')?.value;
+  const addr = document.getElementById('addAddr')?.value?.trim();
+  const bond = document.getElementById('addBond')?.value;
+  const type = document.getElementById('addType')?.value;
+  const descEl = document.querySelector('#addForm textarea');
+  const desc = descEl?.value?.trim();
+  const dateEl = document.getElementById('addDate');
+  const minDur = document.getElementById('addMinDur')?.value || '1w';
+  const maxDur = document.getElementById('addMaxDur')?.value || '6m';
+  const vibeEl = document.getElementById('addVibe') || document.querySelector('#addForm select:last-of-type');
+
   if (!title) { toast('⚠️ Add a room title', 'error'); return; }
-  toast('✅ Listing submitted! Under review within 24h.', 'lime');
-  uploadedPhotos = [];
-  setTimeout(() => llTab('listings'), 1500);
+  if (!rent || rent < 50) { toast('⚠️ Enter a valid weekly rent', 'error'); return; }
+  if (!addr) { toast('⚠️ Enter the full address', 'error'); return; }
+  if (!bond) { toast('⚠️ Enter the bond amount', 'error'); return; }
+
+  // Collect amenities
+  const amenities = Array.from(document.querySelectorAll('#addForm .amen-chip.on'))
+    .map(el => el.textContent.trim())
+    .filter(Boolean);
+
+  // Collect nationalities
+  const nationalities = Array.from(document.querySelectorAll('#natChips .amen-chip.on'))
+    .map(el => {
+      const txt = el.textContent.trim();
+      const map = {'🇧🇷 Brazilian':'br','🇨🇳 Chinese':'cn','🇯🇵 Japanese':'jp',
+                   '🇰🇷 Korean':'kr','🇮🇳 Indian':'in','🇨🇴 Colombian':'co',
+                   '🇫🇷 French':'fr','🇩🇪 German':'de'};
+      return map[txt] || txt;
+    });
+
+  // Parse suburb from address
+  const suburb = addr.split(',')[1]?.trim() || addr.split(' ').slice(-2).join(' ') || 'Gold Coast';
+
+  // Parse duration
+  const minWeeks = minDur.endsWith('w') ? parseInt(minDur) : parseInt(minDur) * 4;
+  const maxMonths = maxDur.endsWith('m') ? parseInt(maxDur) : Math.ceil(parseInt(maxDur) / 4);
+
+  // Parse vibe
+  const vibeMap = {'🎉 Social':'social','🤫 Quiet':'quiet','📚 Study-focused':'study','🌱 Chill':'chill'};
+  const houseVibe = vibeMap[vibeEl?.value] || 'social';
+
+  // Room type map
+  const typeMap = {'Private Room':'private','Ensuite Room':'ensuite','Studio (entire)':'studio','Shared Room (2 people)':'shared'};
+  const roomType = typeMap[type] || 'private';
+
+  // Show loading
+  const btn = document.querySelector('#addForm .btn.lime');
+  if (btn) { btn.textContent = '⏳ Saving...'; btn.disabled = true; }
+
+  // Save to Supabase
+  if (!_supabaseClient || !currentUser) {
+    toast('⚠️ Please log in to save a listing', 'error');
+    if (btn) { btn.textContent = 'Submit for Verification →'; btn.disabled = false; }
+    return;
+  }
+
+  try {
+    // Upload photos to Supabase Storage
+    const photoUrls = [];
+    for (let i = 0; i < uploadedPhotos.length; i++) {
+      const photo = uploadedPhotos[i];
+      if (btn) btn.textContent = '⏳ Uploading photo ' + (i+1) + '/' + uploadedPhotos.length + '...';
+      
+      try {
+        // Convert base64 to blob
+        const res = await fetch(photo.src);
+        const blob = await res.blob();
+        const ext = blob.type.split('/')[1] || 'jpg';
+        const fileName = currentUser.id + '/' + Date.now() + '_' + i + '.' + ext;
+        
+        const { data: uploadData, error: uploadErr } = await _supabaseClient.storage
+          .from('listing-photos')
+          .upload(fileName, blob, { contentType: blob.type, upsert: false });
+        
+        if (uploadErr) throw uploadErr;
+        
+        const { data: urlData } = _supabaseClient.storage
+          .from('listing-photos')
+          .getPublicUrl(fileName);
+        
+        photoUrls.push(urlData.publicUrl);
+      } catch(uploadErr) {
+        console.error('Photo upload error:', uploadErr);
+        // Use base64 as fallback if storage fails
+        photoUrls.push(photo.src);
+      }
+    }
+
+    if (btn) btn.textContent = '⏳ Saving listing...';
+
+    // Save listing to DB
+    const { data, error } = await _supabaseClient.from('listings').insert({
+      landlord_id: currentUser.id,
+      title: title,
+      description: desc || '',
+      suburb: suburb,
+      address: addr,
+      price_weekly: parseFloat(rent),
+      bond_amount: parseFloat(bond),
+      room_type: roomType,
+      min_weeks: minWeeks,
+      max_months: maxMonths,
+      available_from: dateEl?.value || new Date().toISOString().split('T')[0],
+      house_vibe: houseVibe,
+      amenities: amenities,
+      nationalities: nationalities,
+      photos: photoUrls,
+      status: 'pending_review'
+    }).select().single();
+
+    if (error) throw error;
+
+    // Success!
+    toast('✅ Listing submitted! Under review within 24h.', 'lime');
+    uploadedPhotos = [];
+    
+    // Reload dashboard after 1.5s
+    setTimeout(() => loadLandlordDashboard(), 1500);
+
+  } catch(err) {
+    console.error('Save listing error:', err);
+    toast('❌ Error saving: ' + (err.message || 'Please try again'), 'error');
+    if (btn) { btn.textContent = 'Submit for Verification →'; btn.disabled = false; }
+  }
 }
 
 // ══════════════════════════════════════
