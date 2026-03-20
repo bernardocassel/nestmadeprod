@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NestMate — Find Your Room in Gold Coast</title>
+<!-- v161909 -->
 <!-- ═══ NESTMATE CONFIG — substitua com suas credenciais reais ═══ -->
 <script>
   window.NESTMATE_CONFIG = {
@@ -1967,7 +1968,9 @@ async function renderLLListings(m) {
     const statusClass = { active:'s-active', pending_review:'s-pending', draft:'s-vacant', paused:'s-vacant', occupied:'s-pending' };
 
     m.innerHTML = headerHTML + listings.map(l => {
-      const img = l.photos && l.photos[0] ? l.photos[0] : '';
+      var photos = l.photos;
+      if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
+      const img = (photos && photos.length > 0) ? photos[0] : '';
       const st = l.status || 'draft';
       return `<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:12px">
         ${img ? '<img src="' + img + '" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0" alt="">' : '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">&#127968;</div>'}
@@ -2787,7 +2790,7 @@ function admPhotoHtml(photos, large) {
   if (typeof photos === 'string') {
     try { arr = JSON.parse(photos); } catch(e) { arr = [photos]; }
   }
-  if (!arr || !arr.length || !arr[0]) return noPhoto;
+  if (!arr || !arr.length || !arr[0]) return fallback;
   return '<img src="' + arr[0] + '" style="width:' + size + ';height:' + size + ';border-radius:' + radius + ';object-fit:cover;flex-shrink:0">';
 }
 
