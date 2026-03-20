@@ -391,11 +391,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <button class="msw on" onclick="setMode('tenant')" id="msw-tenant">🔍 <span class="t" data-en="Tenant" data-pt="Inquilino">Tenant</span></button>
       <button class="msw" onclick="setMode('landlord')" id="msw-landlord">🏠 <span class="t" data-en="Landlord" data-pt="Proprietário">Landlord</span></button>
     </div>
-    <!-- Language selector -->
-    <div class="lang-sel" id="langSel">
-      <button class="lang-btn on" id="lang-en" onclick="setLang('en')">🇦🇺 EN</button>
-      <button class="lang-btn" id="lang-pt" onclick="setLang('pt')">🇧🇷 PT</button>
-    </div>
+
     <!-- Dark mode toggle -->
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
       <span id="themeIcon">🌙</span>
@@ -1090,9 +1086,8 @@ async function renderRealDashboard(m, listings) {
       </div>
     `).join('')}
 
-    ${pendingCount > 0 ? '<div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:14px;padding:16px;margin-top:12px"><div style="font-weight:600;color:var(--lime);margin-bottom:4px">📥 You have ' + pendingCount + ' pending request' + (pendingCount>1?'s':'') + '!</div><div style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Review and respond within 24h for best results.</div><button class="btn lime sm" onclick="llTab(\x27applications\x27)">View Requests</button>
-      </div>
-    ` : ''}
+
+    ${pendingCount > 0 ? '<div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:14px;padding:16px;margin-top:12px;margin-bottom:8px"><div style="font-weight:600;color:var(--lime);margin-bottom:4px">&#128229; ' + pendingCount + ' pending request' + (pendingCount>1?'s':'') + '</div><button class="btn lime sm" data-goto="applications" onclick="llTab(this.dataset.goto)">View Requests</button></div>' : ''}
 
     <button class="btn ol" style="width:100%;justify-content:center;margin-top:16px" onclick="llTab('add')">
       ➕ Add Another Room
@@ -2034,44 +2029,34 @@ async function declineBooking(bookingId) {
 }
 
 async function renderContracts(m) {
-  m.innerHTML = `
-    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Contracts</h1>
-    <p style="color:var(--muted);font-size:.84rem;margin-bottom:20px">All digital leases — signed, stored, auditable.</p>`;
-
-  if (!_supabaseClient || !currentUser) {
-    document.getElementById('llMain').innerHTML += '<p style="color:var(--muted)">Please log in.</p>';
-    return;
-  }
-
-  const { data: bookings, error } = await _supabaseClient
-    .from('bookings')
+  m.innerHTML = '<h1 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Contracts</h1><p style="color:var(--muted);font-size:.84rem;margin-bottom:20px">All digital leases. Signed, stored, auditable.</p>';
+  if (!_supabaseClient || !currentUser) { m.innerHTML += '<p style="color:var(--muted)">Please log in.</p>'; return; }
+  var res = await _supabaseClient.from('bookings')
     .select('*, listings(title, suburb), profiles!tenant_id(full_name)')
     .eq('landlord_id', currentUser.id)
     .in('status', ['approved','contract_sent','signed','paid','checked_in','checked_out'])
     .order('created_at', { ascending: false });
-
-  if (error || !bookings || bookings.length === 0) {
-    m.innerHTML += '<div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)"><div style="font-size:2.5rem;margin-bottom:12px">📄</div><p style="color:var(--muted)">No contracts yet. Accept a booking to generate a contract.</p></div>';
+  if (res.error || !res.data || !res.data.length) {
+    m.innerHTML += '<div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)"><div style="font-size:2.5rem;margin-bottom:12px">&#128196;</div><p style="color:var(--muted)">No contracts yet. Accept a booking to generate a contract.</p></div>';
     return;
   }
-
-  const statusMap = { approved:'Accepted', contract_sent:'Contract Sent', signed:'Signed', paid:'Paid', checked_in:'Active', checked_out:'Completed' };
-  const statusClass = { approved:'s-pending', contract_sent:'s-pending', signed:'s-active', paid:'s-active', checked_in:'s-active', checked_out:'s-vacant' };
-
-  m.innerHTML += bookings.map(b => {
-    const name = b.profiles?.full_name || 'Tenant';
-    const listing = b.listings?.title || 'Room';
-    const st = b.status;
-    return `<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px">
-      <span style="font-size:1.4rem">📄</span>
-      <div style="flex:1">
-        <div class="ll-name">${name} — ${listing}</div>
-        <div class="ll-sub">${b.move_in_date} → ${b.move_out_date} · AU$${b.total_amount}</div>
-      </div>
-      <span class="s-badge ${statusClass[st] || 's-vacant'}"><span class="s-dot"></span>${statusMap[st] || st}</span>
-      <button class="btn ol sm" onclick="toast('PDF contract — coming soon!','lime')">View PDF</button>
-    </div>`;
-  }).join('');
+  var statusMap = { approved:'Accepted', contract_sent:'Contract Sent', signed:'Signed', paid:'Paid', checked_in:'Active', checked_out:'Completed' };
+  var statusClass = { approved:'s-pending', contract_sent:'s-pending', signed:'s-active', paid:'s-active', checked_in:'s-active', checked_out:'s-vacant' };
+  var html = '';
+  for (var i = 0; i < res.data.length; i++) {
+    var b = res.data[i];
+    var name = (b.profiles && b.profiles.full_name) ? b.profiles.full_name : 'Tenant';
+    var listing = (b.listings && b.listings.title) ? b.listings.title : 'Room';
+    var sc = statusClass[b.status] || 's-vacant';
+    var sl = statusMap[b.status] || b.status;
+    html += '<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px">';
+    html += '<span style="font-size:1.4rem">&#128196;</span>';
+    html += '<div style="flex:1"><div class="ll-name">' + name + ' - ' + listing + '</div>';
+    html += '<div class="ll-sub">' + (b.move_in_date||'') + ' to ' + (b.move_out_date||'') + ' - AU$' + (b.total_amount||0) + '</div></div>';
+    html += '<span class="s-badge ' + sc + '"><span class="s-dot"></span>' + sl + '</span>';
+    html += '<button class="btn ol sm" onclick="toast('PDF coming soon!','lime')">View PDF</button></div>';
+  }
+  m.innerHTML += html;
 }
 
 // ══════════════════════════════════════
@@ -2209,9 +2194,9 @@ function handlePhotos(files) {
     reader.onload = e => {
       uploadedPhotos.push({ src: e.target.result, name: file.name });
       loaded++;
-      prog.textContent = `⏳ ${loaded} de ${Math.min(files.length, 12)} fotos processadas...`;
+      prog.textContent = '\u23f3 ' + loaded + ' de ' + Math.min(files.length, 12) + ' fotos processadas...';
       if (loaded === Math.min(files.length, 12 - (uploadedPhotos.length - loaded))) {
-        prog.textContent = `✅ ${uploadedPhotos.length} foto${uploadedPhotos.length>1?'s':''} adicionada${uploadedPhotos.length>1?'s':''}`;
+        prog.textContent = '\u2705 ' + uploadedPhotos.length + ' foto' + (uploadedPhotos.length>1?'s':'') + ' adicionada' + (uploadedPhotos.length>1?'s':'') + '!';
         setTimeout(() => { prog.style.display = 'none'; }, 2000);
       }
       renderPhotoGrid();
@@ -2223,12 +2208,14 @@ function handlePhotos(files) {
 
 function renderPhotoGrid() {
   const grid = document.getElementById('photoPreviews');
-  grid.innerHTML = uploadedPhotos.map((p, i) => `
-    <div class="photo-prev">
-      <img src="${p.src}" alt="${p.name}">
-      ${i===0?'<span class="main-badge">Capa</span>':''}
-      <button class="del-btn" onclick="removePhoto(${i})">✕</button>
-    </div>`).join('');
+  grid.innerHTML = uploadedPhotos.map(function(p, i) {
+    var badge = i === 0 ? '<span class="main-badge">Capa</span>' : '';
+    return '<div class="photo-prev">' +
+      '<img src="' + p.src + '" alt="' + p.name + '">' +
+      badge +
+      '<button class="del-btn" onclick="removePhoto(' + i + ')">&#x2715;</button>' +
+    '</div>';
+  }).join('');
 }
 
 function removePhoto(idx) {
@@ -2607,11 +2594,13 @@ function renderNatList(query) {
   }
   list.innerHTML = filtered.map(n => {
     const sel = selNats.includes(n.code);
-    return `<div class="nat-dd-item${sel?' selected':''}" onclick="selectNat('${n.code}','${n.flag}','${n.en}','${n.pt}')">
-      <span class="flag">${n.flag}</span>
-      <span class="name">${LANG==='pt'?n.pt:n.en}</span>
-      ${sel?'<span class="check">✓</span>':''}
-    </div>`;
+    var cls = sel ? ' selected' : '';
+    var chk = sel ? '<span class="check">&#x2713;</span>' : '';
+    var name = LANG === 'pt' ? n.pt : n.en;
+    return '<div class="nat-dd-item' + cls + '" onclick="selectNat(' + JSON.stringify(n.code) + ',' + JSON.stringify(n.flag) + ',' + JSON.stringify(n.en) + ',' + JSON.stringify(n.pt) + ')">' +
+      '<span class="flag">' + n.flag + '</span>' +
+      '<span class="name">' + name + '</span>' +
+      chk + '</div>';
   }).join('');
   // update "all" check
   const anyCheck = document.getElementById('natAnyCheck');
@@ -2661,7 +2650,7 @@ function renderSelNatChips() {
   wrap.innerHTML = selNats.map(code => {
     const n = ALL_NATS.find(x => x.code===code);
     if(!n) return '';
-    return `<div class="nat-sel-chip">${n.flag} ${LANG==='pt'?n.pt:n.en} <button onclick="removeNat('${code}')">✕</button></div>`;
+    return '<div class="nat-sel-chip">' + n.flag + ' ' + (LANG === 'pt' ? n.pt : n.en) + ' <button onclick="removeNat(' + JSON.stringify(code) + ')">&#x2715;</button></div>';
   }).join('');
 }
 
@@ -2926,3 +2915,4 @@ function admDeleteById(id, btn) { admDelete(id, btn); }
 </script>
 </body>
 </html>
+</script>
