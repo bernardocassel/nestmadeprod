@@ -1304,47 +1304,56 @@ function doLogin() {
 // ══════════════════════════════════════
 async function loadListingsFromDB() {
   if (!_supabaseClient) {
-    renderListings(LISTINGS); // usa dados de demonstração
+    // Not connected yet — show empty state, not fake data
+    renderListings([]);
     return;
   }
-  const { data, error } = await supabase
-    .from('listings')
-    .select(`
-      *,
-      profiles!landlord_id(full_name, rating_avg, rating_count, avatar_url),
-      housemates(name, nationality_code, bio, avatar_emoji)
-    `)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await _supabaseClient
+      .from('listings')
+      .select('*, profiles!landlord_id(full_name, rating_avg, rating_count, avatar_url)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
 
-  if (error || !data?.length) {
-    renderListings(LISTINGS); // fallback para demo se DB vazio
-    return;
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      // No real listings yet — show empty state
+      renderListings([]);
+      return;
+    }
+
+    const mapped = data.map(l => ({
+      id: l.id,
+      title: l.title,
+      suburb: l.suburb || 'Gold Coast',
+      price: l.price_weekly,
+      type: l.room_type || 'private',
+      nats: l.nationalities || [],
+      minWeeks: l.min_weeks || 1,
+      maxMonths: l.max_months || 6,
+      rating: l.profiles?.rating_avg || 0,
+      reviews: l.profiles?.rating_count || 0,
+      avail: l.available_from ? 'Available ' + new Date(l.available_from).toLocaleDateString('en-AU', {day:'numeric',month:'short'}) : 'Available now',
+      amen: l.amenities || [],
+      rules: [],
+      vibe: l.house_vibe || 'social',
+      gender: l.gender_preference || 'any',
+      bond: l.bond_amount || 0,
+      fee: Math.round((l.price_weekly || 0) * 4.33 * 0.05),
+      desc: l.description || '',
+      hm: [],
+      revs: [],
+      imgs: (l.photos && l.photos.length >= 1) ? l.photos : ['https://picsum.photos/id/1029/800/500']
+    }));
+
+    // Store in global for filters
+    window.CURRENT_LISTINGS = mapped;
+    renderListings(mapped);
+  } catch(e) {
+    console.error('loadListingsFromDB error:', e);
+    renderListings([]);
   }
-  const mapped = data.map(l => ({
-    id: l.id,
-    title: l.title,
-    suburb: l.suburb,
-    price: l.price_weekly,
-    type: l.room_type,
-    nats: l.nationalities || [],
-    minWeeks: l.min_weeks,
-    maxMonths: l.max_months,
-    rating: l.profiles?.rating_avg || 4.5,
-    reviews: l.profiles?.rating_count || 0,
-    avail: 'Available ' + new Date(l.available_from).toLocaleDateString('en-AU', {day:'numeric',month:'short'}),
-    amen: l.amenities || [],
-    rules: (l.house_rules || []).map(r => ({ok: !r.startsWith('No'), t: r.replace(/^No /, '')})),
-    vibe: l.house_vibe || 'Social',
-    gender: l.gender_preference || 'Any',
-    bond: l.bond_amount,
-    fee: Math.round(l.price_weekly * 4.33 * 0.05),
-    desc: l.description || '',
-    hm: (l.housemates || []).map(h => ({flag: natCodeToFlag(h.nationality_code), name: h.name, from: h.bio || '', em: h.avatar_emoji || '👤'})),
-    revs: [],
-    imgs: l.photos?.length >= 3 ? l.photos : LISTINGS[0].imgs // usa demo se sem fotos
-  }));
-  renderListings(mapped);
 }
 
 function natCodeToFlag(code) {
@@ -1509,9 +1518,13 @@ function natFlag(code) {
 }
 
 function renderListings(list) {
-  document.getElementById('listCount').textContent = `${list.length} rooms in Gold Coast`;
+  const countEl = document.getElementById('listCount');
+  if (countEl) countEl.textContent = list.length + ' rooms in Gold Coast';
   if (!list.length) {
-    document.getElementById('listGrid').innerHTML = `<div style="grid-column:span 3;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:14px">🔍</div><p>No rooms match your filters. Try adjusting!</p></div>`;
+    const isEmpty = !window.CURRENT_LISTINGS || window.CURRENT_LISTINGS.length === 0;
+    document.getElementById('listGrid').innerHTML = isEmpty
+      ? '<div style="grid-column:span 3;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:16px">🏠</div><h3 style="font-family:Syne,sans-serif;margin-bottom:8px;color:var(--text)">No rooms listed yet</h3><p>Be the first to list a room on NestMate Gold Coast!</p></div>'
+      : '<div style="grid-column:span 3;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:14px">🔍</div><p>No rooms match your filters. Try adjusting!</p></div>';
     return;
   }
   document.getElementById('listGrid').innerHTML = list.map(l => {
@@ -1567,7 +1580,8 @@ function tglNat(el, nat) {
 }
 
 function filterAll() {
-  let f = LISTINGS.filter(l => l.price <= maxPr);
+  const source = window.CURRENT_LISTINGS || [];
+  let f = source.filter(l => l.price <= maxPr);
   const s = document.getElementById('srchInp')?.value.toLowerCase();
   if (s) f = f.filter(l => l.title.toLowerCase().includes(s) || l.suburb.toLowerCase().includes(s));
   if (selNats.length) f = f.filter(l => selNats.some(n => l.nats.includes(n)));
@@ -1589,9 +1603,10 @@ function resetFilters() {
   selNats = []; selDur = 'any';
   document.querySelectorAll('#natGrid .nchip').forEach(c => c.classList.remove('on'));
   document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.textContent.includes('Any')));
-  document.getElementById('srchInp').value = '';
+  const srch = document.getElementById('srchInp');
+  if (srch) srch.value = '';
   setDurTab('week');
-  renderListings(LISTINGS);
+  renderListings(window.CURRENT_LISTINGS || []);
   toast('Filters cleared', 'lime');
 }
 
@@ -1599,7 +1614,7 @@ function resetFilters() {
 // DETAIL
 // ══════════════════════════════════════
 function openDetail(id) {
-  CUR = LISTINGS.find(l => l.id === id);
+  CUR = (window.CURRENT_LISTINGS || []).find(l => l.id === id) || (typeof LISTINGS !== 'undefined' ? LISTINGS.find(l => l.id === id) : null);
   const l = CUR;
   // Gallery
   document.getElementById('detGallery').innerHTML = `
