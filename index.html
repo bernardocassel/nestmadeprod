@@ -1348,7 +1348,12 @@ async function loadListingsFromDB() {
       desc: l.description || '',
       hm: [],
       revs: [],
-      imgs: (l.photos && l.photos.length >= 1) ? l.photos : []
+      imgs: (function() {
+        var p = l.photos;
+        if (!p) return [];
+        if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = [p]; } }
+        return (p && p.length >= 1) ? p : [];
+      })()
     }));
 
     // Store in global for filters
@@ -2774,10 +2779,16 @@ var isAdmin = false;
 function admPhotoHtml(photos, large) {
   var size = large ? '120px' : '72px';
   var radius = large ? '12px' : '10px';
-  if (photos && photos[0]) {
-    return '<img src="' + photos[0] + '" style="width:' + size + ';height:' + size + ';border-radius:' + radius + ';object-fit:cover;flex-shrink:0">';
+  var fs = large ? '2.5' : '1.8';
+  var fallback = '<div style="width:' + size + ';height:' + size + ';border-radius:' + radius + ';background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:' + fs + 'rem;flex-shrink:0">&#127968;</div>';
+  if (!photos) return fallback;
+  // Handle both array and stringified array
+  var arr = photos;
+  if (typeof photos === 'string') {
+    try { arr = JSON.parse(photos); } catch(e) { arr = [photos]; }
   }
-  return '<div style="width:' + size + ';height:' + size + ';border-radius:' + radius + ';background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:' + (large?'2.5':'1.8') + 'rem;flex-shrink:0">&#127968;</div>';
+  if (!arr || !arr.length || !arr[0]) return noPhoto;
+  return '<img src="' + arr[0] + '" style="width:' + size + ';height:' + size + ';border-radius:' + radius + ';object-fit:cover;flex-shrink:0">';
 }
 
 async function checkAdminRole() {
@@ -2870,24 +2881,39 @@ async function admLoadListings(m, statusFilter) {
 
 async function admApprove(id, btn) {
   if (!isAdmin) return;
-  btn.textContent = '...'; btn.disabled = true;
+  if (btn && btn.textContent !== undefined) { btn.textContent = '...'; btn.disabled = true; }
   var res = await _supabaseClient.from('listings').update({ status: 'active' }).eq('id', id);
-  if (res.error) { toast('Error: ' + res.error.message, 'error'); btn.disabled = false; return; }
-  toast('Listing approved and live!', 'lime');
+  if (res.error) {
+    toast('Error: ' + res.error.message, 'error');
+    if (btn && btn.disabled !== undefined) btn.disabled = false;
+    return;
+  }
+  toast('✅ Listing approved and live!', 'lime');
   loadAdminPendingCount();
-  var activeTab = (document.querySelector('[id^="adm-si-"].on') || {}).id;
-  admTab(activeTab ? activeTab.replace('adm-si-', '') : 'pending');
+  // If we came from detail view, go back to admin pending
+  if (detailNavSource === 's-admin') {
+    go('s-admin');
+    setTimeout(function() { admTab('pending'); }, 200);
+  } else {
+    var activeTab = (document.querySelector('[id^="adm-si-"].on') || {}).id;
+    admTab(activeTab ? activeTab.replace('adm-si-', '') : 'pending');
+  }
 }
 
 async function admReject(id, btn) {
   if (!isAdmin) return;
-  var reason = prompt('Reason for rejection:');
+  var reason = prompt('Reason for rejection (will be shown to landlord):');
   if (reason === null) return;
-  btn.textContent = '...'; btn.disabled = true;
+  if (btn && btn.textContent !== undefined) { btn.textContent = '...'; btn.disabled = true; }
   await _supabaseClient.from('listings').update({ status: 'draft' }).eq('id', id);
-  toast('Listing rejected.', '');
+  toast('Listing returned to landlord for revision.', '');
   loadAdminPendingCount();
-  admTab('pending');
+  if (detailNavSource === 's-admin') {
+    go('s-admin');
+    setTimeout(function() { admTab('pending'); }, 200);
+  } else {
+    admTab('pending');
+  }
 }
 
 async function admPause(id, btn) {
@@ -2900,11 +2926,16 @@ async function admPause(id, btn) {
 
 async function admDelete(id, btn) {
   if (!isAdmin) return;
-  if (!confirm('Delete this listing permanently?')) return;
-  btn.textContent = '...'; btn.disabled = true;
+  if (!confirm('Delete this listing permanently? This cannot be undone.')) return;
+  if (btn && btn.textContent !== undefined) { btn.textContent = '...'; btn.disabled = true; }
   await _supabaseClient.from('listings').update({ status: 'deleted' }).eq('id', id);
   toast('Listing deleted.', '');
-  admTab('all');
+  if (detailNavSource === 's-admin') {
+    go('s-admin');
+    setTimeout(function() { admTab('all'); }, 200);
+  } else {
+    admTab('all');
+  }
 }
 
 async function admLoadUsers(m) {
@@ -2990,8 +3021,9 @@ function detailGoBack() {
 }
 
 function admDetailAction(action) {
-  if (!CUR || !CUR.id) return;
-  var btn = document.getElementById('admDetail' + action.charAt(0).toUpperCase() + action.slice(1));
+  if (!CUR || !CUR.id) { toast('No listing selected', 'error'); return; }
+  // Create a dummy btn object to avoid null errors in admApprove/Reject/Delete
+  var btn = { textContent: '', disabled: false };
   if (action === 'approve') admApprove(CUR.id, btn);
   else if (action === 'reject') admReject(CUR.id, btn);
   else if (action === 'delete') admDelete(CUR.id, btn);
@@ -3013,7 +3045,12 @@ async function admPreview(id) {
     gender: l.gender_preference || 'any', bond: l.bond_amount || 0,
     fee: Math.round((l.price_weekly || 0) * 4.33 * 0.05),
     desc: l.description || '', hm: [], revs: [], status: l.status, landlordName: l.landlord_name || '',
-    imgs: (l.photos && l.photos.length >= 1) ? l.photos : ['https://picsum.photos/id/1029/800/500']
+    imgs: (function() {
+      var p = l.photos;
+      if (!p) return ['https://picsum.photos/id/1029/800/500'];
+      if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = [p]; } }
+      return (p && p.length >= 1) ? p : ['https://picsum.photos/id/1029/800/500'];
+    })()
   };
   // Temporarily add to CURRENT_LISTINGS for openDetail to find
   window.CURRENT_LISTINGS = window.CURRENT_LISTINGS || [];
