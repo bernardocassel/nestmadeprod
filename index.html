@@ -1667,15 +1667,16 @@ function openDetail(id) {
   document.getElementById('mOut').value = out.toISOString().split('T')[0];
   calcPB();
   go('s-detail');
-  // Show admin review card or booking card
+  // Show admin review card ONLY when coming from admin panel
   var adminCard = document.getElementById('adminReviewCard');
   var bookCard = document.querySelector('.book-card');
   var backBtn = document.getElementById('detBackBtn');
-  if (isAdmin) {
+  
+  if (isAdmin && detailNavSource === 's-admin') {
+    // Admin viewing from Pending Review panel
     if (adminCard) adminCard.style.display = 'block';
     if (bookCard) bookCard.style.display = 'none';
     if (backBtn) backBtn.textContent = '← Back to Pending Review';
-    // Show listing status
     var statusEl = document.getElementById('adminReviewStatus');
     if (statusEl && CUR) {
       statusEl.innerHTML = '<strong>Status:</strong> ' + (CUR.status || 'pending_review') +
@@ -1683,12 +1684,11 @@ function openDetail(id) {
         '<br><strong>Price:</strong> AU$' + CUR.price + '/wk' +
         '<br><strong>Bond:</strong> AU$' + (CUR.bond || 0);
     }
-    detailNavSource = 's-admin';
   } else {
+    // Normal browsing (tenant view, or admin browsing as tenant)
     if (adminCard) adminCard.style.display = 'none';
     if (bookCard) bookCard.style.display = 'block';
     if (backBtn) backBtn.textContent = '← Back to listings';
-    detailNavSource = 's-browse';
   }
 }
 
