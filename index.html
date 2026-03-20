@@ -1196,7 +1196,7 @@ function onUserLoggedIn(user) {
       if (savedScreen === 's-landlord') {
         go('s-landlord');
         setTimeout(() => loadLandlordDashboard().then(() => {
-          if (savedTab && savedTab !== 'overview') llTab(savedTab);
+          if (savedTab && savedTab !== 'overview') llTab(savedTab, true); // true = don't clear photos on restore
         }), 300);
       } else if (savedScreen === 's-admin') {
         go('s-admin');
@@ -1452,6 +1452,18 @@ function safeInit() {
 }
 window.addEventListener('load', safeInit);
 document.addEventListener('DOMContentLoaded', () => { setTimeout(safeInit, 500); });
+
+// When user switches back to this tab, don't reset the page
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && _initDone) {
+    // Tab is back in focus - just refresh auth silently without changing screen
+    if (_supabaseClient && currentUser) {
+      // Already logged in - do nothing, stay on current screen
+      return;
+    }
+    // Not logged in - also do nothing, stay where they are
+  }
+});
 
 // ══════════════════════════════════════
 // DURATION FILTER (sidebar)
@@ -1839,10 +1851,10 @@ async function simulatePay(total) {
 // ══════════════════════════════════════
 const EARN_DATA = { months: ['Jul','Aug','Sep','Oct','Nov','Dec','Jan'], values: [820, 1240, 930, 1550, 1860, 1240, 1720] };
 
-function llTab(tab) {
-  // Clear photos when leaving Add Listing tab
+function llTab(tab, skipPhotoClear) {
+  // Clear photos when navigating AWAY from Add Listing (but not on restore)
   const currentTab = sessionStorage.getItem('nm-ll-tab');
-  if (currentTab === 'add' && tab !== 'add') {
+  if (!skipPhotoClear && currentTab === 'add' && tab !== 'add') {
     uploadedPhotos = [];
     renderPhotoGrid();
   }
@@ -1865,7 +1877,7 @@ function llTab(tab) {
   else if (tab==='applications') renderApplications(m);
   else if (tab==='earnings') renderEarnings(m);
   else if (tab==='contracts') renderContracts(m);
-  else if (tab==='add') renderAddListing(m);
+  else if (tab==='add') renderAddListing(m, skipPhotoClear);
 }
 
 async function renderOverview(m) {
@@ -2124,9 +2136,11 @@ async function renderContracts(m) {
 // ADD LISTING FORM (with mandatory photos)
 // ══════════════════════════════════════
 
-function renderAddListing(m) {
-  // Always clear photos when opening Add Listing - prevents stale photos from previous session
-  uploadedPhotos = [];
+function renderAddListing(m, skipClear) {
+  // Clear photos only on fresh open, not when restoring from tab switch
+  if (!skipClear) {
+    uploadedPhotos = [];
+  }
   setTimeout(loadListingDraft, 400);
   m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Add New Listing</h1>
