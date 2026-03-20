@@ -1149,10 +1149,11 @@ async function checkSession() {
     currentUser = session.user;
     onUserLoggedIn(session.user);
   } else {
-    // Not logged in — restore non-auth screens
+    // Not logged in — restore browse screen if that's where they were
     try {
       const saved = sessionStorage.getItem('nm-screen');
       if (saved === 's-browse') go('s-browse');
+      else if (saved === 's-land') go('s-land');
     } catch(e) {}
   }
   // Escutar mudanças de auth
@@ -1182,26 +1183,35 @@ function onUserLoggedIn(user) {
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
   setTimeout(checkAdminRole, 500);
 
-  // Restore last screen or redirect from login/signup
+  // Restore last screen after login/refresh
   const loginScreen = document.getElementById('s-login');
   const signupScreen = document.getElementById('s-signup');
   const onAuthScreen = loginScreen?.classList.contains('active') || signupScreen?.classList.contains('active');
 
-  const pendingScreen = sessionStorage.getItem('nm-pending-screen');
-  if (pendingScreen === 's-landlord') {
-    sessionStorage.removeItem('nm-pending-screen');
-    go('s-landlord');
-    const pendingTab = sessionStorage.getItem('nm-pending-tab') || 'overview';
-    sessionStorage.removeItem('nm-pending-tab');
-    setTimeout(() => loadLandlordDashboard().then(() => {
-      if (pendingTab !== 'overview') llTab(pendingTab);
-    }), 200);
-  } else if (onAuthScreen) {
-    go('s-browse');
-  } else {
-    // Already on correct screen, refresh dashboard if needed
-    const landlordScreen = document.getElementById('s-landlord');
-    if (landlordScreen?.classList.contains('active')) loadLandlordDashboard();
+  try {
+    const savedScreen = sessionStorage.getItem('nm-screen');
+    const savedTab = sessionStorage.getItem('nm-ll-tab');
+
+    if (savedScreen === 's-landlord' || savedScreen === 's-browse' || savedScreen === 's-admin') {
+      if (savedScreen === 's-landlord') {
+        go('s-landlord');
+        setTimeout(() => loadLandlordDashboard().then(() => {
+          if (savedTab && savedTab !== 'overview') llTab(savedTab);
+        }), 300);
+      } else if (savedScreen === 's-admin') {
+        go('s-admin');
+        setTimeout(() => admTab(sessionStorage.getItem('nm-adm-tab') || 'pending'), 300);
+      } else {
+        go('s-browse');
+      }
+    } else if (onAuthScreen) {
+      go('s-browse');
+    } else {
+      const landlordScreen = document.getElementById('s-landlord');
+      if (landlordScreen?.classList.contains('active')) loadLandlordDashboard();
+    }
+  } catch(e) {
+    if (onAuthScreen) go('s-browse');
   }
 }
 
@@ -1830,6 +1840,12 @@ async function simulatePay(total) {
 const EARN_DATA = { months: ['Jul','Aug','Sep','Oct','Nov','Dec','Jan'], values: [820, 1240, 930, 1550, 1860, 1240, 1720] };
 
 function llTab(tab) {
+  // Clear photos when leaving Add Listing tab
+  const currentTab = sessionStorage.getItem('nm-ll-tab');
+  if (currentTab === 'add' && tab !== 'add') {
+    uploadedPhotos = [];
+    renderPhotoGrid();
+  }
   try { sessionStorage.setItem('nm-ll-tab', tab); } catch(e) {}
   document.querySelectorAll('.si').forEach(i => i.classList.remove('on'));
   document.querySelectorAll('.si').forEach(i => {
@@ -2109,6 +2125,8 @@ async function renderContracts(m) {
 // ══════════════════════════════════════
 
 function renderAddListing(m) {
+  // Always clear photos when opening Add Listing - prevents stale photos from previous session
+  uploadedPhotos = [];
   setTimeout(loadListingDraft, 400);
   m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Add New Listing</h1>
@@ -2298,7 +2316,8 @@ function saveListingDraft() {
     roomType: (document.getElementById('listRoomType')||{}).value || 'private',
     minWeeks: (document.getElementById('listMinWeeks')||{}).value || '4',
     maxMonths: (document.getElementById('listMaxMonths')||{}).value || '6',
-    suburb: (document.getElementById('listSuburb')||{}).value || ''
+    suburb: (document.getElementById('listSuburb')||{}).value || '',
+    ts: Date.now()
   };
   try { localStorage.setItem('nm-listing-draft', JSON.stringify(draft)); } catch(e) {}
 }
@@ -2822,6 +2841,7 @@ async function loadAdminPendingCount() {
 }
 
 function admTab(tab) {
+  try { sessionStorage.setItem('nm-adm-tab', tab); } catch(e) {}
   document.querySelectorAll('[id^="adm-si-"]').forEach(function(el) { el.classList.remove('on'); });
   var si = document.getElementById('adm-si-' + tab);
   if (si) si.classList.add('on');
