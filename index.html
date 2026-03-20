@@ -1090,11 +1090,7 @@ async function renderRealDashboard(m, listings) {
       </div>
     `).join('')}
 
-    ${pendingCount > 0 ? `
-      <div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:14px;padding:16px;margin-top:12px">
-        <div style="font-weight:600;color:var(--lime);margin-bottom:4px">📥 You have ${pendingCount} pending request${pendingCount>1?'s':''}!</div>
-        <div style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Review and respond within 24h for best results.</div>
-        <button class="btn lime sm" onclick="llTab('applications')">View Requests</button>
+    ${pendingCount > 0 ? '<div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:14px;padding:16px;margin-top:12px"><div style="font-weight:600;color:var(--lime);margin-bottom:4px">📥 You have ' + pendingCount + ' pending request' + (pendingCount>1?'s':'') + '!</div><div style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Review and respond within 24h for best results.</div><button class="btn lime sm" onclick="llTab(\x27applications\x27)">View Requests</button>
       </div>
     ` : ''}
 
@@ -1528,7 +1524,7 @@ function renderListings(list) {
     return;
   }
   document.getElementById('listGrid').innerHTML = list.map(l => {
-    const durLabel = l.minWeeks <= 1 ? 'From 1 week' : `From ${l.minWeeks} weeks`;
+    const durLabel = l.minWeeks <= 1 ? 'From 1 week' : 'From ' + l.minWeeks + ' weeks';
     return `<div class="lcard" onclick="openDetail('${l.id}')">
       <div class="lcard-img">
         <img src="${l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500'}" alt="${l.title}" loading="lazy" onerror="this.src='https://picsum.photos/id/1029/800/500'">
@@ -1641,7 +1637,7 @@ function openDetail(id) {
       <span>📍 ${l.suburb}, Gold Coast</span>
       <span style="color:var(--gold)">★ ${l.rating}</span>
       <span style="color:var(--muted)">(${l.reviews} reviews)</span>
-      ${l.nats.length ? `<span>👥 ${l.nats.length + 1} housemates</span>` : '<span style="color:var(--teal)">🔑 Private — no housemates</span>'}
+      ${l.nats.length ? '<span>👥 ' + (l.nats.length + 1) + ' housemates</span>' : '<span style="color:var(--teal)">🔑 Private — no housemates</span>'}
     </div>`;
   document.getElementById('detPrice').innerHTML = `AU$${l.price} <small>/week</small>`;
   document.getElementById('detAvail').textContent = `📅 ${l.avail}`;
@@ -1882,32 +1878,8 @@ async function renderEarnings(m) {
         <div class="stat-card"><div class="ico">💰</div><div class="sval">AU$${totalEarned.toFixed(2)}</div><div class="slabel">Total earned</div><div class="sdelta">Via NestMate escrow</div></div>
         <div class="stat-card"><div class="ico">🔒</div><div class="sval">AU$${inEscrow.toFixed(2)}</div><div class="slabel">In escrow (bonds)</div><div class="sdelta">Released after check-in</div></div>
       </div>
-      ${!payments || payments.length === 0 ? `
-        <div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)">
-          <div style="font-size:2.5rem;margin-bottom:12px">💰</div>
-          <p style="color:var(--muted)">No payments yet. Once tenants book and pay, your earnings will appear here.</p>
-        </div>` : `
-        <div class="ll-table">
-          <div class="ll-table-head" style="grid-template-columns:2.5fr 1fr 1fr 1fr">
-            <div>Transaction</div><div>Amount</div><div>Status</div><div>Date</div>
-          </div>
-          ${payments.map(p => {
-            const listing = p.bookings?.listings;
-            const label = listing ? listing.title : p.payment_type;
-            const sub = listing ? listing.suburb : '';
-            const amt = p.amount || 0;
-            const sign = p.payment_type === 'service_fee' ? '-' : '+';
-            const color = sign === '+' ? 'var(--lime)' : 'var(--red)';
-            const date = new Date(p.created_at).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'});
-            const stClass = p.status === 'completed' ? 's-active' : p.status === 'pending' ? 's-pending' : 's-vacant';
-            return `<div class="ll-row" style="grid-template-columns:2.5fr 1fr 1fr 1fr">
-              <div><div class="ll-name">${label}</div><div class="ll-sub">${sub}</div></div>
-              <div style="font-weight:700;color:${color}">${sign}AU$${amt.toFixed(2)}</div>
-              <div><span class="s-badge ${stClass}"><span class="s-dot"></span>${p.status}</span></div>
-              <div style="font-size:.78rem;color:var(--muted)">${date}</div>
-            </div>`;
-          }).join('')}
-        </div>`}`;
+      ${!payments || payments.length === 0 ? '<div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)"><div style="font-size:2.5rem;margin-bottom:12px">💰</div><p style="color:var(--muted)">No payments yet. Once tenants book and pay, your earnings will appear here.</p></div>' : renderPaymentsTable(payments)}
+`;
 
   } catch(e) {
     console.error('Earnings error:', e);
@@ -2024,7 +1996,7 @@ async function renderApplications(m) {
         <div class="app-info">
           <h4>${name} <span style="font-size:.68rem;background:rgba(0,212,170,.1);color:var(--teal);padding:2px 7px;border-radius:6px;font-weight:600">🪪 Verified</span></h4>
           <p>${listing.title || ''} · ${b.move_in_date} → ${b.move_out_date} · AU$${b.total_amount}</p>
-          ${b.tenant_message ? `<p style="margin-top:5px;font-style:italic;color:var(--muted)">"${b.tenant_message}"</p>` : ''}
+           ${b.tenant_message ? '<p style="margin-top:5px;font-style:italic;color:var(--muted)">"' + b.tenant_message + '"</p>' : ''}
         </div>
         <div class="app-actions">
           <button class="btn-ok" onclick="acceptBooking('${b.id}', '${name}')">Accept</button>
@@ -2696,7 +2668,7 @@ function renderSelNatChips() {
 function updateNatCount() {
   const c = document.getElementById('natSelCount');
   if(!c) return;
-  c.textContent = selNats.length ? `${selNats.length} selecionado${selNats.length>1?'s':''}` : '';
+  c.textContent = selNats.length ? selNats.length + ' selecionado' + (selNats.length>1?'s':'') : '';
 }
 
 // override the old tglNat to use new system
