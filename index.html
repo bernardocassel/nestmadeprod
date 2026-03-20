@@ -562,7 +562,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 <!-- ════════════ DETAIL ════════════ -->
 <div id="s-detail" class="screen">
   <div class="detail-wrap">
-    <button class="btn ol sm" onclick="go('s-browse')" style="margin-bottom:16px">← <span class="t" data-en="Back to listings" data-pt="Voltar às listagens">Back to listings</span></button>
+    <button class="btn ol sm" id="detBackBtn" onclick="detailGoBack()" style="margin-bottom:16px">← Back to listings</button>
     <div class="det-gallery" id="detGallery"></div>
     <div class="det-layout">
       <div>
@@ -614,9 +614,21 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         </div>
         <div class="pb" id="priceBreak"></div>
         <div class="esc-note">🔒 <span>Bond held in <strong>escrow</strong> — released only after you confirm check-in.</span></div>
-        <button class="btn lime full" onclick="openBooking()" style="margin-bottom:8px"><span class="t" data-en="Request this Room" data-pt="Solicitar este Quarto">Request this Room</span></button>
-        <button class="btn ol full sm" onclick="toast('📅 Video tour request sent!','lime')"><span class="t" data-en="Schedule Video Tour" data-pt="Agendar Tour por Vídeo">Schedule Video Tour</span></button>
+        <button class="btn lime full" onclick="openBooking()" style="margin-bottom:8px">Request this Room</button>
+        <button class="btn ol full sm" onclick="toast('📅 Video tour request sent!','lime')">Schedule Video Tour</button>
         <p style="text-align:center;margin-top:12px;font-size:.72rem;color:var(--muted)">Free cancellation 48h · No charges until accepted</p>
+      </div>
+
+      <!-- Admin Review Card (hidden for tenants) -->
+      <div id="adminReviewCard" style="display:none;background:var(--bg-m);border:2px solid rgba(255,71,87,.3);border-radius:18px;padding:24px;position:sticky;top:72px">
+        <div style="font-size:.7rem;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">⚙️ Admin Review</div>
+        <div id="adminReviewStatus" style="font-size:.85rem;color:var(--muted);margin-bottom:16px;padding:10px;background:var(--bg-l);border-radius:10px"></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn lime full" id="admRevApprove" onclick="admDetailAction('approve')">✅ Approve Listing</button>
+          <button class="btn full" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.3)" id="admRevReject" onclick="admDetailAction('reject')">❌ Reject — Return to Landlord</button>
+          <button class="btn full sm" style="background:transparent;color:var(--muted);border:1px solid var(--border)" id="admRevDelete" onclick="admDetailAction('delete')">🗑 Delete Permanently</button>
+        </div>
+        <p style="text-align:center;margin-top:14px;font-size:.72rem;color:var(--muted)">Only visible to NestMate admins</p>
       </div>
     </div>
   </div>
@@ -870,6 +882,7 @@ const LISTINGS = [
 // STATE
 // ══════════════════════════════════════
 let CUR = null;
+let detailNavSource = 's-browse'; // track where user came from
 let STEP = 1;
 let selNats = ['br'];
 let maxPr = 550;
@@ -1647,10 +1660,28 @@ function openDetail(id) {
   document.getElementById('mOut').value = out.toISOString().split('T')[0];
   calcPB();
   go('s-detail');
-  // Show admin controls if admin viewing a listing
-  var adminBar = document.getElementById('adminDetailActions');
-  if (adminBar) {
-    adminBar.style.display = isAdmin ? 'flex' : 'none';
+  // Show admin review card or booking card
+  var adminCard = document.getElementById('adminReviewCard');
+  var bookCard = document.querySelector('.book-card');
+  var backBtn = document.getElementById('detBackBtn');
+  if (isAdmin) {
+    if (adminCard) adminCard.style.display = 'block';
+    if (bookCard) bookCard.style.display = 'none';
+    if (backBtn) backBtn.textContent = '← Back to Pending Review';
+    // Show listing status
+    var statusEl = document.getElementById('adminReviewStatus');
+    if (statusEl && CUR) {
+      statusEl.innerHTML = '<strong>Status:</strong> ' + (CUR.status || 'pending_review') +
+        '<br><strong>Landlord:</strong> ' + (CUR.landlordName || 'Unknown') +
+        '<br><strong>Price:</strong> AU$' + CUR.price + '/wk' +
+        '<br><strong>Bond:</strong> AU$' + (CUR.bond || 0);
+    }
+    detailNavSource = 's-admin';
+  } else {
+    if (adminCard) adminCard.style.display = 'none';
+    if (bookCard) bookCard.style.display = 'block';
+    if (backBtn) backBtn.textContent = '← Back to listings';
+    detailNavSource = 's-browse';
   }
 }
 
@@ -2085,9 +2116,9 @@ function renderAddListing(m) {
           <input type="file" accept="image/*" multiple onchange="handlePhotos(this.files)" id="photoInput">
           <div class="ico">📷</div>
           <h4 style="color:var(--text)">Arraste fotos aqui ou clique para selecionar</h4>
-          <p>Mínimo 3 fotos · Máximo 12 · JPG, PNG, HEIC</p>
-          <p style="margin-top:6px;font-size:.75rem">A primeira foto será a capa do anúncio</p>
-          <span class="req-badge">⚠️ Listagem sem fotos não será publicada</span>
+          <p>Min 3 photos · Max 12 · JPG, PNG, HEIC</p>
+          <p style="margin-top:6px;font-size:.75rem">First photo will be the cover</p>
+          <span class="req-badge">⚠️ Listing without photos will not be published</span>
         </div>
         <div id="photoWarn" class="photo-min-warn">⚠️ Adicione pelo menos 3 fotos para publicar este quarto. Anúncios sem fotos geram desconfiança e não serão aprovados pela equipe NestMate.</div>
         <div class="photo-previews" id="photoPreviews"></div>
@@ -2223,18 +2254,17 @@ function renderPhotoGrid() {
       '<button class="del-btn" onclick="removePhoto(' + i + ')">&#x2715;</button>' +
     '</div>';
   }).join('');
-  // Show cover photo in upload zone background
+  // Show cover photo in big preview above upload zone
+  var coverDiv = document.getElementById('coverPreview');
+  var coverImg = document.getElementById('coverImg');
   var zone = document.getElementById('photoZone');
-  if (zone) {
-    if (uploadedPhotos.length > 0) {
-      zone.style.backgroundImage = 'url(' + uploadedPhotos[0].src + ')';
-      zone.style.backgroundSize = 'cover';
-      zone.style.backgroundPosition = 'center';
-      zone.style.opacity = '0.85';
-    } else {
-      zone.style.backgroundImage = '';
-      zone.style.opacity = '1';
-    }
+  if (uploadedPhotos.length > 0) {
+    if (coverDiv) coverDiv.style.display = 'block';
+    if (coverImg) coverImg.src = uploadedPhotos[0].src;
+    if (zone) zone.style.display = uploadedPhotos.length >= 12 ? 'none' : 'block';
+  } else {
+    if (coverDiv) coverDiv.style.display = 'none';
+    if (zone) zone.style.display = 'block';
   }
 }
 
@@ -2741,11 +2771,13 @@ function t(key) { return (TRANSLATIONS[LANG]||{})[key] || key; }
 // ADMIN PANEL
 var isAdmin = false;
 
-function admPhotoHtml(photos) {
+function admPhotoHtml(photos, large) {
+  var size = large ? '120px' : '72px';
+  var radius = large ? '12px' : '10px';
   if (photos && photos[0]) {
-    return '<img src="' + photos[0] + '" style="width:72px;height:72px;border-radius:10px;object-fit:cover;flex-shrink:0">';
+    return '<img src="' + photos[0] + '" style="width:' + size + ';height:' + size + ';border-radius:' + radius + ';object-fit:cover;flex-shrink:0">';
   }
-  return '<div style="width:72px;height:72px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">&#127968;</div>';
+  return '<div style="width:' + size + ';height:' + size + ';border-radius:' + radius + ';background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:' + (large?'2.5':'1.8') + 'rem;flex-shrink:0">&#127968;</div>';
 }
 
 async function checkAdminRole() {
@@ -2801,7 +2833,7 @@ async function admLoadListings(m, statusFilter) {
     for (var i = 0; i < listings.length; i++) {
       var l = listings[i];
       var sc = stClass[l.status] || 's-vacant';
-      var photoHtml = admPhotoHtml(l.photos);
+      var photoHtml = admPhotoHtml(l.photos, statusFilter === 'pending_review');
       var landlordName = (l.profiles && l.profiles.full_name) ? l.profiles.full_name : 'Unknown';
       var landlordEmail = (l.profiles && l.profiles.email) ? l.profiles.email : '';
       var desc = l.description ? l.description.substring(0, 100) + '...' : '';
@@ -2948,6 +2980,15 @@ function admAction(btn) {
   else if (action === 'preview') admPreview(id);
 }
 
+function detailGoBack() {
+  if (detailNavSource === 's-admin') {
+    go('s-admin');
+    setTimeout(function() { admTab('pending'); }, 100);
+  } else {
+    go('s-browse');
+  }
+}
+
 function admDetailAction(action) {
   if (!CUR || !CUR.id) return;
   var btn = document.getElementById('admDetail' + action.charAt(0).toUpperCase() + action.slice(1));
@@ -2971,7 +3012,7 @@ async function admPreview(id) {
     amen: l.amenities || [], rules: [], vibe: l.house_vibe || 'social',
     gender: l.gender_preference || 'any', bond: l.bond_amount || 0,
     fee: Math.round((l.price_weekly || 0) * 4.33 * 0.05),
-    desc: l.description || '', hm: [], revs: [],
+    desc: l.description || '', hm: [], revs: [], status: l.status, landlordName: l.landlord_name || '',
     imgs: (l.photos && l.photos.length >= 1) ? l.photos : ['https://picsum.photos/id/1029/800/500']
   };
   // Temporarily add to CURRENT_LISTINGS for openDetail to find
