@@ -1647,6 +1647,11 @@ function openDetail(id) {
   document.getElementById('mOut').value = out.toISOString().split('T')[0];
   calcPB();
   go('s-detail');
+  // Show admin controls if admin viewing a listing
+  var adminBar = document.getElementById('adminDetailActions');
+  if (adminBar) {
+    adminBar.style.display = isAdmin ? 'flex' : 'none';
+  }
 }
 
 function calcPB() {
@@ -2064,6 +2069,7 @@ async function renderContracts(m) {
 // ══════════════════════════════════════
 
 function renderAddListing(m) {
+  setTimeout(loadListingDraft, 400);
   m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Add New Listing</h1>
     <p style="color:var(--muted);font-size:.84rem;margin-bottom:22px">List your room and reach verified international students.</p>
@@ -2175,6 +2181,7 @@ function renderAddListing(m) {
         <strong style="color:var(--lime)">📸 Nota sobre as fotos:</strong> Após cadastro, a equipe NestMate verifica as fotos com timestamp e geolocalização para garantir que representam o estado real do quarto. Listagens com fotos manipuladas serão removidas imediatamente.
       </div>
 
+      <button class="btn ol sm" style="margin-top:8px;margin-right:8px" onclick="clearListingDraft()">Clear Form</button>
       <button class="btn lime" style="margin-top:18px" onclick="submitListing()">Submit for Verification →</button>
       <p style="font-size:.73rem;color:var(--muted);margin-top:10px">Sua listagem será revisada pela equipe em até 24h. Você receberá uma notificação quando aprovada.</p>
     </div>`;
@@ -2216,6 +2223,19 @@ function renderPhotoGrid() {
       '<button class="del-btn" onclick="removePhoto(' + i + ')">&#x2715;</button>' +
     '</div>';
   }).join('');
+  // Show cover photo in upload zone background
+  var zone = document.getElementById('photoZone');
+  if (zone) {
+    if (uploadedPhotos.length > 0) {
+      zone.style.backgroundImage = 'url(' + uploadedPhotos[0].src + ')';
+      zone.style.backgroundSize = 'cover';
+      zone.style.backgroundPosition = 'center';
+      zone.style.opacity = '0.85';
+    } else {
+      zone.style.backgroundImage = '';
+      zone.style.opacity = '1';
+    }
+  }
 }
 
 function removePhoto(idx) {
@@ -2227,6 +2247,51 @@ function removePhoto(idx) {
 function dragOver(e) { e.preventDefault(); document.getElementById('photoZone').classList.add('dragging'); }
 function dragLeave(e) { document.getElementById('photoZone').classList.remove('dragging'); }
 function dropPhotos(e) { e.preventDefault(); document.getElementById('photoZone').classList.remove('dragging'); handlePhotos(e.dataTransfer.files); }
+
+// ── FORM DRAFT AUTOSAVE ──
+function saveListingDraft() {
+  var draft = {
+    title: (document.getElementById('listTitle')||{}).value || '',
+    rent: (document.getElementById('listRent')||{}).value || '',
+    addr: (document.getElementById('listAddr')||{}).value || '',
+    bond: (document.getElementById('listBond')||{}).value || '',
+    desc: (document.getElementById('listDesc')||{}).value || '',
+    roomType: (document.getElementById('listRoomType')||{}).value || 'private',
+    minWeeks: (document.getElementById('listMinWeeks')||{}).value || '4',
+    maxMonths: (document.getElementById('listMaxMonths')||{}).value || '6',
+    suburb: (document.getElementById('listSuburb')||{}).value || ''
+  };
+  try { localStorage.setItem('nm-listing-draft', JSON.stringify(draft)); } catch(e) {}
+}
+
+function loadListingDraft() {
+  try {
+    var raw = localStorage.getItem('nm-listing-draft');
+    if (!raw) return;
+    var draft = JSON.parse(raw);
+    setTimeout(function() {
+      var fields = {
+        'listTitle': draft.title, 'listRent': draft.rent, 'listAddr': draft.addr,
+        'listBond': draft.bond, 'listDesc': draft.desc, 'listSuburb': draft.suburb,
+        'listMinWeeks': draft.minWeeks, 'listMaxMonths': draft.maxMonths
+      };
+      for (var id in fields) {
+        var el = document.getElementById(id);
+        if (el && fields[id]) el.value = fields[id];
+      }
+      var rt = document.getElementById('listRoomType');
+      if (rt && draft.roomType) rt.value = draft.roomType;
+      if (draft.title) toast('Draft restored!', 'lime');
+    }, 300);
+  } catch(e) {}
+}
+
+function clearListingDraft() {
+  try { localStorage.removeItem('nm-listing-draft'); } catch(e) {}
+  var ids = ['listTitle','listRent','listAddr','listBond','listDesc','listSuburb','listMinWeeks','listMaxMonths'];
+  ids.forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+  toast('Form cleared', '');
+}
 
 async function submitListing() {
   // Validate photos
@@ -2367,6 +2432,7 @@ async function submitListing() {
 
     // Success!
     toast('✅ Listing submitted! Under review within 24h.', 'lime');
+    clearListingDraft();
     uploadedPhotos = [];
     
     // Reload dashboard after 1.5s
@@ -2500,7 +2566,8 @@ function setLang(lang) {
   localStorage.setItem('nm-lang', lang);
 }
 // restore saved lang
-(function(){const l=localStorage.getItem('nm-lang');if(l&&l!=='en')setTimeout(()=>setLang(l),100);})();
+// Language locked to English for AU beta
+LANG = 'en';
 
 // ══════════════════════════════════════
 // NATIONALITY SEARCH — full list of 50 nationalities
@@ -2879,6 +2946,14 @@ function admAction(btn) {
   else if (action === 'pause') admPause(id, btn);
   else if (action === 'delete') admDelete(id, btn);
   else if (action === 'preview') admPreview(id);
+}
+
+function admDetailAction(action) {
+  if (!CUR || !CUR.id) return;
+  var btn = document.getElementById('admDetail' + action.charAt(0).toUpperCase() + action.slice(1));
+  if (action === 'approve') admApprove(CUR.id, btn);
+  else if (action === 'reject') admReject(CUR.id, btn);
+  else if (action === 'delete') admDelete(CUR.id, btn);
 }
 
 async function admPreview(id) {
