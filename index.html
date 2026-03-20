@@ -2054,7 +2054,7 @@ async function renderContracts(m) {
     html += '<div style="flex:1"><div class="ll-name">' + name + ' - ' + listing + '</div>';
     html += '<div class="ll-sub">' + (b.move_in_date||'') + ' to ' + (b.move_out_date||'') + ' - AU$' + (b.total_amount||0) + '</div></div>';
     html += '<span class="s-badge ' + sc + '"><span class="s-dot"></span>' + sl + '</span>';
-    html += '<button class="btn ol sm" onclick="toast('PDF coming soon!','lime')">View PDF</button></div>';
+    html += '<button class="btn ol sm" data-act="pdf" onclick="toast(this.dataset.msg,this.dataset.col)" data-msg="PDF coming soon!" data-col="lime">View PDF</button></div>';
   }
   m.innerHTML += html;
 }
@@ -2597,7 +2597,7 @@ function renderNatList(query) {
     var cls = sel ? ' selected' : '';
     var chk = sel ? '<span class="check">&#x2713;</span>' : '';
     var name = LANG === 'pt' ? n.pt : n.en;
-    return '<div class="nat-dd-item' + cls + '" onclick="selectNat(' + JSON.stringify(n.code) + ',' + JSON.stringify(n.flag) + ',' + JSON.stringify(n.en) + ',' + JSON.stringify(n.pt) + ')">' +
+    return '<div class="nat-dd-item' + cls + '" data-code="' + n.code + '" data-flag="' + n.flag + '" data-en="' + n.en.replace('"','') + '" data-pt="' + n.pt.replace('"','') + '" onclick="selectNatEl(this)">' + '<span class="flag">' + n.flag + '</span><span class="name">' + (LANG === 'pt' ? n.pt : n.en) + '</span>' + chk + '</div>';
       '<span class="flag">' + n.flag + '</span>' +
       '<span class="name">' + name + '</span>' +
       chk + '</div>';
@@ -2650,7 +2650,7 @@ function renderSelNatChips() {
   wrap.innerHTML = selNats.map(code => {
     const n = ALL_NATS.find(x => x.code===code);
     if(!n) return '';
-    return '<div class="nat-sel-chip">' + n.flag + ' ' + (LANG === 'pt' ? n.pt : n.en) + ' <button onclick="removeNat(' + JSON.stringify(code) + ')">&#x2715;</button></div>';
+    return '<div class="nat-sel-chip">' + n.flag + ' ' + (LANG === 'pt' ? n.pt : n.en) + ' <button data-code="' + code + '" onclick="removeNatEl(this)">&#x2715;</button></div>';
   }).join('');
 }
 
@@ -2915,4 +2915,16 @@ function admDeleteById(id, btn) { admDelete(id, btn); }
 </script>
 </body>
 </html>
+
+function selectNatEl(el) {
+  var code = el.getAttribute('data-code');
+  var flag = el.getAttribute('data-flag');
+  var en = el.getAttribute('data-en');
+  var pt = el.getAttribute('data-pt');
+  if (code) selectNat(code, flag, en, pt);
+}
+function removeNatEl(el) {
+  var code = el.getAttribute('data-code');
+  if (code) removeNat(code);
+}
 </script>
