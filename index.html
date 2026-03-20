@@ -1344,7 +1344,7 @@ async function loadListingsFromDB() {
       desc: l.description || '',
       hm: [],
       revs: [],
-      imgs: (l.photos && l.photos.length >= 1) ? l.photos : ['https://picsum.photos/id/1029/800/500']
+      imgs: (l.photos && l.photos.length >= 1) ? l.photos : []
     }));
 
     // Store in global for filters
@@ -1529,9 +1529,9 @@ function renderListings(list) {
   }
   document.getElementById('listGrid').innerHTML = list.map(l => {
     const durLabel = l.minWeeks <= 1 ? 'From 1 week' : `From ${l.minWeeks} weeks`;
-    return `<div class="lcard" onclick="openDetail(${l.id})">
+    return `<div class="lcard" onclick="openDetail('${l.id}')">
       <div class="lcard-img">
-        <img src="${l.imgs[0]}" alt="${l.title}" loading="lazy" onerror="this.src='https://placehold.co/800x500/1E2733/C8F135?text=NestMate+Photo'">
+        <img src="${l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500'}" alt="${l.title}" loading="lazy" onerror="this.src='https://picsum.photos/id/1029/800/500'">
         <div class="badges">
           <span class="badge-v">✓ Verified</span>
           ${l.type==='Studio'?'<span class="tag t" style="font-size:.62rem;padding:2px 6px">Studio</span>':''}
@@ -1614,12 +1614,20 @@ function resetFilters() {
 // DETAIL
 // ══════════════════════════════════════
 function openDetail(id) {
-  CUR = (window.CURRENT_LISTINGS || []).find(l => l.id === id) || (typeof LISTINGS !== 'undefined' ? LISTINGS.find(l => l.id === id) : null);
+  // id can be number (demo) or UUID string (real)
+  const all = window.CURRENT_LISTINGS || [];
+  CUR = all.find(l => String(l.id) === String(id));
+  if (!CUR && typeof LISTINGS !== 'undefined') {
+    CUR = LISTINGS.find(l => String(l.id) === String(id));
+  }
+  if (!CUR) { toast('Room not found', 'error'); return; }
   const l = CUR;
   // Gallery
+  const mainImg = l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500';
+  const subImgs = l.imgs && l.imgs.length > 1 ? l.imgs.slice(1,5) : [];
   document.getElementById('detGallery').innerHTML = `
-    <div class="main-img"><img src="${l.imgs[0]}" alt="${l.title}"><span class="gallery-count">📷 ${l.imgs.length} photos</span></div>
-    ${l.imgs.slice(1,5).map(u => '<div class="sub-img"><img src="' + u + '" alt=""></div>').join('')}`;
+    <div class="main-img"><img src="${mainImg}" alt="${l.title}"><span class="gallery-count">📷 ${(l.imgs||[]).length} photos</span></div>
+    ${subImgs.map(u => '<div class="sub-img"><img src="' + u + '" alt=""></div>').join('')}`;
   // Meta
   document.getElementById('detMeta').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
@@ -2707,9 +2715,9 @@ var isAdmin = false;
 
 function admPhotoHtml(photos) {
   if (photos && photos[0]) {
-    return '<img src="' + photos[0] + '" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0">';
+    return '<img src="' + photos[0] + '" style="width:72px;height:72px;border-radius:10px;object-fit:cover;flex-shrink:0" onerror="this.src='https://picsum.photos/id/1029/80/80'">';
   }
-  return '<div style="width:64px;height:64px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">&#127968;</div>';
+  return '<div style="width:72px;height:72px;border-radius:10px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">&#127968;</div>';
 }
 
 async function checkAdminRole() {
@@ -2777,6 +2785,7 @@ async function admLoadListings(m, statusFilter) {
       if (l.status === 'pending_review' || l.status === 'draft') {
         btns += '<button class="btn lime sm" data-admid="' + lid + '" data-admaction="approve" onclick="admAction(this)">Approve</button> ';
       }
+      btns += '<button class="btn ol sm" data-admid="' + lid + '" data-admaction="preview" onclick="admAction(this)">👁 Preview</button> ';
       if (l.status === 'pending_review') {
         btns += '<button class="btn sm" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2)" data-admid="' + lid + '" data-admaction="reject" onclick="admAction(this)">Reject</button> ';
       }
@@ -2908,6 +2917,33 @@ function admAction(btn) {
   else if (action === 'reject') admReject(id, btn);
   else if (action === 'pause') admPause(id, btn);
   else if (action === 'delete') admDelete(id, btn);
+  else if (action === 'preview') admPreview(id);
+}
+
+async function admPreview(id) {
+  if (!_supabaseClient) return;
+  // Load listing from DB and open detail view
+  var res = await _supabaseClient.from('listings').select('*').eq('id', id).single();
+  if (res.error || !res.data) { toast('Error loading listing', 'error'); return; }
+  var l = res.data;
+  var mapped = {
+    id: l.id, title: l.title, suburb: l.suburb || 'Gold Coast',
+    price: l.price_weekly, type: l.room_type || 'private',
+    nats: l.nationalities || [], minWeeks: l.min_weeks || 1, maxMonths: l.max_months || 6,
+    rating: 0, reviews: 0,
+    avail: l.available_from ? 'Available ' + new Date(l.available_from).toLocaleDateString('en-AU') : 'Available now',
+    amen: l.amenities || [], rules: [], vibe: l.house_vibe || 'social',
+    gender: l.gender_preference || 'any', bond: l.bond_amount || 0,
+    fee: Math.round((l.price_weekly || 0) * 4.33 * 0.05),
+    desc: l.description || '', hm: [], revs: [],
+    imgs: (l.photos && l.photos.length >= 1) ? l.photos : ['https://picsum.photos/id/1029/800/500']
+  };
+  // Temporarily add to CURRENT_LISTINGS for openDetail to find
+  window.CURRENT_LISTINGS = window.CURRENT_LISTINGS || [];
+  var existing = window.CURRENT_LISTINGS.findIndex(function(x) { return x.id === id; });
+  if (existing >= 0) window.CURRENT_LISTINGS[existing] = mapped;
+  else window.CURRENT_LISTINGS.push(mapped);
+  openDetail(id);
 }
 
 function admApproveById(id, btn) { admApprove(id, btn); }
