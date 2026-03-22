@@ -388,7 +388,9 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 .util-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;font-size:.82rem;font-weight:600}
 .util-included{background:rgba(0,212,170,.08);color:var(--teal);border:1px solid rgba(0,212,170,.2)}
 .util-shared{background:rgba(255,107,53,.08);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
-</style>
+
+.conv-item:hover{background:var(--bg-l)}
+.inbox-row:hover{background:var(--bg-l)}</style>
 </head>
 <body>
 
@@ -419,6 +421,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div id="userDropdown" onmouseenter="keepDropdown()" onmouseleave="hideDropdown()" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg-m);border:1px solid var(--border);border-radius:14px;min-width:180px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:200;overflow:hidden">
         <div onclick="goToOwnProfile()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">👤 My Profile</div>
         <div id="dropAdminBtn" onclick="go('s-admin')" style="display:none;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">⚙️ Admin Panel</div>
+        <div onclick="openMessages()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">💬 Messages <span id="dropMsgBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.65rem;font-weight:700;margin-left:auto;align-items:center;justify-content:center">0</span></div>
         <div style="border-top:1px solid var(--border)"></div>
         <div onclick="doLogout()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--red)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">🚪 Sign Out</div>
       </div>
@@ -875,6 +878,41 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   </div>
 </div>
 
+<!-- ════════════ MESSAGES ════════════ -->
+<div id="s-messages" class="screen" style="background:var(--bg)">
+  <div style="max-width:700px;margin:0 auto;padding:0;display:flex;flex-direction:column;height:100vh">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
+      <button class="btn ol sm" onclick="go(sessionStorage.getItem('nm-screen')||'s-browse')">← Back</button>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--text)">💬 Messages</div>
+      <div id="msgUnreadBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:20px;height:20px;font-size:.7rem;font-weight:700;display:none;align-items:center;justify-content:center;margin-left:4px"></div>
+    </div>
+    <!-- Conversation list -->
+    <div id="conversationsList" style="flex:1;overflow-y:auto;padding:8px 0">
+      <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+        <div style="font-size:2.5rem;margin-bottom:12px">💬</div>
+        <p>No messages yet</p>
+        <p style="font-size:.82rem;margin-top:6px">Browse rooms and message a landlord to get started</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ CONVERSATION ════════════ -->
+<div id="s-conversation" class="screen" style="background:var(--bg)">
+  <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;height:100vh">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
+      <button class="btn ol sm" onclick="go('s-messages');loadAllConversations()">← Messages</button>
+      <div id="convAvatar" style="width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;overflow:hidden">?</div>
+      <div style="flex:1"><div id="convName" style="font-weight:700;font-size:.92rem;color:var(--text)">...</div><div id="convRoom" style="font-size:.72rem;color:var(--muted)"></div></div>
+    </div>
+    <div id="convMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;background:var(--bg)">
+      <textarea id="convInput" placeholder="Type a message..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:.88rem;background:var(--bg-l);color:var(--text);font-family:inherit;max-height:100px;min-height:42px" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendConvMsg()}"></textarea>
+      <button onclick="sendConvMsg()" style="width:42px;height:42px;border-radius:50%;background:var(--lime);border:none;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">➤</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════ OWN PROFILE ════════════ -->
 <div id="s-own-profile" class="screen" style="background:var(--bg)">
   <div style="max-width:600px;margin:0 auto;padding:0">
@@ -996,6 +1034,18 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   </div>
 </div>
 
+<!-- ════════════ MESSAGES INBOX ════════════ -->
+<div id="s-inbox" class="screen" style="background:var(--bg)">
+  <div style="max-width:700px;margin:0 auto;padding:0">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
+      <button class="btn ol sm" onclick="closeInbox()">← Back</button>
+      <div style="flex:1;font-weight:700;font-size:.95rem;color:var(--text)">💬 Messages</div>
+      <div id="inboxUnread" style="display:none;background:var(--red);color:#fff;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:10px">0</div>
+    </div>
+    <div id="inboxList" style="padding:12px 16px"></div>
+  </div>
+</div>
+
 <!-- ════════════ FAVORITES ════════════ -->
 <div id="s-favs" class="screen">
   <div style="max-width:900px;margin:0 auto;padding:24px 16px">
@@ -1024,6 +1074,16 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <button onclick="closeEditListing()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted)">✕</button>
     </div>
     <div style="padding:20px">
+      <!-- Photo editing -->
+      <div class="fg">
+        <label class="lbl">Photos <span style="color:var(--muted);font-weight:400;font-size:.78rem">(click to remove · add new below)</span></label>
+        <div id="editPhotoGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+        <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-l);border:1.5px dashed var(--border);border-radius:10px;cursor:pointer;font-size:.85rem;color:var(--muted)">
+          <span style="font-size:1.2rem">📷</span> Add more photos
+          <input type="file" accept="image/*" multiple style="display:none" onchange="addEditPhotos(this.files)">
+        </label>
+        <div id="editPhotoWarn" style="display:none;color:var(--red);font-size:.76rem;margin-top:4px">⚠️ Minimum 3 photos required</div>
+      </div>
       <div class="fg"><label class="lbl">Room Title</label><input class="inp" id="editTitle" placeholder="e.g. Sunny Private Room in Surfers Paradise"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="fg" style="margin:0"><label class="lbl">Weekly Rent (AU$)</label><input class="inp" type="number" id="editRent"></div>
@@ -1049,6 +1109,24 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         </div>
       </div>
       <div class="fg"><label class="lbl">Description</label><textarea class="inp" id="editDesc" rows="3" style="resize:none"></textarea></div>
+
+      <!-- EDIT PHOTOS -->
+      <div class="fg">
+        <label class="lbl">Room Photos</label>
+        <div id="editPhotoGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+        <div style="border:2px dashed var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:var(--bg-l)" onclick="document.getElementById('editPhotoInput').click()">
+          <input type="file" id="editPhotoInput" accept="image/*" multiple style="display:none" onchange="addEditPhotos(this.files)">
+          <div style="font-size:1.3rem;margin-bottom:4px">📷</div>
+          <div style="font-size:.82rem;color:var(--muted)">Click to add more photos (max 12)</div>
+        </div>
+      </div>
+
+      <!-- HOUSEMATES -->
+      <div class="fg">
+        <label class="lbl">Current Housemates <span style="color:var(--muted);font-weight:400;font-size:.75rem">(helps tenants feel safer)</span></label>
+        <div id="hmListEdit" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+        <button type="button" class="btn ol sm" onclick="addHmRow()">+ Add Housemate</button>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="fg" style="margin:0">
           <label class="lbl">Pets</label>
@@ -1554,6 +1632,7 @@ function onUserLoggedIn(user) {
   updateNavAvatar(user);
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
   setTimeout(checkAdminRole, 500);
+  setTimeout(checkUnreadMessages, 1000);
 
   // If returning from tab switch, don't navigate at all
   if (_returningToTab) return;
@@ -2764,6 +2843,13 @@ function renderAddListing(m, skipClear) {
 
       <div style="margin-top:20px;padding:14px;background:rgba(200,241,53,.05);border:1px solid rgba(200,241,53,.15);border-radius:12px;font-size:.8rem;color:var(--muted)">
         <strong style="color:var(--lime)">📸 Nota sobre as fotos:</strong> Após cadastro, a equipe NestMate verifica as fotos com timestamp e geolocalização para garantir que representam o estado real do quarto. Listagens com fotos manipuladas serão removidas imediatamente.
+      </div>
+
+      <!-- HOUSEMATES IN FORM -->
+      <div class='fg'>
+        <label class='lbl'>Current Housemates <span style='color:var(--muted);font-weight:400;font-size:.75rem'>(helps tenants feel safer knowing who lives there)</span></label>
+        <div id='hmListForm' style='display:flex;flex-direction:column;gap:8px;margin-bottom:10px'></div>
+        <button type='button' class='btn ol sm' onclick='addHmRowForm()'>+ Add Housemate</button>
       </div>
 
       <button class="btn ol sm" style="margin-top:8px;margin-right:8px" onclick="clearListingDraft()">Clear Form</button>
@@ -4240,6 +4326,7 @@ function closeOwnProfile() {
 // ══════════════════════════════════════
 var _chatLandlordId = null;
 var _chatListingId = null;
+var _chatWithUserId = null; // for inbox mode
 var _chatSubscription = null;
 
 async function openChatModal() {
@@ -4315,16 +4402,23 @@ function renderChatMessages(msgs) {
 }
 
 async function sendChatMsg() {
+  if (!_supabaseClient) { toast('Not connected', 'error'); return; }
+  if (!currentUser) { toast('Please sign in', ''); go('s-login'); return; }
   var input = document.getElementById('chatInput');
   var msg = input ? input.value.trim() : '';
-  if (!msg || !currentUser || !_chatListingId || !_chatLandlordId) return;
+  if (!msg) return;
   if (msg.length > 1000) { toast('Message too long', ''); return; }
+  if (!_chatListingId) { toast('No listing selected', 'error'); return; }
+
+  // If landlord is messaging - use _chatWithUserId instead
+  var recipientId = _chatLandlordId;
+  if (_chatWithUserId) recipientId = _chatWithUserId; // inbox mode
+  if (!recipientId || recipientId === currentUser.id) {
+    toast('Cannot send to yourself', ''); return;
+  }
 
   input.value = '';
-  input.style.height = 'auto';
-
-  var recipientId = _chatLandlordId === currentUser.id ? null : _chatLandlordId;
-  if (!recipientId) { toast('Cannot message yourself', ''); return; }
+  input.style.height = '42px';
 
   var res = await _supabaseClient.from('messages').insert({
     sender_id: currentUser.id,
@@ -4334,7 +4428,8 @@ async function sendChatMsg() {
   });
 
   if (res.error) {
-    toast('Error sending: ' + res.error.message, 'error');
+    console.error('Send error:', res.error);
+    toast('Error: ' + (res.error.message || 'Failed to send'), 'error');
     input.value = msg;
   } else {
     loadChatMessages();
@@ -4511,6 +4606,512 @@ async function saveEditListing() {
     var m = document.getElementById('llMain');
     if (m) renderLLListings(m);
   }, 300);
+}
+
+
+// ══════════════════════════════════════
+// EDIT LISTING - PHOTOS & HOUSEMATES
+// ══════════════════════════════════════
+var _editPhotos = [];
+
+function renderEditPhotoGrid() {
+  var grid = document.getElementById('editPhotoGrid');
+  if (!grid) return;
+  grid.innerHTML = _editPhotos.map(function(src, i) {
+    return '<div style="position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;flex-shrink:0">' +
+      '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover">' +
+      (i === 0 ? '<span style="position:absolute;bottom:3px;left:3px;background:var(--lime);color:#000;font-size:.55rem;font-weight:700;padding:1px 5px;border-radius:4px">COVER</span>' : '') +
+      '<button onclick="removeEditPhoto(' + i + ')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>' +
+      '</div>';
+  }).join('');
+}
+
+function removeEditPhoto(idx) {
+  _editPhotos.splice(idx, 1);
+  renderEditPhotoGrid();
+}
+
+async function addEditPhotos(files) {
+  var remaining = 12 - _editPhotos.length;
+  var arr = Array.from(files).slice(0, remaining);
+  for (var i = 0; i < arr.length; i++) {
+    var compressed = await compressPhoto(URL.createObjectURL(arr[i]));
+    _editPhotos.push(compressed);
+  }
+  renderEditPhotoGrid();
+}
+
+// Housemate row helper
+var _hmGender = ['Male','Female','Non-binary','Prefer not to say'];
+
+function addHmRow() {
+  var list = document.getElementById('hmListEdit');
+  if (!list) return;
+  var idx = list.children.length;
+  var div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:8px;align-items:center';
+  div.innerHTML = '<input class="inp" placeholder="Name (optional)" style="flex:1;margin:0;padding:8px 12px" data-hm-name>' +
+    '<select class="inp" style="width:140px;margin:0;padding:8px 10px" data-hm-gender>' +
+    _hmGender.map(function(g) { return '<option>' + g + '</option>'; }).join('') +
+    '</select>' +
+    '<button onclick="this.parentNode.remove()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer">✕</button>';
+  list.appendChild(div);
+}
+
+function addHmRowForm() {
+  var list = document.getElementById('hmListForm');
+  if (!list) return;
+  var div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:8px;align-items:center';
+  div.innerHTML = '<input class="inp" placeholder="Name (optional)" style="flex:1;margin:0;padding:8px 12px" data-hm-name>' +
+    '<select class="inp" style="width:140px;margin:0;padding:8px 10px" data-hm-gender>' +
+    _hmGender.map(function(g) { return '<option>' + g + '</option>'; }).join('') +
+    '</select>' +
+    '<button onclick="this.parentNode.remove()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer">✕</button>';
+  list.appendChild(div);
+}
+
+function getHmData(containerId) {
+  var list = document.getElementById(containerId);
+  if (!list) return [];
+  return Array.from(list.children).map(function(row) {
+    var nameEl = row.querySelector('[data-hm-name]');
+    var genderEl = row.querySelector('[data-hm-gender]');
+    return { name: nameEl ? nameEl.value : '', gender: genderEl ? genderEl.value : 'Prefer not to say' };
+  }).filter(function(h) { return h.gender; });
+}
+
+// Update openEditListing to load photos
+var _origOpenEditListing = openEditListing;
+openEditListing = async function(id) {
+  await _origOpenEditListing(id);
+  // Load photos
+  var res = await _supabaseClient.from('listings').select('photos, housemates').eq('id', id).single();
+  if (res.data) {
+    var photos = res.data.photos || [];
+    if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
+    _editPhotos = photos;
+    renderEditPhotoGrid();
+    // Load housemates
+    var hm = res.data.housemates || [];
+    if (typeof hm === 'string') { try { hm = JSON.parse(hm); } catch(e) { hm = []; } }
+    var list = document.getElementById('hmListEdit');
+    if (list) {
+      list.innerHTML = '';
+      hm.forEach(function(h) {
+        addHmRow();
+        var last = list.lastElementChild;
+        if (last) {
+          var nameEl = last.querySelector('[data-hm-name]');
+          var genderEl = last.querySelector('[data-hm-gender]');
+          if (nameEl) nameEl.value = h.name || '';
+          if (genderEl) genderEl.value = h.gender || 'Prefer not to say';
+        }
+      });
+    }
+  }
+};
+
+// Update saveEditListing to include photos + housemates
+var _origSaveEdit = saveEditListing;
+saveEditListing = async function() {
+  // Inject photos and housemates into updates before saving
+  var origUpdate = _supabaseClient.from.bind(_supabaseClient);
+  if (_editPhotos.length > 0) {
+    var patchRes = await _supabaseClient.from('listings').update({
+      photos: _editPhotos,
+      housemates: getHmData('hmListEdit')
+    }).eq('id', _editingListingId).eq('landlord_id', currentUser.id);
+  }
+  await _origSaveEdit();
+};
+
+// ══════════════════════════════════════
+// MESSAGES INBOX
+// ══════════════════════════════════════
+var _convListingId = null;
+var _convPartnerId = null;
+
+function openMessages() {
+  hideDropdown();
+  go('s-messages');
+  loadAllConversations();
+}
+
+async function loadAllConversations() {
+  if (!_supabaseClient || !currentUser) return;
+  var listEl = document.getElementById('conversationsList');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Loading...</div>';
+
+  var res = await _supabaseClient.from('messages')
+    .select('*, listing:listings(title,photos), sender:profiles!sender_id(id,full_name,avatar_url), recipient:profiles!recipient_id(id,full_name,avatar_url)')
+    .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (res.error || !res.data || !res.data.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:12px">💬</div><p>No messages yet</p><p style="font-size:.82rem;margin-top:6px">Browse rooms and message a landlord!</p></div>';
+    return;
+  }
+
+  // Group by listing + partner
+  var convMap = {};
+  res.data.forEach(function(m) {
+    var partnerId = m.sender_id === currentUser.id ? m.recipient_id : m.sender_id;
+    var partnerProfile = m.sender_id === currentUser.id ? m.recipient : m.sender;
+    var key = (m.listing_id || 'direct') + '_' + partnerId;
+    if (!convMap[key]) {
+      convMap[key] = { lastMsg: m, partner: partnerProfile, listing: m.listing, listingId: m.listing_id, partnerId: partnerId, unread: 0 };
+    }
+    if (!m.read && m.recipient_id === currentUser.id) convMap[key].unread++;
+  });
+
+  listEl.innerHTML = Object.values(convMap).map(function(c) {
+    var p = c.partner || {};
+    var initial = (p.full_name || '?').charAt(0).toUpperCase();
+    var avatar = p.avatar_url ? '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '<span style="font-weight:700">' + initial + '</span>';
+    var roomTitle = c.listing ? c.listing.title : 'Direct message';
+    var preview = c.lastMsg.content.slice(0, 60) + (c.lastMsg.content.length > 60 ? '...' : '');
+    var time = new Date(c.lastMsg.created_at).toLocaleDateString('en-AU', {day:'numeric',month:'short'});
+    var unreadBadge = c.unread > 0 ? '<span style="background:var(--red);color:#fff;border-radius:50%;width:20px;height:20px;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + c.unread + '</span>' : '';
+    return '<div data-pid="' + c.partnerId + '" data-lid="' + (c.listingId||'') + '" onclick="openConversation(this.dataset.pid,this.dataset.lid)" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)" class="conv-item">' +
+      '<div style="width:46px;height:46px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">' + avatar + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<div style="font-weight:700;font-size:.9rem;color:var(--text)">' + (p.full_name || 'User') + '</div>' +
+      '<div style="font-size:.72rem;color:var(--muted)">' + time + '</div></div>' +
+      '<div style="font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + roomTitle + '</div>' +
+      '<div style="font-size:.8rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + preview + '</div>' +
+      '</div>' + unreadBadge + '</div>';
+  }).join('');
+}
+
+async function openConversation(partnerId, listingId) {
+  if (!partnerId) return;
+  _convPartnerId = partnerId;
+  _convListingId = listingId || null;
+  go('s-conversation');
+
+  // Load partner info
+  var pRes = await _supabaseClient.from('profiles').select('full_name, avatar_url').eq('id', partnerId).single();
+  var p = pRes.data || {};
+  var convNameEl = document.getElementById('convName');
+  var convAvatarEl = document.getElementById('convAvatar');
+  var convRoomEl = document.getElementById('convRoom');
+  if (convNameEl) convNameEl.textContent = p.full_name || 'User';
+  if (convAvatarEl) {
+    if (p.avatar_url) convAvatarEl.innerHTML = '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    else convAvatarEl.textContent = (p.full_name || '?').charAt(0).toUpperCase();
+  }
+  if (convRoomEl && listingId) {
+    var lRes = await _supabaseClient.from('listings').select('title').eq('id', listingId).single();
+    if (lRes.data) convRoomEl.textContent = '🏠 ' + lRes.data.title;
+  }
+
+  loadConversationMessages();
+}
+
+async function loadConversationMessages() {
+  if (!_supabaseClient || !currentUser || !_convPartnerId) return;
+  var msgsEl = document.getElementById('convMessages');
+  if (!msgsEl) return;
+
+  var query = _supabaseClient.from('messages')
+    .select('*')
+    .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
+    .order('created_at', { ascending: true });
+
+  if (_convListingId) query = query.eq('listing_id', _convListingId);
+
+  var res = await query;
+  if (res.error || !res.data) { msgsEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">No messages yet</div>'; return; }
+
+  // Filter to this conversation
+  var msgs = res.data.filter(function(m) {
+    return (m.sender_id === currentUser.id && m.recipient_id === _convPartnerId) ||
+           (m.sender_id === _convPartnerId && m.recipient_id === currentUser.id);
+  });
+
+  if (!msgs.length) { msgsEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px">No messages yet — say hello!</div>'; return; }
+
+  msgsEl.innerHTML = msgs.map(function(m) {
+    var isMe = m.sender_id === currentUser.id;
+    var time = new Date(m.created_at).toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
+    return '<div style="display:flex;flex-direction:' + (isMe?'row-reverse':'row') + ';align-items:flex-end;gap:8px">' +
+      '<div style="max-width:75%;padding:10px 14px;border-radius:' + (isMe?'16px 16px 4px 16px':'16px 16px 16px 4px') + ';background:' + (isMe?'var(--lime)':'var(--bg-l)') + ';color:' + (isMe?'#000':'var(--text)') + ';font-size:.88rem;line-height:1.4">' +
+      m.content + '<div style="font-size:.65rem;color:' + (isMe?'rgba(0,0,0,.5)':'var(--muted)') + ';margin-top:4px;text-align:right">' + time + '</div></div></div>';
+  }).join('');
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  // Mark as read
+  _supabaseClient.from('messages').update({ read: true }).eq('recipient_id', currentUser.id).eq('sender_id', _convPartnerId).then(function(){});
+}
+
+async function sendConvMsg() {
+  var input = document.getElementById('convInput');
+  var msg = input ? input.value.trim() : '';
+  if (!msg || !currentUser || !_convPartnerId) return;
+  input.value = '';
+  input.style.height = 'auto';
+
+  var insertData = { sender_id: currentUser.id, recipient_id: _convPartnerId, content: msg };
+  if (_convListingId) insertData.listing_id = _convListingId;
+
+  var res = await _supabaseClient.from('messages').insert(insertData);
+  if (res.error) { toast('Error: ' + res.error.message, 'error'); input.value = msg; return; }
+  loadConversationMessages();
+}
+
+// Fix the original chat modal send to use convPartnerId approach
+async function sendChatMsg() {
+  var input = document.getElementById('chatInput');
+  var msg = input ? input.value.trim() : '';
+  if (!msg || !currentUser) return;
+  if (!currentUser) { toast('Please sign in first', ''); go('s-login'); return; }
+
+  var recipientId = _chatLandlordId;
+  if (!recipientId || recipientId === currentUser.id) { toast('Cannot message yourself', ''); return; }
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  var insertData = { sender_id: currentUser.id, recipient_id: recipientId, content: msg };
+  if (_chatListingId) insertData.listing_id = _chatListingId;
+
+  var res = await _supabaseClient.from('messages').insert(insertData);
+  if (res.error) { toast('Error sending: ' + res.error.message, 'error'); input.value = msg; return; }
+
+  // Show optimistic message immediately
+  var msgsEl = document.getElementById('chatMessages');
+  if (msgsEl) {
+    var time = new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
+    var div = document.createElement('div');
+    div.style.cssText = 'display:flex;flex-direction:row-reverse;align-items:flex-end;gap:8px';
+    div.innerHTML = '<div style="max-width:75%;padding:10px 14px;border-radius:16px 16px 4px 16px;background:var(--lime);color:#000;font-size:.88rem;line-height:1.4">' + msg + '<div style="font-size:.65rem;color:rgba(0,0,0,.5);margin-top:4px;text-align:right">' + time + '</div></div>';
+    msgsEl.appendChild(div);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+}
+
+
+// ══════════════════════════════════════
+// PHOTO EDITING IN EDIT LISTING
+// ══════════════════════════════════════
+var _editPhotos = []; // current photos array
+
+function renderEditPhotoGrid() {
+  var grid = document.getElementById('editPhotoGrid');
+  if (!grid) return;
+  if (!_editPhotos.length) { grid.innerHTML = '<p style="color:var(--muted);font-size:.82rem">No photos yet</p>'; return; }
+  grid.innerHTML = _editPhotos.map(function(src, i) {
+    var isBase64 = src.startsWith('data:');
+    var preview = isBase64 ? src : src;
+    return '<div style="position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;flex-shrink:0">' +
+      '<img src="' + preview + '" style="width:100%;height:100%;object-fit:cover">' +
+      (i === 0 ? '<span style="position:absolute;bottom:2px;left:2px;background:var(--lime);color:#000;font-size:.58rem;font-weight:700;padding:1px 5px;border-radius:4px">COVER</span>' : '') +
+      '<button onclick="removeEditPhoto(' + i + ')" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(255,71,87,.9);border:none;color:#fff;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>' +
+      '</div>';
+  }).join('');
+}
+
+function removeEditPhoto(idx) {
+  _editPhotos.splice(idx, 1);
+  renderEditPhotoGrid();
+  var warn = document.getElementById('editPhotoWarn');
+  if (warn) warn.style.display = _editPhotos.length < 3 ? 'block' : 'none';
+}
+
+async function addEditPhotos(files) {
+  for (var i = 0; i < files.length && _editPhotos.length < 12; i++) {
+    var compressed = await compressPhoto(URL.createObjectURL(files[i]));
+    _editPhotos.push(compressed);
+  }
+  renderEditPhotoGrid();
+}
+
+// Override openEditListing to load photos
+var _origOpenEdit = openEditListing;
+openEditListing = async function(id) {
+  _editPhotos = [];
+  await _origOpenEdit(id);
+  // Load photos from DB
+  var res = await _supabaseClient.from('listings').select('photos').eq('id', id).single();
+  if (res.data && res.data.photos) {
+    var p = res.data.photos;
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) {} }
+    if (Array.isArray(p)) _editPhotos = p;
+  }
+  renderEditPhotoGrid();
+};
+
+// Override saveEditListing to include photos
+var _origSaveEdit = saveEditListing;
+saveEditListing = async function() {
+  // Inject photos into update
+  var _origUpdate = _supabaseClient.from;
+  await _origSaveEdit();
+};
+
+// Actually just extend saveEditListing to save photos too
+var _baseSaveEdit = saveEditListing;
+saveEditListing = async function() {
+  if (!_editingListingId || !_supabaseClient) return;
+  if (_editPhotos.length < 3) {
+    var warn = document.getElementById('editPhotoWarn');
+    if (warn) warn.style.display = 'block';
+    toast('Please add at least 3 photos', 'error');
+    return;
+  }
+  // Save photos separately  
+  await _supabaseClient.from('listings').update({ photos: _editPhotos }).eq('id', _editingListingId);
+  await _baseSaveEdit();
+};
+
+// ══════════════════════════════════════
+// HOUSEMATE MANAGEMENT IN LISTING FORM
+// ══════════════════════════════════════
+var _hmEntries = [];
+
+function addHmEntry() {
+  var idx = _hmEntries.length;
+  _hmEntries.push({ name: '', gender: 'any' });
+  renderHmList();
+}
+
+function removeHmEntry(idx) {
+  _hmEntries.splice(idx, 1);
+  renderHmList();
+}
+
+function renderHmList() {
+  var list = document.getElementById('hmAddList');
+  if (!list) return;
+  list.innerHTML = _hmEntries.map(function(hm, i) {
+    return '<div style="display:flex;gap:8px;align-items:center;padding:8px 10px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border)">' +
+      '<span style="font-size:1.2rem">' + (hm.gender === 'male' ? '👨' : hm.gender === 'female' ? '👩' : '🧑') + '</span>' +
+      '<input class="inp" style="flex:1;margin:0;padding:6px 10px" placeholder="Name (optional)" value="' + hm.name + '" oninput="_hmEntries[' + i + '].name=this.value">' +
+      '<select class="inp" style="width:120px;margin:0;padding:6px 8px;font-size:.82rem" onchange="_hmEntries[' + i + '].gender=this.value">' +
+      '<option value="any"' + (hm.gender==='any'?' selected':'') + '>🧑 Not specified</option>' +
+      '<option value="male"' + (hm.gender==='male'?' selected':'') + '>👨 Male</option>' +
+      '<option value="female"' + (hm.gender==='female'?' selected':'') + '>👩 Female</option>' +
+      '</select>' +
+      '<button onclick="removeHmEntry(' + i + ')" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer">✕</button>' +
+      '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// MESSAGES INBOX
+// ══════════════════════════════════════
+var _inboxNavSource = 's-browse';
+
+async function openInbox() {
+  hideDropdown();
+  if (!currentUser || !_supabaseClient) { toast('Please sign in', ''); return; }
+  _inboxNavSource = sessionStorage.getItem('nm-screen') || 's-browse';
+  go('s-inbox');
+  loadInbox();
+}
+
+function closeInbox() {
+  go(_inboxNavSource || 's-browse');
+}
+
+async function loadInbox() {
+  var list = document.getElementById('inboxList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Loading...</div>';
+
+  // Get all conversations (unique sender/recipient pairs)
+  var res = await _supabaseClient.from('messages')
+    .select('*, listing:listings(title, suburb), sender:profiles!sender_id(id, full_name, avatar_url), recipient:profiles!recipient_id(id, full_name, avatar_url)')
+    .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (res.error || !res.data || !res.data.length) {
+    list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:12px">💬</div><p style="font-weight:600">No messages yet</p><p style="font-size:.85rem;margin-top:6px">Messages from tenants will appear here</p></div>';
+    return;
+  }
+
+  // Group by conversation (listing_id + other_user_id)
+  var convos = {};
+  res.data.forEach(function(m) {
+    var otherId = m.sender_id === currentUser.id ? m.recipient_id : m.sender_id;
+    var key = (m.listing_id || 'general') + '_' + otherId;
+    if (!convos[key]) {
+      var other = m.sender_id === currentUser.id ? m.recipient : m.sender;
+      convos[key] = { key: key, other: other, listing: m.listing, lastMsg: m, unread: 0, otherId: otherId, listingId: m.listing_id };
+    }
+    if (!m.read && m.recipient_id === currentUser.id) convos[key].unread++;
+  });
+
+  var keys = Object.keys(convos);
+  list.innerHTML = keys.map(function(k) {
+    var c = convos[k];
+    var other = c.other || {};
+    var name = other.full_name || 'User';
+    var initial = name.charAt(0).toUpperCase();
+    var avatar = other.avatar_url
+      ? '<img src="' + other.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+      : '<span style="font-weight:700;color:#000">' + initial + '</span>';
+    var listing = c.listing ? (c.listing.title || 'Room') : 'General';
+    var time = new Date(c.lastMsg.created_at).toLocaleDateString('en-AU', {day:'numeric', month:'short'});
+    var preview = (c.lastMsg.content || '').slice(0, 60) + (c.lastMsg.content && c.lastMsg.content.length > 60 ? '...' : '');
+    var isUnread = c.unread > 0;
+
+    return '<div data-ouid="' + c.otherId + '" data-lid="' + (c.listingId||'') + '" data-oname="' + name + '" data-oav="' + (other.avatar_url||'') + '" onclick="openInboxConvo(this)" style="display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--border);cursor:pointer" class="inbox-row">' +
+      '<div style="width:46px;height:46px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">' + avatar + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<span style="font-weight:' + (isUnread?'700':'600') + ';font-size:.9rem;color:var(--text)">' + name + '</span>' +
+      '<span style="font-size:.72rem;color:var(--muted)">' + time + '</span></div>' +
+      '<div style="font-size:.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + listing + '</div>' +
+      '<div style="font-size:.82rem;color:' + (isUnread?'var(--text)':'var(--muted)') + ';font-weight:' + (isUnread?'600':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + preview + '</div>' +
+      '</div>' +
+      (isUnread ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--lime);flex-shrink:0"></div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+function openInboxConvo(el) {
+  var otherId = el.dataset.ouid;
+  var listingId = el.dataset.lid;
+  var otherName = el.dataset.oname;
+  var otherAv = el.dataset.oav;
+
+  _chatWithUserId = otherId;
+  _chatLandlordId = otherId;
+  _chatListingId = listingId || null;
+
+  var chatName = document.getElementById('chatName');
+  var chatAvatar = document.getElementById('chatAvatar');
+  if (chatName) chatName.textContent = otherName;
+  if (chatAvatar) {
+    if (otherAv) {
+      chatAvatar.innerHTML = '<img src="' + otherAv + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    } else {
+      chatAvatar.textContent = otherName.charAt(0).toUpperCase();
+    }
+  }
+
+  document.getElementById('chatModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  loadChatMessages();
+}
+
+// Check unread count and show badge
+async function checkUnreadMessages() {
+  if (!currentUser || !_supabaseClient) return;
+  var res = await _supabaseClient.from('messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('recipient_id', currentUser.id)
+    .eq('read', false);
+  var count = res.count || 0;
+  var badge = document.getElementById('dropMsgBadge');
+  if (badge) {
+    badge.style.display = count > 0 ? 'inline' : 'none';
+    badge.textContent = count;
+  }
 }
 
 </script>
