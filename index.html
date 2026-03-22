@@ -380,6 +380,12 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   .stats-row{grid-template-columns:repeat(2,1fr)}
   .form-grid{grid-template-columns:1fr}
 }
+.leaflet-container{font-family:inherit}
+.transport-pin{background:var(--blue);color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.extra-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;font-size:.82rem;font-weight:600;background:var(--bg-l);border:1px solid var(--border);color:var(--text)}
+.util-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;font-size:.82rem;font-weight:600}
+.util-included{background:rgba(0,212,170,.08);color:var(--teal);border:1px solid rgba(0,212,170,.2)}
+.util-shared{background:rgba(255,107,53,.08);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
 </style>
 </head>
 <body>
@@ -397,6 +403,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
       <span id="themeIcon">🌙</span>
     </button>
+    <button class="nbtn ol" onclick="openFavs()" title="Saved rooms" style="padding:7px 12px">❤️</button>
     <button id="adminNavBtn" style="display:none;padding:7px 14px;border-radius:50px;font-size:.78rem;font-weight:700;border:1.5px solid var(--red);color:var(--red);background:transparent;cursor:pointer" onclick="go('s-admin');admTab('pending')">⚙️ Admin</button>
     <button class="nbtn ol t" data-en="Sign In" data-pt="Entrar" onclick="go('s-login')">Sign In</button>
     <button class="nbtn prim t" data-en="Join Free" data-pt="Cadastrar" onclick="go('s-signup')">Join Free</button>
@@ -588,31 +595,71 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <span class="slabel">Reviews</span>
           <div class="revs" id="detRevs"></div>
         </div>
+
+        <!-- MAP SECTION -->
+        <div class="det-section" id="mapSection">
+          <span class="slabel">📍 Location & Transport</span>
+          <div id="detMap" style="height:280px;border-radius:14px;overflow:hidden;margin-top:10px;border:1px solid var(--border)"></div>
+          <p id="detMapAddr" style="font-size:.8rem;color:var(--muted);margin-top:8px;text-align:center"></p>
+        </div>
+
+        <!-- BATHROOM & SMOKING & PETS -->
+        <div class="det-section" id="detExtrasSection" style="display:none">
+          <span class="slabel">🏠 Room Details</span>
+          <div id="detExtras" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        </div>
+
+        <!-- UTILITIES -->
+        <div class="det-section" id="detUtilitiesSection" style="display:none">
+          <span class="slabel">⚡ What's Included</span>
+          <div id="detUtilities" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        </div>
+
       </div>
       <!-- Booking Card -->
       <div class="book-card">
         <div class="big-price" id="detPrice">AU$320 <small>/week</small></div>
         <div class="tag g" style="margin-bottom:14px" id="detAvail">Available now</div>
 
-        <!-- Duration Picker in booking card -->
-        <div class="dur-picker">
-          <label>How long?</label>
-          <div class="dur-picker-tabs">
-            <button class="dpt on" id="bk-dtab-week" onclick="setBkDurTab('week')">Weeks</button>
-            <button class="dpt" id="bk-dtab-month" onclick="setBkDurTab('month')">Months</button>
-          </div>
-          <div class="dur-picker-opts" id="bkDurOpts">
+        <!-- Stay Type Picker -->
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="dpt on" id="stay-short" onclick="setStayType('short')" style="flex:1;padding:10px;font-weight:700">🗓 Short Stay</button>
+          <button class="dpt" id="stay-long" onclick="setStayType('long')" style="flex:1;padding:10px;font-weight:700">🏡 Long Term</button>
+        </div>
+
+        <!-- Short Stay Options -->
+        <div id="shortStayOpts">
+          <label style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Duration</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px">
             <button class="dpo on" onclick="setBkDur(this,1,'week')">1 week</button>
             <button class="dpo" onclick="setBkDur(this,2,'week')">2 weeks</button>
             <button class="dpo" onclick="setBkDur(this,3,'week')">3 weeks</button>
             <button class="dpo" onclick="setBkDur(this,4,'week')">4 weeks</button>
           </div>
+          <div class="date-grid">
+            <div class="dbox"><label>Move-in</label><input type="date" id="mIn" oninput="calcPB()"></div>
+            <div class="dbox"><label>Move-out</label><input type="date" id="mOut" oninput="calcPB()" readonly style="background:var(--bg-l)"></div>
+          </div>
         </div>
 
-        <div class="date-grid">
-          <div class="dbox"><label>Move-in</label><input type="date" id="mIn" oninput="calcPB()"></div>
-          <div class="dbox"><label>Move-out</label><input type="date" id="mOut" oninput="calcPB()"></div>
+        <!-- Long Term Options -->
+        <div id="longTermOpts" style="display:none">
+          <div class="dbox" style="margin-bottom:12px">
+            <label>Preferred move-in date</label>
+            <input type="date" id="mInLong" oninput="calcPB()">
+          </div>
+          <div id="flexibleNote" style="font-size:.78rem;color:var(--teal);background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.2);border-radius:8px;padding:8px 10px;margin-bottom:12px;display:none">
+            📅 <strong>Flexible dates</strong> — landlord accepts ±3 days from this date
+          </div>
+          <label style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Minimum stay</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px">
+            <button class="dpo on" onclick="setBkDur(this,1,'month')">1 month</button>
+            <button class="dpo" onclick="setBkDur(this,3,'month')">3 months</button>
+            <button class="dpo" onclick="setBkDur(this,6,'month')">6 months</button>
+            <button class="dpo" onclick="setBkDur(this,12,'month')">12 months</button>
+          </div>
         </div>
+
         <div class="pb" id="priceBreak"></div>
         <div class="esc-note">🔒 <span>Bond held in <strong>escrow</strong> — released only after you confirm check-in.</span></div>
         <button class="btn lime full" onclick="openBooking()" style="margin-bottom:8px">Request this Room</button>
@@ -731,6 +778,17 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="si" onclick="go('s-browse')"><span class="ico">←</span>Back to Site</div>
     </div>
     <div class="ll-main" id="admMain" style="background:var(--bg)"></div>
+  </div>
+</div>
+
+<!-- ════════════ FAVORITES ════════════ -->
+<div id="s-favs" class="screen">
+  <div style="max-width:900px;margin:0 auto;padding:24px 16px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <button class="btn ol sm" onclick="go('s-browse')">← Browse</button>
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--text)">❤️ Saved Rooms</h1>
+    </div>
+    <div id="favsGrid" class="list-grid"></div>
   </div>
 </div>
 
@@ -1469,6 +1527,7 @@ var _initDone = false;
 function safeInit() {
   if (_initDone) return;
   _initDone = true;
+  loadFavs();
   initSupabase();
 }
 window.addEventListener('load', safeInit);
@@ -1710,6 +1769,41 @@ function openDetail(id) {
   document.getElementById('mOut').value = out.toISOString().split('T')[0];
   calcPB();
   go('s-detail');
+
+  // Render map for this listing
+  setTimeout(function() {
+    renderDetailMap(l.address || l.suburb, l.suburb);
+  }, 300);
+
+  // Show extras: bathroom, pets, smoking
+  var extrasEl = document.getElementById('detExtras');
+  var extrasSection = document.getElementById('detExtrasSection');
+  var extrasData = [];
+  if (l.bathroom) extrasData.push({ icon: l.bathroom === 'private' ? '🚿' : '🚽', label: l.bathroom === 'private' ? 'Private bathroom' : 'Shared bathroom', color: 'var(--teal)' });
+  if (l.pets !== undefined) extrasData.push({ icon: l.pets ? '🐾' : '🚫', label: l.pets ? 'Pets welcome' : 'No pets', color: l.pets ? 'var(--lime)' : 'var(--muted)' });
+  if (l.smoking !== undefined) extrasData.push({ icon: l.smoking ? '🚬' : '🚭', label: l.smoking ? 'Smoking allowed' : 'No smoking', color: l.smoking ? 'var(--muted)' : 'var(--red)' });
+  if (extrasEl && extrasData.length > 0) {
+    extrasEl.innerHTML = extrasData.map(function(e) { return '<span class="extra-badge"><span>' + e.icon + '</span><span style="color:' + e.color + '">' + e.label + '</span></span>'; }).join('');
+    if (extrasSection) extrasSection.style.display = 'block';
+  }
+
+  // Show utilities
+  var utilEl = document.getElementById('detUtilities');
+  var utilSection = document.getElementById('detUtilitiesSection');
+  if (utilEl && l.utilities && l.utilities.length > 0) {
+    utilEl.innerHTML = l.utilities.map(function(u) {
+      var included = u.endsWith(':included');
+      var name = u.replace(':included','').replace(':shared','');
+      var icons = { electricity:'⚡', water:'💧', internet:'📶', gas:'🔥', council:'🏛' };
+      return '<span class="util-badge ' + (included ? 'util-included' : 'util-shared') + '">' + (icons[name]||'💡') + ' ' + name.charAt(0).toUpperCase()+name.slice(1) + ' ' + (included ? '✓ included' : '(shared)') + '</span>';
+    }).join('');
+    if (utilSection) utilSection.style.display = 'block';
+  }
+
+  // Show flexible dates note for long term
+  var flexNote = document.getElementById('flexibleNote');
+  if (flexNote && l.flexibleDates) flexNote.style.display = 'block';
+
   // Show admin review card ONLY when coming from admin panel
   var adminCard = document.getElementById('adminReviewCard');
   var bookCard = document.querySelector('.book-card');
@@ -2352,6 +2446,10 @@ function saveListingDraft() {
     minWeeks: (document.getElementById('listMinWeeks')||{}).value || '4',
     maxMonths: (document.getElementById('listMaxMonths')||{}).value || '6',
     suburb: (document.getElementById('listSuburb')||{}).value || '',
+    bathroom: (document.getElementById('listBathroom')||{}).value || 'shared',
+    pets: (document.getElementById('listPets')||{}).value || 'no',
+    smoking: (document.getElementById('listSmoking')||{}).value || 'no',
+    flexDates: (document.getElementById('listFlexDates')||{}).checked || false,
     ts: Date.now()
   };
   try { localStorage.setItem('nm-listing-draft', JSON.stringify(draft)); } catch(e) {}
@@ -2374,6 +2472,14 @@ function loadListingDraft() {
       }
       var rt = document.getElementById('listRoomType');
       if (rt && draft.roomType) rt.value = draft.roomType;
+      var rb = document.getElementById('listBathroom');
+      if (rb && draft.bathroom) rb.value = draft.bathroom;
+      var rp = document.getElementById('listPets');
+      if (rp && draft.pets) rp.value = draft.pets;
+      var rs = document.getElementById('listSmoking');
+      if (rs && draft.smoking) rs.value = draft.smoking;
+      var rf = document.getElementById('listFlexDates');
+      if (rf && draft.flexDates) rf.checked = draft.flexDates;
       if (draft.title) toast('Draft restored!', 'lime');
     }, 300);
   } catch(e) {}
@@ -2519,6 +2625,11 @@ async function submitListing() {
       amenities: amenities,
       nationalities: nationalities,
       photos: photoUrls,
+      bathroom: document.getElementById('listBathroom')?.value || 'shared',
+      pets: document.getElementById('listPets')?.value === 'yes',
+      smoking: document.getElementById('listSmoking')?.value === 'yes',
+      flexible_dates: document.getElementById('listFlexDates')?.checked || false,
+      utilities: Array.from(document.querySelectorAll('[data-util]')).map(s => s.getAttribute('data-util') + ':' + s.value).filter(u => !u.endsWith(':not_included')),
       status: 'pending_review'
     }).select().single();
 
@@ -3140,6 +3251,170 @@ function removeNatEl(el) {
   var code = el.getAttribute('data-code');
   if (code) removeNat(code);
 }
+
+// ══════════════════════════════════════
+// MAP (OpenStreetMap + Leaflet)
+// ══════════════════════════════════════
+var _detailMap = null;
+
+async function renderDetailMap(address, suburb) {
+  var mapEl = document.getElementById('detMap');
+  var addrEl = document.getElementById('detMapAddr');
+  if (!mapEl) return;
+
+  // Destroy previous map instance
+  if (_detailMap) { _detailMap.remove(); _detailMap = null; }
+
+  var searchAddr = address || suburb || 'Gold Coast, QLD, Australia';
+  if (!searchAddr.includes('Australia')) searchAddr += ', Gold Coast QLD Australia';
+
+  if (addrEl) addrEl.textContent = '📍 ' + searchAddr;
+
+  try {
+    // Geocode via Nominatim (OpenStreetMap, free)
+    var resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
+    var data = await resp.json();
+
+    var lat = -28.0167, lng = 153.4000; // Gold Coast default
+    if (data && data[0]) {
+      lat = parseFloat(data[0].lat);
+      lng = parseFloat(data[0].lon);
+    }
+
+    // Create map
+    _detailMap = L.map('detMap', { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 15);
+
+    // Tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
+    }).addTo(_detailMap);
+
+    // Property marker
+    var houseIcon = L.divIcon({
+      html: '<div style="background:var(--lime);color:#000;border:2px solid #000;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.3)">🏠</div>',
+      iconSize: [34, 34],
+      iconAnchor: [17, 17],
+      className: ''
+    });
+    L.marker([lat, lng], { icon: houseIcon }).addTo(_detailMap)
+      .bindPopup('<strong>This property</strong>').openPopup();
+
+    // Fetch nearby transport via Overpass API
+    fetchNearbyTransport(lat, lng);
+
+  } catch(e) {
+    console.log('Map error:', e);
+    mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:.85rem">📍 ' + searchAddr + '</div>';
+  }
+}
+
+async function fetchNearbyTransport(lat, lng) {
+  if (!_detailMap) return;
+  try {
+    // Overpass query for bus stops and train stations within 800m
+    var radius = 800;
+    var query = '[out:json][timeout:10];(' +
+      'node["highway"="bus_stop"](around:' + radius + ',' + lat + ',' + lng + ');' +
+      'node["railway"="station"](around:' + radius + ',' + lat + ',' + lng + ');' +
+      'node["railway"="tram_stop"](around:' + radius + ',' + lat + ',' + lng + ');' +
+      'node["amenity"="ferry_terminal"](around:' + radius + ',' + lat + ',' + lng + ');' +
+      ');out body;';
+
+    var resp = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: 'data=' + encodeURIComponent(query)
+    });
+    var data = await resp.json();
+
+    var typeConfig = {
+      'bus_stop':    { emoji: '🚌', color: '#4A90D9', label: 'Bus' },
+      'station':     { emoji: '🚆', color: '#E53935', label: 'Train' },
+      'tram_stop':   { emoji: '🚊', color: '#7B1FA2', label: 'Tram' },
+      'ferry_terminal': { emoji: '⛴', color: '#0277BD', label: 'Ferry' }
+    };
+
+    (data.elements || []).slice(0, 20).forEach(function(el) {
+      var type = el.tags && (el.tags.highway || el.tags.railway || el.tags.amenity);
+      var cfg = typeConfig[type] || { emoji: '🚏', color: '#666', label: 'Stop' };
+      var name = (el.tags && (el.tags.name || el.tags['name:en'])) || cfg.label;
+
+      var icon = L.divIcon({
+        html: '<div style="background:' + cfg.color + ';color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.8rem;box-shadow:0 1px 4px rgba(0,0,0,.3)">' + cfg.emoji + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        className: ''
+      });
+      L.marker([el.lat, el.lon], { icon: icon })
+        .addTo(_detailMap)
+        .bindPopup('<strong>' + cfg.emoji + ' ' + name + '</strong><br><small>' + cfg.label + '</small>');
+    });
+  } catch(e) {
+    console.log('Transport fetch error:', e);
+  }
+}
+
+// ══════════════════════════════════════
+// SHORT / LONG TERM BOOKING
+// ══════════════════════════════════════
+var _stayType = 'short';
+
+function setStayType(type) {
+  _stayType = type;
+  document.getElementById('stay-short').classList.toggle('on', type === 'short');
+  document.getElementById('stay-long').classList.toggle('on', type === 'long');
+  var shortOpts = document.getElementById('shortStayOpts');
+  var longOpts = document.getElementById('longTermOpts');
+  if (shortOpts) shortOpts.style.display = type === 'short' ? 'block' : 'none';
+  if (longOpts) longOpts.style.display = type === 'long' ? 'block' : 'none';
+  calcPB();
+}
+
+
+// ══════════════════════════════════════
+// FAVORITES
+// ══════════════════════════════════════
+function toggleFav(id, btn) {
+  if (favs.has(id)) {
+    favs.delete(id);
+    if (btn) btn.textContent = '🤍';
+    if (btn) btn.title = 'Save';
+  } else {
+    favs.add(id);
+    if (btn) btn.textContent = '❤️';
+    if (btn) btn.title = 'Saved!';
+    toast('❤️ Saved to favourites!', 'lime');
+  }
+  try { localStorage.setItem('nm-favs', JSON.stringify([...favs])); } catch(e) {}
+  // Update all fav buttons for this listing
+  document.querySelectorAll('[data-favid="' + id + '"]').forEach(function(b) {
+    b.textContent = favs.has(id) ? '❤️' : '🤍';
+  });
+}
+
+function loadFavs() {
+  try {
+    var saved = localStorage.getItem('nm-favs');
+    if (saved) favs = new Set(JSON.parse(saved));
+  } catch(e) {}
+}
+
+function openFavs() {
+  go('s-favs');
+  var grid = document.getElementById('favsGrid');
+  if (!grid) return;
+  var all = window.CURRENT_LISTINGS || [];
+  var favList = all.filter(function(l) { return favs.has(l.id); });
+  if (favList.length === 0) {
+    grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:14px">🤍</div><p>No saved rooms yet.</p><p style="font-size:.85rem;margin-top:8px">Tap the heart on any room to save it here.</p></div>';
+  } else {
+    renderListings(favList);
+    // Move grid content to favsGrid
+    var mainGrid = document.getElementById('listGrid');
+    if (mainGrid) grid.innerHTML = mainGrid.innerHTML;
+  }
+}
+
 </script>
 </body>
 </html>
