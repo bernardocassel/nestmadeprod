@@ -405,8 +405,8 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </button>
     <button class="nbtn ol" onclick="openFavs()" title="Saved rooms" style="padding:7px 12px">❤️</button>
     <button id="adminNavBtn" style="display:none;padding:7px 14px;border-radius:50px;font-size:.78rem;font-weight:700;border:1.5px solid var(--red);color:var(--red);background:transparent;cursor:pointer" onclick="go('s-admin');admTab('pending')">⚙️ Admin</button>
-    <button class="nbtn ol t" data-en="Sign In" data-pt="Entrar" onclick="go('s-login')">Sign In</button>
-    <button class="nbtn prim t" data-en="Join Free" data-pt="Cadastrar" onclick="go('s-signup')">Join Free</button>
+    <button class="nbtn ol t" id="signInBtn" data-en="Sign In" data-pt="Entrar" onclick="go('s-login')">Sign In</button>
+    <button class="nbtn prim t" id="joinFreeBtn" data-en="Join Free" data-pt="Cadastrar" onclick="go('s-signup')">Join Free</button>
   </div>
 </nav>
 
@@ -1358,9 +1358,8 @@ async function checkSession() {
 }
 
 function onUserLoggedIn(user) {
-  const navR = document.querySelector('.nav-r');
-  const loginBtn = navR?.querySelector('.nbtn.ol');
-  const joinBtn = navR?.querySelector('.nbtn.prim');
+  const loginBtn = document.getElementById('signInBtn');
+  const joinBtn = document.getElementById('joinFreeBtn');
   const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
   if (loginBtn) loginBtn.style.display = 'none';
   if (joinBtn) {
@@ -1425,8 +1424,7 @@ function onUserLoggedIn(user) {
 }
 
 function onUserLoggedOut() {
-  const navR = document.querySelector('.nav-r');
-  const loginBtn = navR?.querySelector('.nbtn.ol');
+  const loginBtn = document.getElementById('signInBtn');
   const joinBtn = navR?.querySelector('.nbtn.prim');
   if (loginBtn) loginBtn.style.display = '';
   if (joinBtn) { joinBtn.textContent = 'Join Free'; joinBtn.onclick = () => go('s-signup'); }
