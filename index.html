@@ -759,13 +759,34 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       </div>
       <div class="fg">
         <label class="lbl">Nationality</label>
-        <select class="inp">
-          <option>🇧🇷 Brazil</option><option>🇨🇳 China</option><option>🇯🇵 Japan</option>
-          <option>🇮🇳 India</option><option>🇰🇷 South Korea</option><option>🇨🇴 Colombia</option>
-          <option>🇫🇷 France</option><option>🇩🇪 Germany</option><option>🇲🇽 Mexico</option>
-          <option>🇵🇭 Philippines</option><option>🇻🇳 Vietnam</option><option>🇹🇭 Thailand</option>
-          <option>Other</option>
+        <select class="inp" id="signupNat">
+          <option>🇦🇺 Australia</option><option>🇧🇷 Brazil</option><option>🇨🇳 China</option>
+          <option>🇯🇵 Japan</option><option>🇮🇳 India</option><option>🇰🇷 South Korea</option>
+          <option>🇨🇴 Colombia</option><option>🇫🇷 France</option><option>🇩🇪 Germany</option>
+          <option>🇲🇽 Mexico</option><option>🇵🇭 Philippines</option><option>🇻🇳 Vietnam</option>
+          <option>🇹🇭 Thailand</option><option>🇮🇹 Italy</option><option>🇪🇸 Spain</option>
+          <option>🇵🇹 Portugal</option><option>🇦🇷 Argentina</option><option>🇨🇱 Chile</option>
+          <option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option><option>Other</option>
         </select>
+      </div>
+      <div class="fg">
+        <label class="lbl">Languages you speak</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="langPicker">
+          <button type="button" class="chip on" onclick="toggleLang(this,'English')">🇦🇺 English</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'Portuguese')">🇧🇷 Portuguese</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'Spanish')">🇪🇸 Spanish</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'Mandarin')">🇨🇳 Mandarin</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'Japanese')">🇯🇵 Japanese</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'Korean')">🇰🇷 Korean</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'Hindi')">🇮🇳 Hindi</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'French')">🇫🇷 French</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'German')">🇩🇪 German</button>
+          <button type="button" class="chip" onclick="toggleLang(this,'Italian')">🇮🇹 Italian</button>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="lbl">About you <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <textarea class="inp" id="signupBio" rows="3" placeholder="Tell future housemates a bit about yourself — your lifestyle, hobbies, study/work..." style="resize:none"></textarea>
       </div>
       <button class="btn lime full" onclick="doSignup()">Create Account →</button>
       <div class="kyc-note">🪪 <span>After signup you'll verify your identity (passport + selfie) in ~5 min. Keeps everyone safe.</span></div>
@@ -822,6 +843,70 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
       <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin:20px 0 10px;color:var(--text)">📍 Address</h3>
       <div id="locFullAddr" style="font-size:.88rem;color:var(--muted);padding:12px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ TENANT PROFILE ════════════ -->
+<div id="s-profile" class="screen" style="background:var(--bg)">
+  <div style="max-width:700px;margin:0 auto;padding:0">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
+      <button class="btn ol sm" id="profileBackBtn" onclick="closeProfile()">← Back</button>
+      <div style="font-weight:700;font-size:.95rem;color:var(--text)">Tenant Profile</div>
+    </div>
+
+    <!-- Profile Header Card -->
+    <div style="padding:24px 16px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+        <div id="profileAvatar" style="width:72px;height:72px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#000;flex-shrink:0">?</div>
+        <div style="flex:1">
+          <div id="profileName" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--text)">Loading...</div>
+          <div id="profileNat" style="font-size:.85rem;color:var(--muted);margin-top:2px"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <span id="profileVerified" style="display:none;font-size:.72rem;font-weight:700;padding:3px 8px;background:rgba(0,212,170,.1);color:var(--teal);border-radius:6px">✓ Verified</span>
+            <span id="profileKYC" style="display:none;font-size:.72rem;font-weight:700;padding:3px 8px;background:rgba(200,241,53,.1);color:var(--lime);border-radius:6px">🪪 KYC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div id="profileBioSection" style="display:none">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">About</div>
+        <p id="profileBio" style="font-size:.88rem;color:var(--text);line-height:1.6;background:var(--bg-l);padding:12px;border-radius:10px;border:1px solid var(--border)"></p>
+      </div>
+    </div>
+
+    <!-- Details -->
+    <div style="padding:20px 16px;border-bottom:1px solid var(--border)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="padding:14px;background:var(--bg-l);border-radius:12px;border:1px solid var(--border)">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:4px">Role</div>
+          <div id="profileRole" style="font-weight:700;font-size:.9rem;color:var(--text)">Tenant</div>
+        </div>
+        <div style="padding:14px;background:var(--bg-l);border-radius:12px;border:1px solid var(--border)">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:4px">Member since</div>
+          <div id="profileSince" style="font-weight:700;font-size:.9rem;color:var(--text)">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Languages -->
+    <div id="profileLangsSection" style="padding:20px 16px;border-bottom:1px solid var(--border);display:none">
+      <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🗣 Languages</div>
+      <div id="profileLangs" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- Rental History -->
+    <div style="padding:20px 16px;border-bottom:1px solid var(--border)">
+      <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🏠 Rental History</div>
+      <div id="profileHistory" style="color:var(--muted);font-size:.85rem"></div>
+    </div>
+
+    <!-- Reviews -->
+    <div style="padding:20px 16px">
+      <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">⭐ Reviews from Landlords</div>
+      <div id="profileReviews" style="color:var(--muted);font-size:.85rem"></div>
     </div>
   </div>
 </div>
@@ -1395,31 +1480,48 @@ async function loginWithEmail(email, password) {
 }
 
 // CADASTRO COM EMAIL
+function toggleLang(btn, lang) {
+  btn.classList.toggle('on');
+}
+
 function doSignup() {
   const email = document.querySelector('#s-signup input[type=email]')?.value;
   const password = document.querySelector('#s-signup input[type=password]')?.value;
-  const nameInputs = document.querySelectorAll('#s-signup input[type=text]');
+  const nameInputs = document.querySelectorAll('#s-signup .form-grid input');
   const fullName = Array.from(nameInputs).map(i => i.value).filter(Boolean).join(' ');
-  const roleSelect = document.querySelector('#s-signup select:first-of-type');
-  const natSelect = document.querySelector('#s-signup select:last-of-type');
+  const roleSelect = document.getElementById('s-signup') ? document.querySelector('#s-signup select') : null;
   const role = roleSelect?.value?.includes('Student') ? 'tenant' : 'landlord';
-  const nationality = natSelect?.value || '';
-  if (!email || !password) { toast('Preencha email e senha', 'error'); return; }
-  if (password.length < 6) { toast('Senha precisa ter ao menos 6 caracteres', 'error'); return; }
-  signUpWithEmail(email, password, fullName, role, nationality);
+  const nationality = document.getElementById('signupNat')?.value || '';
+  const bio = document.getElementById('signupBio')?.value || '';
+  const languages = Array.from(document.querySelectorAll('#langPicker .chip.on')).map(b => b.textContent.trim().split(' ').slice(1).join(' ') || b.textContent.trim());
+  if (!email || !password) { toast('Please fill email and password', 'error'); return; }
+  if (password.length < 6) { toast('Password must be at least 6 characters', 'error'); return; }
+  signUpWithEmail(email, password, fullName, role, nationality, bio, languages);
 }
 
-async function signUpWithEmail(email, password, fullName, role, nationality) {
-  if (!_supabaseClient) { toast('⏳ Aguarde, conectando...', ''); setTimeout(initSupabase, 100); return; }
+async function signUpWithEmail(email, password, fullName, role, nationality, bio, languages) {
+  if (!_supabaseClient) { toast('⏳ Connecting...', ''); setTimeout(initSupabase, 100); return; }
   const { data, error } = await _supabaseClient.auth.signUp({
     email, password,
     options: {
-      data: { full_name: fullName, role, nationality },
+      data: { full_name: fullName, role, nationality, bio: bio||'', languages: languages||[] },
       emailRedirectTo: window.NESTMATE_CONFIG.APP_URL
     }
   });
-  if (error) { toast('Erro: ' + error.message, 'error'); return; }
-  toast('✅ Conta criada! Verifique seu email para confirmar.', 'lime');
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  // Also save to profiles table
+  if (data?.user) {
+    await _supabaseClient.from('profiles').upsert({
+      id: data.user.id,
+      email: email,
+      full_name: fullName,
+      role: role,
+      nationality: nationality,
+      bio: bio || '',
+      languages: languages || [],
+    });
+  }
+  toast('✅ Account created! Check your email to confirm.', 'lime');
   go('s-browse');
 }
 
@@ -2239,7 +2341,7 @@ async function renderApplications(m) {
       return `<div class="app-card">
         <div class="app-av" style="background:rgba(200,241,53,.15);color:var(--lime)">${initial}</div>
         <div class="app-info">
-          <h4>${name} <span style="font-size:.68rem;background:rgba(0,212,170,.1);color:var(--teal);padding:2px 7px;border-radius:6px;font-weight:600">🪪 Verified</span></h4>
+          <h4>${name} <span style="font-size:.68rem;background:rgba(0,212,170,.1);color:var(--teal);padding:2px 7px;border-radius:6px;font-weight:600">🪪 Verified</span> <button class="btn ol sm" style="font-size:.7rem;padding:3px 8px;margin-left:4px" data-uid="${b.tenant_id||''}" onclick="openProfile(this.dataset.uid)">👤 Profile</button></h4>
           <p>${listing.title || ''} · ${b.move_in_date} → ${b.move_out_date} · AU$${b.total_amount}</p>
            ${b.tenant_message ? '<p style="margin-top:5px;font-style:italic;color:var(--muted)">"' + b.tenant_message + '"</p>' : ''}
         </div>
@@ -3594,6 +3696,135 @@ async function renderLocationPageMap(address, suburb) {
     if (mapEl) mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">📍 '+searchAddr+'</div>';
   }
 }
+
+// ══════════════════════════════════════
+// TENANT PROFILE
+// ══════════════════════════════════════
+var _profileNavSource = 's-browse';
+
+async function openProfile(userId) {
+  if (!userId || !_supabaseClient) return;
+  _profileNavSource = sessionStorage.getItem('nm-screen') || 's-browse';
+  go('s-profile');
+
+  // Reset
+  document.getElementById('profileName').textContent = 'Loading...';
+  document.getElementById('profileBioSection').style.display = 'none';
+  document.getElementById('profileLangsSection').style.display = 'none';
+  document.getElementById('profileHistory').innerHTML = '<div style="color:var(--muted);font-size:.85rem">Loading...</div>';
+
+  try {
+    // Load profile
+    var res = await _supabaseClient.from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (res.error || !res.data) {
+      document.getElementById('profileName').textContent = 'Profile not found';
+      return;
+    }
+
+    var p = res.data;
+
+    // Avatar - initials
+    var initials = (p.full_name || 'U').split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
+    var avatarEl = document.getElementById('profileAvatar');
+    if (p.avatar_url) {
+      avatarEl.innerHTML = '<img src="' + p.avatar_url + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover">';
+    } else {
+      avatarEl.textContent = initials;
+    }
+
+    // Name & nationality
+    document.getElementById('profileName').textContent = p.full_name || 'Anonymous';
+    document.getElementById('profileNat').textContent = p.nationality || '';
+
+    // Role
+    var roleMap = { tenant: '🎓 Student (Tenant)', landlord: '🏠 Landlord', both: '🎓🏠 Tenant & Landlord' };
+    document.getElementById('profileRole').textContent = roleMap[p.role] || p.role || 'Tenant';
+
+    // Member since
+    if (p.created_at) {
+      var d = new Date(p.created_at);
+      document.getElementById('profileSince').textContent = d.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+    }
+
+    // Verified badges
+    if (p.email_verified) document.getElementById('profileVerified').style.display = 'inline';
+    if (p.kyc_verified) document.getElementById('profileKYC').style.display = 'inline';
+
+    // Bio
+    if (p.bio) {
+      document.getElementById('profileBio').textContent = p.bio;
+      document.getElementById('profileBioSection').style.display = 'block';
+    }
+
+    // Languages
+    var langs = p.languages || [];
+    if (typeof langs === 'string') { try { langs = JSON.parse(langs); } catch(e) { langs = []; } }
+    if (langs.length > 0) {
+      var langEmojis = { English:'🇦🇺', Portuguese:'🇧🇷', Spanish:'🇪🇸', Mandarin:'🇨🇳', Japanese:'🇯🇵', Korean:'🇰🇷', Hindi:'🇮🇳', French:'🇫🇷', German:'🇩🇪', Italian:'🇮🇹' };
+      document.getElementById('profileLangs').innerHTML = langs.map(function(l) {
+        return '<span style="padding:6px 12px;background:var(--bg-l);border:1px solid var(--border);border-radius:20px;font-size:.82rem;font-weight:600">' + (langEmojis[l]||'🗣') + ' ' + l + '</span>';
+      }).join('');
+      document.getElementById('profileLangsSection').style.display = 'block';
+    }
+
+    // Rental history
+    var histRes = await _supabaseClient.from('bookings')
+      .select('*, listings(title, suburb)')
+      .eq('tenant_id', userId)
+      .in('status', ['checked_out', 'checked_in', 'paid', 'signed'])
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    var histEl = document.getElementById('profileHistory');
+    if (histRes.data && histRes.data.length > 0) {
+      histEl.innerHTML = histRes.data.map(function(b) {
+        var title = (b.listings && b.listings.title) || 'Room';
+        var suburb = (b.listings && b.listings.suburb) || 'Gold Coast';
+        var statusMap = { checked_out:'Completed', checked_in:'Active', paid:'Confirmed', signed:'Signed' };
+        var st = statusMap[b.status] || b.status;
+        return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">' +
+          '<span style="font-size:1.2rem">🏠</span>' +
+          '<div style="flex:1"><div style="font-weight:600;font-size:.88rem">' + title + '</div><div style="font-size:.76rem;color:var(--muted)">' + suburb + ' &middot; ' + (b.move_in_date||'') + '</div></div>' +
+          '<span style="font-size:.76rem;font-weight:700;color:var(--teal)">' + st + '</span></div>';
+      }).join('');
+    } else {
+      histEl.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No rental history yet.</p>';
+    }
+
+    // Reviews from landlords
+    var revRes = await _supabaseClient.from('reviews')
+      .select('*, profiles!reviewer_id(full_name)')
+      .eq('subject_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    var revEl = document.getElementById('profileReviews');
+    if (revRes.data && revRes.data.length > 0) {
+      revEl.innerHTML = revRes.data.map(function(r) {
+        var stars = '⭐'.repeat(Math.min(5, r.rating||5));
+        var reviewer = (r.profiles && r.profiles.full_name) || 'Landlord';
+        return '<div style="padding:12px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:600;font-size:.85rem">' + reviewer + '</span><span>' + stars + '</span></div>' +
+          '<p style="font-size:.84rem;color:var(--muted);line-height:1.5">' + (r.comment||'') + '</p></div>';
+      }).join('');
+    } else {
+      revEl.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No reviews yet.</p>';
+    }
+
+  } catch(e) {
+    console.error('Profile load error:', e);
+    document.getElementById('profileName').textContent = 'Error loading profile';
+  }
+}
+
+function closeProfile() {
+  go(_profileNavSource || 's-browse');
+}
+
 </script>
 </body>
 </html>
