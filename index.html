@@ -830,10 +830,15 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </div>
 
     <!-- Photo strip -->
-    <div id="locPagePhotos" style="display:flex;gap:3px;height:210px;overflow:hidden;background:var(--bg-l)"></div>
+    <div id="locPagePhotos" style="display:flex;gap:3px;height:200px;overflow:hidden;border-bottom:3px solid var(--bg)"></div>
+
+    <!-- Map header -->
+    <div style="padding:14px 16px 0;background:var(--bg)">
+      <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📍 Location on Map</div>
+    </div>
 
     <!-- Full map -->
-    <div id="locPageMap" style="height:420px;width:100%;min-height:420px;background:var(--bg-l)"></div>
+    <div id="locPageMap" style="height:400px;width:100%;min-height:400px;background:var(--bg-l);border-top:1px solid var(--border);border-bottom:1px solid var(--border)"></div>
 
     <!-- Transport & Address -->
     <div style="padding:20px;background:var(--bg)">
@@ -920,6 +925,15 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </div>
     <div id="favsGrid" class="list-grid"></div>
   </div>
+</div>
+
+<!-- ════════════ LIGHTBOX ════════════ -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center" onclick="closeLightbox()">
+  <button onclick="closeLightbox()" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;z-index:10">✕</button>
+  <button onclick="lightboxPrev(event)" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.8rem;cursor:pointer;width:48px;height:48px;border-radius:50%;z-index:10">‹</button>
+  <button onclick="lightboxNext(event)" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.8rem;cursor:pointer;width:48px;height:48px;border-radius:50%;z-index:10">›</button>
+  <img id="lightboxImg" src="" style="max-width:92vw;max-height:85vh;object-fit:contain;border-radius:8px" onclick="event.stopPropagation()">
+  <div id="lightboxCounter" style="color:rgba(255,255,255,.7);font-size:.85rem;margin-top:12px"></div>
 </div>
 
 <!-- ════════════ BOOKING MODAL ════════════ -->
@@ -1883,9 +1897,10 @@ function openDetail(id) {
   // Gallery
   const mainImg = l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500';
   const subImgs = l.imgs && l.imgs.length > 1 ? l.imgs.slice(1,5) : [];
+  const allImgs = l.imgs || [];
   document.getElementById('detGallery').innerHTML = `
-    <div class="main-img"><img src="${mainImg}" alt="${l.title}"><span class="gallery-count">📷 ${(l.imgs||[]).length} photos</span></div>
-    ${subImgs.map(u => '<div class="sub-img"><img src="' + u + '" alt=""></div>').join('')}`;
+    <div class="main-img" onclick="openLightbox(allImgs,0)" style="cursor:zoom-in"><img src="${mainImg}" alt="${l.title}" style="pointer-events:none"><span class="gallery-count" style="pointer-events:none">📷 ${(l.imgs||[]).length} photos — click to expand</span></div>
+    ${subImgs.map((u,i) => '<div class="sub-img" onclick="openLightbox(allImgs,' + (i+1) + ')" style="cursor:zoom-in"><img src="' + u + '" alt="" style="pointer-events:none"></div>').join('')}`;
   // Meta
   document.getElementById('detMeta').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
@@ -3634,8 +3649,9 @@ function openLocationPage() {
   // Photo strip
   var photoStrip = document.getElementById('locPagePhotos');
   if (photoStrip && CUR.imgs && CUR.imgs.length > 0) {
-    photoStrip.innerHTML = CUR.imgs.slice(0, 5).map(function(src) {
-      return '<img src="' + src + '" style="flex:1;min-width:0;object-fit:cover;height:100%;cursor:pointer" onclick="closeLocationPage()">';
+    var locImgs = CUR.imgs.slice(0, 5);
+    photoStrip.innerHTML = locImgs.map(function(src, i) {
+      return '<img src="' + src + '" style="flex:1;min-width:0;object-fit:cover;height:100%;cursor:zoom-in" onclick="openLightbox(CUR.imgs,' + i + ')">';
     }).join('');
   } else if (photoStrip) {
     photoStrip.style.display = 'none';
@@ -3834,6 +3850,53 @@ async function openProfile(userId) {
 function closeProfile() {
   go(_profileNavSource || 's-browse');
 }
+
+
+// ══════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════
+var _lbImgs = [];
+var _lbIdx = 0;
+
+function openLightbox(imgs, idx) {
+  _lbImgs = imgs;
+  _lbIdx = idx || 0;
+  var lb = document.getElementById('lightbox');
+  lb.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  updateLightbox();
+}
+
+function updateLightbox() {
+  document.getElementById('lightboxImg').src = _lbImgs[_lbIdx];
+  document.getElementById('lightboxCounter').textContent = (_lbIdx + 1) + ' / ' + _lbImgs.length;
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function lightboxPrev(e) {
+  e.stopPropagation();
+  _lbIdx = (_lbIdx - 1 + _lbImgs.length) % _lbImgs.length;
+  updateLightbox();
+}
+
+function lightboxNext(e) {
+  e.stopPropagation();
+  _lbIdx = (_lbIdx + 1) % _lbImgs.length;
+  updateLightbox();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  var lb = document.getElementById('lightbox');
+  if (!lb || lb.style.display === 'none') return;
+  if (e.key === 'ArrowLeft') lightboxPrev(e);
+  if (e.key === 'ArrowRight') lightboxNext(e);
+  if (e.key === 'Escape') closeLightbox();
+});
 
 </script>
 </body>
