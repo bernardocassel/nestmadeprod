@@ -3279,6 +3279,7 @@ async function admPreview(id) {
   var existing = window.CURRENT_LISTINGS.findIndex(function(x) { return x.id === id; });
   if (existing >= 0) window.CURRENT_LISTINGS[existing] = mapped;
   else window.CURRENT_LISTINGS.push(mapped);
+  detailNavSource = 's-admin';
   openDetail(id);
 }
 
@@ -3307,98 +3308,41 @@ var _detailMap = null;
 
 async function renderMiniMap(address, suburb) {
   var miniEl = document.getElementById('locMiniMap');
-  if (!miniEl || typeof L === 'undefined') return;
-  
-  // Clear previous
-  miniEl.innerHTML = '';
-  miniEl.style.display = 'block';
-  
+  if (!miniEl) return;
   var searchAddr = (address || suburb || 'Gold Coast') + ', Gold Coast QLD Australia';
-  
   try {
-    var resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
-    var data = await resp.json();
+    var r = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
+    var d = await r.json();
     var lat = -28.0167, lng = 153.4000;
-    if (data && data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
-
-    // Create mini map (non-interactive)
-    var miniMap = L.map('locMiniMap', { 
-      zoomControl: false, 
-      scrollWheelZoom: false, 
-      dragging: false,
-      touchZoom: false,
-      doubleClickZoom: false,
-      attributionControl: false
-    }).setView([lat, lng], 15);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
-    
-    var icon = L.divIcon({
-      html: '<div style="background:var(--lime);color:#000;border:2px solid #000;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900">🏠</div>',
-      iconSize: [28,28], iconAnchor: [14,14], className: ''
-    });
-    L.marker([lat, lng], { icon: icon }).addTo(miniMap);
-    
-    // Update address text
-    var locAddr = document.getElementById('locWidgetAddr');
-    if (locAddr) locAddr.textContent = address || (suburb + ', Gold Coast QLD');
-    
+    if (d && d[0]) { lat = parseFloat(d[0].lat); lng = parseFloat(d[0].lon); }
+    var bbox = (lng-0.008)+','+(lat-0.005)+','+(lng+0.008)+','+(lat+0.005);
+    miniEl.innerHTML = '<iframe width="100%" height="100%" style="border:0" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&layer=mapnik&marker='+lat+','+lng+'" sandbox="allow-scripts allow-same-origin"></iframe>';
+    var la = document.getElementById('locWidgetAddr');
+    if (la) la.textContent = address || (suburb + ', Gold Coast QLD');
   } catch(e) {
-    if (miniEl) miniEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;gap:6px;color:var(--muted)">📍 ' + (address || suburb || 'Gold Coast') + '</div>';
+    miniEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">Loading map...</div>';
   }
 }
+
 
 async function renderDetailMap(address, suburb) {
   var mapEl = document.getElementById('detMap');
   var addrEl = document.getElementById('detMapAddr');
   if (!mapEl) return;
-
-  // Destroy previous map instance
-  if (_detailMap) { _detailMap.remove(); _detailMap = null; }
-
-  var searchAddr = address || suburb || 'Gold Coast, QLD, Australia';
-  if (!searchAddr.includes('Australia')) searchAddr += ', Gold Coast QLD Australia';
-
-  if (addrEl) addrEl.textContent = '📍 ' + searchAddr;
-
+  var searchAddr = (address || suburb || 'Gold Coast') + ', Gold Coast QLD Australia';
+  if (addrEl) addrEl.textContent = '📍 ' + (address || suburb || 'Gold Coast QLD');
   try {
-    // Geocode via Nominatim (OpenStreetMap, free)
-    var resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
-    var data = await resp.json();
-
-    var lat = -28.0167, lng = 153.4000; // Gold Coast default
-    if (data && data[0]) {
-      lat = parseFloat(data[0].lat);
-      lng = parseFloat(data[0].lon);
-    }
-
-    // Create map
-    _detailMap = L.map('detMap', { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 15);
-
-    // Tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-      maxZoom: 19
-    }).addTo(_detailMap);
-
-    // Property marker
-    var houseIcon = L.divIcon({
-      html: '<div style="background:var(--lime);color:#000;border:2px solid #000;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.3)">🏠</div>',
-      iconSize: [34, 34],
-      iconAnchor: [17, 17],
-      className: ''
-    });
-    L.marker([lat, lng], { icon: houseIcon }).addTo(_detailMap)
-      .bindPopup('<strong>This property</strong>').openPopup();
-
-    // Fetch nearby transport via Overpass API
-    fetchNearbyTransport(lat, lng);
-
+    var r = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
+    var d = await r.json();
+    var lat = -28.0167, lng = 153.4000;
+    if (d && d[0]) { lat = parseFloat(d[0].lat); lng = parseFloat(d[0].lon); }
+    var bbox = (lng-0.008)+','+(lat-0.005)+','+(lng+0.008)+','+(lat+0.005);
+    mapEl.innerHTML = '<iframe width="100%" height="100%" style="border:0;border-radius:14px" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&layer=mapnik&marker='+lat+','+lng+'" sandbox="allow-scripts allow-same-origin"></iframe>';
   } catch(e) {
-    console.log('Map error:', e);
-    mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:.85rem">📍 ' + searchAddr + '</div>';
+    if (mapEl) mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">📍 ' + (address||suburb) + '</div>';
   }
 }
+
 
 async function fetchNearbyTransport(lat, lng) {
   if (!_detailMap) return;
@@ -3557,82 +3501,49 @@ function closeLocationPage() {
 async function renderLocationPageMap(address, suburb) {
   var mapEl = document.getElementById('locPageMap');
   var transportList = document.getElementById('locTransportList');
-  if (!mapEl || typeof L === 'undefined') return;
+  if (!mapEl) return;
 
-  // Destroy previous
-  if (_locMap) { _locMap.remove(); _locMap = null; }
-
-  var searchAddr = address || suburb || 'Gold Coast QLD Australia';
-  if (!searchAddr.includes('Australia')) searchAddr += ', Gold Coast QLD Australia';
+  var searchAddr = (address || suburb || 'Gold Coast') + ', Gold Coast QLD Australia';
+  mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">Loading map...</div>';
 
   try {
-    var resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
-    var data = await resp.json();
-
+    var r = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
+    var d = await r.json();
     var lat = -28.0167, lng = 153.4000;
-    if (data && data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
+    if (d && d[0]) { lat = parseFloat(d[0].lat); lng = parseFloat(d[0].lon); }
 
-    _locMap = L.map('locPageMap', { zoomControl: true, scrollWheelZoom: true }).setView([lat, lng], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom: 19
-    }).addTo(_locMap);
-    setTimeout(function() { if (_locMap) _locMap.invalidateSize(); }, 200);
+    var bbox = (lng-0.015)+','+(lat-0.010)+','+(lng+0.015)+','+(lat+0.010);
+    mapEl.innerHTML = '<iframe width="100%" height="100%" style="border:0" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&layer=mapnik&marker='+lat+','+lng+'" sandbox="allow-scripts allow-same-origin" allowfullscreen></iframe>';
 
-    // Property marker
-    var houseIcon = L.divIcon({
-      html: '<div style="background:var(--lime);color:#000;border:3px solid #000;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.4)">🏠</div>',
-      iconSize: [38, 38], iconAnchor: [19, 19], className: ''
-    });
-    L.marker([lat, lng], { icon: houseIcon }).addTo(_locMap)
-      .bindPopup('<strong>' + (CUR ? CUR.title : 'Property') + '</strong>').openPopup();
+    // Fetch nearby transport
+    var query = '[out:json][timeout:15];(node["highway"="bus_stop"](around:800,'+lat+','+lng+');node["railway"="station"](around:800,'+lat+','+lng+');node["railway"="tram_stop"](around:800,'+lat+','+lng+');node["amenity"="ferry_terminal"](around:800,'+lat+','+lng+'););out body;';
+    var tr = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:'data='+encodeURIComponent(query)});
+    var td = await tr.json();
 
-    // Fetch transport
     var typeConfig = {
-      'bus_stop':    { emoji: '🚌', color: '#4A90D9', label: 'Bus stop' },
-      'station':     { emoji: '🚆', color: '#E53935', label: 'Train station' },
-      'tram_stop':   { emoji: '🚊', color: '#7B1FA2', label: 'Tram stop' },
-      'ferry_terminal': { emoji: '⛴', color: '#0277BD', label: 'Ferry terminal' }
+      'bus_stop':       {emoji:'🚌', label:'Bus stop'},
+      'station':        {emoji:'🚆', label:'Train station'},
+      'tram_stop':      {emoji:'🚊', label:'Tram stop'},
+      'ferry_terminal': {emoji:'⛴',  label:'Ferry terminal'}
     };
-
-    var query = '[out:json][timeout:15];(node["highway"="bus_stop"](around:800,' + lat + ',' + lng + ');node["railway"="station"](around:800,' + lat + ',' + lng + ');node["railway"="tram_stop"](around:800,' + lat + ',' + lng + ');node["amenity"="ferry_terminal"](around:800,' + lat + ',' + lng + '););out body;';
-    var tresp = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(query) });
-    var tdata = await tresp.json();
-
-    var transportItems = {};
-    (tdata.elements || []).forEach(function(el) {
-      var type = el.tags && (el.tags.highway || el.tags.railway || el.tags.amenity);
-      var cfg = typeConfig[type] || { emoji: '🚏', color: '#666', label: 'Stop' };
-      var name = (el.tags && (el.tags.name || el.tags['name:en'])) || cfg.label;
-
-      var icon = L.divIcon({
-        html: '<div style="background:' + cfg.color + ';color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.85rem;box-shadow:0 2px 6px rgba(0,0,0,.3)">' + cfg.emoji + '</div>',
-        iconSize: [28, 28], iconAnchor: [14, 14], className: ''
-      });
-      L.marker([el.lat, el.lon], { icon: icon }).addTo(_locMap)
-        .bindPopup('<strong>' + cfg.emoji + ' ' + name + '</strong><br><small>' + cfg.label + '</small>');
-
-      if (!transportItems[type]) transportItems[type] = { cfg: cfg, count: 0 };
-      transportItems[type].count++;
+    var counts = {};
+    (td.elements||[]).forEach(function(el) {
+      var t = el.tags && (el.tags.highway || el.tags.railway || el.tags.amenity);
+      if (t && typeConfig[t]) counts[t] = (counts[t]||0) + 1;
     });
-
-    // Render transport list
     if (transportList) {
-      var items = Object.values(transportItems);
-      if (items.length > 0) {
-        transportList.innerHTML = items.map(function(t) {
-          return '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg-l);border:1px solid var(--border);border-radius:20px;font-size:.82rem;font-weight:600">' +
-            t.cfg.emoji + ' ' + t.count + ' ' + t.cfg.label + (t.count > 1 ? 's' : '') + '</span>';
+      var keys = Object.keys(counts);
+      if (keys.length > 0) {
+        transportList.innerHTML = keys.map(function(k) {
+          return '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg-l);border:1px solid var(--border);border-radius:20px;font-size:.82rem;font-weight:600">'+typeConfig[k].emoji+' '+counts[k]+' '+typeConfig[k].label+(counts[k]>1?'s':'')+'</span>';
         }).join('');
       } else {
         transportList.innerHTML = '<span style="color:var(--muted);font-size:.85rem">No public transport found within 800m</span>';
       }
     }
   } catch(e) {
-    console.log('Location map error:', e);
-    if (mapEl) mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">📍 ' + searchAddr + '</div>';
+    if (mapEl) mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">📍 '+searchAddr+'</div>';
   }
 }
 
-</script>
-</body>
-</html>
+>
