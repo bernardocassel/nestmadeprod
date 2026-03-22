@@ -631,10 +631,10 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <div id="shortStayOpts" style="display:none">
           <label style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Duration</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px">
-            <button class="dpo on" onclick="setBkDur(this,1,'week')">1 week</button>
-            <button class="dpo" onclick="setBkDur(this,2,'week')">2 weeks</button>
-            <button class="dpo" onclick="setBkDur(this,3,'week')">3 weeks</button>
-            <button class="dpo" onclick="setBkDur(this,4,'week')">4 weeks</button>
+            <button class="dpo on" onclick="setBkDurSingle(this,1,'week')">1 week</button>
+            <button class="dpo" onclick="setBkDurSingle(this,2,'week')">2 weeks</button>
+            <button class="dpo" onclick="setBkDurSingle(this,3,'week')">3 weeks</button>
+            <button class="dpo" onclick="setBkDurSingle(this,4,'week')">4 weeks</button>
           </div>
           <div class="date-grid">
             <div class="dbox"><label>Move-in</label><input type="date" id="mIn" oninput="calcPB()"></div>
@@ -653,10 +653,10 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           </div>
           <label style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Minimum stay</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px">
-            <button class="dpo on" onclick="setBkDur(this,1,'month')">1 month</button>
-            <button class="dpo" onclick="setBkDur(this,3,'month')">3 months</button>
-            <button class="dpo" onclick="setBkDur(this,6,'month')">6 months</button>
-            <button class="dpo" onclick="setBkDur(this,12,'month')">12 months</button>
+            <button class="dpo on" onclick="setBkDurSingle(this,1,'month')">1 month</button>
+            <button class="dpo" onclick="setBkDurSingle(this,3,'month')">3 months</button>
+            <button class="dpo" onclick="setBkDurSingle(this,6,'month')">6 months</button>
+            <button class="dpo" onclick="setBkDurSingle(this,12,'month')">12 months</button>
           </div>
         </div>
 
@@ -1750,20 +1750,20 @@ function setBkDurTab(mode) {
   const opts = document.getElementById('bkDurOpts');
   if (mode === 'week') {
     opts.innerHTML = `
-      <button class="dpo on" onclick="setBkDur(this,1,'week')">1 week</button>
-      <button class="dpo" onclick="setBkDur(this,2,'week')">2 weeks</button>
-      <button class="dpo" onclick="setBkDur(this,3,'week')">3 weeks</button>
-      <button class="dpo" onclick="setBkDur(this,4,'week')">4 weeks</button>`;
-    setBkDur(opts.querySelector('.dpo.on'), 1, 'week');
+      <button class="dpo on" onclick="setBkDurSingle(this,1,'week')">1 week</button>
+      <button class="dpo" onclick="setBkDurSingle(this,2,'week')">2 weeks</button>
+      <button class="dpo" onclick="setBkDurSingle(this,3,'week')">3 weeks</button>
+      <button class="dpo" onclick="setBkDurSingle(this,4,'week')">4 weeks</button>`;
+    setBkDurSingle(opts.querySelector('.dpo.on'), 1, 'week');
   } else {
     opts.innerHTML = `
-      <button class="dpo on" onclick="setBkDur(this,1,'month')">1 month</button>
-      <button class="dpo" onclick="setBkDur(this,2,'month')">2 months</button>
-      <button class="dpo" onclick="setBkDur(this,3,'month')">3 months</button>
-      <button class="dpo" onclick="setBkDur(this,4,'month')">4 months</button>
-      <button class="dpo" onclick="setBkDur(this,5,'month')">5 months</button>
-      <button class="dpo" onclick="setBkDur(this,6,'month')">6 months</button>`;
-    setBkDur(opts.querySelector('.dpo.on'), 1, 'month');
+      <button class="dpo on" onclick="setBkDurSingle(this,1,'month')">1 month</button>
+      <button class="dpo" onclick="setBkDurSingle(this,2,'month')">2 months</button>
+      <button class="dpo" onclick="setBkDurSingle(this,3,'month')">3 months</button>
+      <button class="dpo" onclick="setBkDurSingle(this,4,'month')">4 months</button>
+      <button class="dpo" onclick="setBkDurSingle(this,5,'month')">5 months</button>
+      <button class="dpo" onclick="setBkDurSingle(this,6,'month')">6 months</button>`;
+    setBkDurSingle(opts.querySelector('.dpo.on'), 1, 'month');
   }
 }
 
