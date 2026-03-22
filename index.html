@@ -1898,9 +1898,10 @@ function openDetail(id) {
   const mainImg = l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500';
   const subImgs = l.imgs && l.imgs.length > 1 ? l.imgs.slice(1,5) : [];
   const allImgs = l.imgs || [];
+  window._curImgs = allImgs; // Store globally for lightbox
   document.getElementById('detGallery').innerHTML = `
-    <div class="main-img" onclick="openLightbox(allImgs,0)" style="cursor:zoom-in"><img src="${mainImg}" alt="${l.title}" style="pointer-events:none"><span class="gallery-count" style="pointer-events:none">📷 ${(l.imgs||[]).length} photos — click to expand</span></div>
-    ${subImgs.map((u,i) => '<div class="sub-img" onclick="openLightbox(allImgs,' + (i+1) + ')" style="cursor:zoom-in"><img src="' + u + '" alt="" style="pointer-events:none"></div>').join('')}`;
+    <div class="main-img" onclick="openLightbox(window._curImgs,0)" style="cursor:zoom-in"><img src="${mainImg}" alt="${l.title}" style="pointer-events:none"><span class="gallery-count" style="pointer-events:none">📷 ${(l.imgs||[]).length} photos — click to expand</span></div>
+    ${subImgs.map((u,i) => '<div class="sub-img" onclick="openLightbox(window._curImgs,' + (i+1) + ')" style="cursor:zoom-in"><img src="' + u + '" alt="" style="pointer-events:none"></div>').join('')}`;
   // Meta
   document.getElementById('detMeta').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
