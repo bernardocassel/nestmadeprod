@@ -574,7 +574,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <div class="det-gallery" id="detGallery"></div>
     <div class="det-layout">
       <div>
-        <div id="detMeta"></div>
+        <div id="detMeta" style="position:relative"></div>
         <div class="det-section">
           <span class="slabel">About this room</span>
           <p id="detDesc" style="color:var(--muted);font-size:.9rem;line-height:1.75"></p>
@@ -1902,7 +1902,8 @@ function openDetail(id) {
       <span style="color:var(--gold)">★ ${l.rating}</span>
       <span style="color:var(--muted)">(${l.reviews} reviews)</span>
       ${l.nats.length ? '<span>👥 ' + (l.nats.length + 1) + ' housemates</span>' : '<span style="color:var(--teal)">🔑 Private — no housemates</span>'}
-    </div>`;
+    </div>
+    <button data-favid="${l.id}" onclick="toggleFav(this.dataset.favid,this)" style="position:absolute;top:12px;right:16px;width:42px;height:42px;border-radius:50%;background:var(--bg-m);border:1px solid var(--border);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.1)" title="${favs.has(l.id)?'Saved':'Save to favourites'}">${favs.has(l.id)?'❤️':'🤍'}</button>`;
   document.getElementById('detPrice').innerHTML = `AU$${l.price} <small>/week</small>`;
   document.getElementById('detAvail').textContent = `📅 ${l.avail}`;
   document.getElementById('detDesc').textContent = l.desc;
@@ -3577,6 +3578,17 @@ function loadFavs() {
 
 function openFavs() {
   go('s-favs');
+  var grid = document.getElementById('favsGrid');
+  if (!grid) return;
+  if (!window.CURRENT_LISTINGS || !window.CURRENT_LISTINGS.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">&#128337; Loading...</div>';
+    loadListingsFromDB().then(function() { renderFavsGrid(); });
+    return;
+  }
+  renderFavsGrid();
+}
+
+function renderFavsGrid() {
   var grid = document.getElementById('favsGrid');
   if (!grid) return;
   var all = window.CURRENT_LISTINGS || [];
