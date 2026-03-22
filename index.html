@@ -1814,6 +1814,7 @@ function openDetail(id) {
   const mOutEl = document.getElementById('mOut');
   if (mInEl) mInEl.value = today.toISOString().split('T')[0];
   if (mOutEl) mOutEl.value = out.toISOString().split('T')[0];
+  setStayType('long');
   calcPB();
   go('s-detail');
 
@@ -1879,21 +1880,34 @@ function openDetail(id) {
 
 function calcPB() {
   if (!CUR) return;
-  const mIn = new Date(document.getElementById('mIn').value||new Date());
-  const mOut = new Date(document.getElementById('mOut').value||new Date());
-  const weeks = Math.max(1, Math.round((mOut - mIn)/(7*24*60*60*1000)));
-  const rent = CUR.price * weeks;
-  const total = rent + CUR.bond + CUR.fee;
-  document.getElementById('priceBreak').innerHTML = `
-    <div class="pbr"><span>AU$${CUR.price}/wk × ${weeks} weeks</span><span>AU$${rent}</span></div>
-    <div class="pbr"><span>🔒 Bond (escrow)</span><span>AU$${CUR.bond}</span></div>
-    <div class="pbr"><span>NestMate fee</span><span>AU$${CUR.fee}</span></div>
-    <div class="pbr tot"><span>Total due today</span><span>AU$${total}</span></div>`;
+  var pbEl = document.getElementById('priceBreak');
+  if (!pbEl) return;
+  var rent, weeks, label, totalLabel;
+  if (_stayType === 'long') {
+    var dur = bkDurVal || 1;
+    var unit = bkDurUnit || 'month';
+    weeks = unit === 'month' ? Math.round(dur * 4.33) : dur;
+    rent = Math.round(CUR.price * weeks);
+    label = dur + (unit === 'month' ? ' month' : ' week') + (dur > 1 ? 's' : '');
+    totalLabel = 'First month + bond';
+  } else {
+    var mIn = new Date(document.getElementById('mIn').value || new Date());
+    var mOut = new Date(document.getElementById('mOut').value || new Date());
+    weeks = Math.max(1, Math.round((mOut - mIn)/(7*24*60*60*1000)));
+    rent = CUR.price * weeks;
+    label = weeks + ' week' + (weeks > 1 ? 's' : '');
+    totalLabel = 'Total due today';
+  }
+  var total = rent + (CUR.bond||0) + (CUR.fee||0);
+  pbEl.innerHTML =
+    '<div style="border-top:1px solid var(--border);margin:14px 0 10px"></div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:6px"><span>AU$' + CUR.price + '/wk x ' + label + '</span><span>AU$' + rent + '</span></div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:6px"><span>&#128274; Bond (escrow)</span><span>AU$' + (CUR.bond||0) + '</span></div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:10px"><span>NestMate fee</span><span>AU$' + (CUR.fee||0) + '</span></div>' +
+    '<div style="display:flex;justify-content:space-between;font-weight:700;font-size:.95rem"><span>' + totalLabel + '</span><span style="color:var(--lime)">AU$' + total + '</span></div>';
 }
 
-// ══════════════════════════════════════
-// BOOKING FLOW
-// ══════════════════════════════════════
+
 function openBooking() { STEP=1; document.getElementById('bookMo').classList.add('open'); renderStep(); }
 function closeMo(id) { document.getElementById(id).classList.remove('open'); }
 function closeMoOut(e, id) { if(e.target.id===id) closeMo(id); }
@@ -3394,6 +3408,23 @@ async function fetchNearbyTransport(lat, lng) {
 // ══════════════════════════════════════
 var _stayType = 'long';
 
+function setBkDurSingle(btn, val, unit) {
+  var parent = btn.parentNode;
+  parent.querySelectorAll('.dpo').forEach(function(b) { b.classList.remove('on'); });
+  btn.classList.add('on');
+  bkDurVal = val; bkDurUnit = unit;
+  if (_stayType === 'short' && unit === 'week') {
+    var mInEl = document.getElementById('mIn');
+    if (mInEl && mInEl.value) {
+      var d = new Date(mInEl.value);
+      d.setDate(d.getDate() + val * 7);
+      var mOutEl = document.getElementById('mOut');
+      if (mOutEl) mOutEl.value = d.toISOString().split('T')[0];
+    }
+  }
+  calcPB();
+}
+
 function setStayType(type) {
   _stayType = type;
   document.getElementById('stay-short').classList.toggle('on', type === 'short');
@@ -3402,6 +3433,14 @@ function setStayType(type) {
   var longOpts = document.getElementById('longTermOpts');
   if (shortOpts) shortOpts.style.display = type === 'short' ? 'block' : 'none';
   if (longOpts) longOpts.style.display = type === 'long' ? 'block' : 'none';
+  // Set date limits: today to Dec 31, year+2 (updates automatically each year)
+  var today = new Date();
+  var maxDate = (today.getFullYear() + 2) + '-12-31';
+  var todayStr = today.toISOString().split('T')[0];
+  ['mIn','mInLong'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.min = todayStr; el.max = maxDate; }
+  });
   calcPB();
 }
 
