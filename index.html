@@ -623,12 +623,12 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
         <!-- Stay Type Picker -->
         <div style="display:flex;gap:8px;margin-bottom:16px">
-          <button class="dpt on" id="stay-short" onclick="setStayType('short')" style="flex:1;padding:10px;font-weight:700">🗓 Short Stay</button>
-          <button class="dpt" id="stay-long" onclick="setStayType('long')" style="flex:1;padding:10px;font-weight:700">🏡 Long Term</button>
+          <button class="dpt on" id="stay-long" onclick="setStayType('long')" style="flex:1;padding:10px;font-weight:700">🏡 Long Term</button>
+          <button class="dpt" id="stay-short" onclick="setStayType('short')" style="flex:1;padding:10px;font-weight:700">🗓 Short Stay</button>
         </div>
 
         <!-- Short Stay Options -->
-        <div id="shortStayOpts">
+        <div id="shortStayOpts" style="display:none">
           <label style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Duration</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px">
             <button class="dpo on" onclick="setBkDur(this,1,'week')">1 week</button>
@@ -643,7 +643,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         </div>
 
         <!-- Long Term Options -->
-        <div id="longTermOpts" style="display:none">
+        <div id="longTermOpts">
           <div class="dbox" style="margin-bottom:12px">
             <label>Preferred move-in date</label>
             <input type="date" id="mInLong" oninput="calcPB()">
@@ -658,6 +658,16 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
             <button class="dpo" onclick="setBkDur(this,6,'month')">6 months</button>
             <button class="dpo" onclick="setBkDur(this,12,'month')">12 months</button>
           </div>
+        </div>
+
+        <!-- LOCATION MINI WIDGET -->
+        <div id="locWidget" onclick="openLocationPage()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--bg-l);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:14px;transition:border-color .2s" onmouseover="this.style.borderColor='var(--lime)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:1.3rem">📍</span>
+          <div style="flex:1">
+            <div id="locWidgetAddr" style="font-size:.82rem;font-weight:600;color:var(--text)">View location</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:1px">Tap to see map & transport nearby</div>
+          </div>
+          <span style="color:var(--muted);font-size:.85rem">›</span>
         </div>
 
         <div class="pb" id="priceBreak"></div>
@@ -778,6 +788,36 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="si" onclick="go('s-browse')"><span class="ico">←</span>Back to Site</div>
     </div>
     <div class="ll-main" id="admMain" style="background:var(--bg)"></div>
+  </div>
+</div>
+
+<!-- ════════════ LOCATION PAGE ════════════ -->
+<div id="s-location" class="screen">
+  <div style="max-width:900px;margin:0 auto;padding:0">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);background:var(--bg-m);position:sticky;top:0;z-index:100">
+      <button class="btn ol sm" onclick="closeLocationPage()">← Back to listing</button>
+      <div>
+        <div id="locPageTitle" style="font-weight:700;font-size:.95rem;color:var(--text)">Location</div>
+        <div id="locPageAddr" style="font-size:.76rem;color:var(--muted)"></div>
+      </div>
+    </div>
+
+    <!-- Photo strip -->
+    <div id="locPagePhotos" style="display:flex;gap:4px;height:200px;overflow:hidden;background:var(--bg-l)"></div>
+
+    <!-- Full map -->
+    <div id="locPageMap" style="height:380px;width:100%"></div>
+
+    <!-- Transport legend -->
+    <div style="padding:20px">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:12px;color:var(--text)">🚌 Nearby Transport</h3>
+      <div id="locTransportList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      <p style="font-size:.76rem;color:var(--muted);margin-top:10px">Transport stops within 800m of the property</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin:20px 0 12px;color:var(--text)">📍 Address</h3>
+      <div id="locFullAddr" style="font-size:.9rem;color:var(--muted);padding:12px;background:var(--bg-l);border-radius:10px"></div>
+    </div>
   </div>
 </div>
 
@@ -1770,7 +1810,11 @@ function openDetail(id) {
   calcPB();
   go('s-detail');
 
-  // Render map for this listing
+  // Update location widget
+  var locAddr = document.getElementById('locWidgetAddr');
+  if (locAddr) locAddr.textContent = l.address || (l.suburb + ', Gold Coast QLD');
+
+  // Render mini map in detail page
   setTimeout(function() {
     renderDetailMap(l.address || l.suburb, l.suburb);
   }, 300);
@@ -3357,7 +3401,7 @@ async function fetchNearbyTransport(lat, lng) {
 // ══════════════════════════════════════
 // SHORT / LONG TERM BOOKING
 // ══════════════════════════════════════
-var _stayType = 'short';
+var _stayType = 'long';
 
 function setStayType(type) {
   _stayType = type;
@@ -3412,6 +3456,128 @@ function openFavs() {
     // Move grid content to favsGrid
     var mainGrid = document.getElementById('listGrid');
     if (mainGrid) grid.innerHTML = mainGrid.innerHTML;
+  }
+}
+
+
+// ══════════════════════════════════════
+// LOCATION PAGE
+// ══════════════════════════════════════
+var _locMap = null;
+var _locNavSource = 's-detail';
+
+function openLocationPage() {
+  if (!CUR) return;
+  _locNavSource = 's-detail';
+  
+  // Set title and address
+  var title = document.getElementById('locPageTitle');
+  var addr = document.getElementById('locPageAddr');
+  var fullAddr = document.getElementById('locFullAddr');
+  if (title) title.textContent = CUR.title || 'Location';
+  var address = CUR.address || (CUR.suburb + ', Gold Coast QLD');
+  if (addr) addr.textContent = address;
+  if (fullAddr) fullAddr.textContent = address + ', Australia';
+
+  // Photo strip
+  var photoStrip = document.getElementById('locPagePhotos');
+  if (photoStrip && CUR.imgs && CUR.imgs.length > 0) {
+    photoStrip.innerHTML = CUR.imgs.slice(0, 5).map(function(src) {
+      return '<img src="' + src + '" style="flex:1;min-width:0;object-fit:cover;height:100%;cursor:pointer" onclick="closeLocationPage()">';
+    }).join('');
+  } else if (photoStrip) {
+    photoStrip.style.display = 'none';
+  }
+
+  // Update location widget text
+  var locAddr = document.getElementById('locWidgetAddr');
+  if (locAddr) locAddr.textContent = address;
+
+  go('s-location');
+
+  // Render full map
+  setTimeout(function() { renderLocationPageMap(address, CUR.suburb); }, 300);
+}
+
+function closeLocationPage() {
+  go(_locNavSource);
+}
+
+async function renderLocationPageMap(address, suburb) {
+  var mapEl = document.getElementById('locPageMap');
+  var transportList = document.getElementById('locTransportList');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  // Destroy previous
+  if (_locMap) { _locMap.remove(); _locMap = null; }
+
+  var searchAddr = address || suburb || 'Gold Coast QLD Australia';
+  if (!searchAddr.includes('Australia')) searchAddr += ', Gold Coast QLD Australia';
+
+  try {
+    var resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
+    var data = await resp.json();
+
+    var lat = -28.0167, lng = 153.4000;
+    if (data && data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
+
+    _locMap = L.map('locPageMap', { zoomControl: true, scrollWheelZoom: true }).setView([lat, lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(_locMap);
+
+    // Property marker
+    var houseIcon = L.divIcon({
+      html: '<div style="background:var(--lime);color:#000;border:3px solid #000;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.4)">🏠</div>',
+      iconSize: [38, 38], iconAnchor: [19, 19], className: ''
+    });
+    L.marker([lat, lng], { icon: houseIcon }).addTo(_locMap)
+      .bindPopup('<strong>' + (CUR ? CUR.title : 'Property') + '</strong>').openPopup();
+
+    // Fetch transport
+    var typeConfig = {
+      'bus_stop':    { emoji: '🚌', color: '#4A90D9', label: 'Bus stop' },
+      'station':     { emoji: '🚆', color: '#E53935', label: 'Train station' },
+      'tram_stop':   { emoji: '🚊', color: '#7B1FA2', label: 'Tram stop' },
+      'ferry_terminal': { emoji: '⛴', color: '#0277BD', label: 'Ferry terminal' }
+    };
+
+    var query = '[out:json][timeout:15];(node["highway"="bus_stop"](around:800,' + lat + ',' + lng + ');node["railway"="station"](around:800,' + lat + ',' + lng + ');node["railway"="tram_stop"](around:800,' + lat + ',' + lng + ');node["amenity"="ferry_terminal"](around:800,' + lat + ',' + lng + '););out body;';
+    var tresp = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(query) });
+    var tdata = await tresp.json();
+
+    var transportItems = {};
+    (tdata.elements || []).forEach(function(el) {
+      var type = el.tags && (el.tags.highway || el.tags.railway || el.tags.amenity);
+      var cfg = typeConfig[type] || { emoji: '🚏', color: '#666', label: 'Stop' };
+      var name = (el.tags && (el.tags.name || el.tags['name:en'])) || cfg.label;
+
+      var icon = L.divIcon({
+        html: '<div style="background:' + cfg.color + ';color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.85rem;box-shadow:0 2px 6px rgba(0,0,0,.3)">' + cfg.emoji + '</div>',
+        iconSize: [28, 28], iconAnchor: [14, 14], className: ''
+      });
+      L.marker([el.lat, el.lon], { icon: icon }).addTo(_locMap)
+        .bindPopup('<strong>' + cfg.emoji + ' ' + name + '</strong><br><small>' + cfg.label + '</small>');
+
+      if (!transportItems[type]) transportItems[type] = { cfg: cfg, count: 0 };
+      transportItems[type].count++;
+    });
+
+    // Render transport list
+    if (transportList) {
+      var items = Object.values(transportItems);
+      if (items.length > 0) {
+        transportList.innerHTML = items.map(function(t) {
+          return '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg-l);border:1px solid var(--border);border-radius:20px;font-size:.82rem;font-weight:600">' +
+            t.cfg.emoji + ' ' + t.count + ' ' + t.cfg.label + (t.count > 1 ? 's' : '') + '</span>';
+        }).join('');
+      } else {
+        transportList.innerHTML = '<span style="color:var(--muted);font-size:.85rem">No public transport found within 800m</span>';
+      }
+    }
+  } catch(e) {
+    console.log('Location map error:', e);
+    if (mapEl) mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">📍 ' + searchAddr + '</div>';
   }
 }
 
