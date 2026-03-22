@@ -1858,7 +1858,7 @@ async function loadListingsFromDB() {
   try {
     const { data, error } = await _supabaseClient
       .from('listings')
-      .select('id, title, suburb, address, price_weekly, bond_amount, room_type, min_weeks, max_months, available_from, house_vibe, amenities, nationalities, photos, status, description, gender_preference, created_at, profiles!landlord_id(full_name, rating_avg, rating_count)')
+      .select('id, title, suburb, address, price_weekly, bond_amount, room_type, min_weeks, max_months, available_from, house_vibe, amenities, nationalities, photos, status, description, gender_preference, created_at, bathroom, pets, smoking, flexible_dates, utilities, landlord_id, profiles!landlord_id(full_name, rating_avg, rating_count, avatar_url)')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(50);
@@ -1897,7 +1897,16 @@ async function loadListingsFromDB() {
         if (!p) return [];
         if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = [p]; } }
         return (p && p.length >= 1) ? p : [];
-      })()
+      })(),
+      landlordId: l.landlord_id || '',
+      landlordName: (l.profiles && l.profiles.full_name) ? l.profiles.full_name : 'Landlord',
+      landlordAvatar: (l.profiles && l.profiles.avatar_url) ? l.profiles.avatar_url : '',
+      bathroom: l.bathroom || 'shared',
+      pets: l.pets || false,
+      smoking: l.smoking || false,
+      flexibleDates: l.flexible_dates || false,
+      utilities: l.utilities || [],
+      address: l.address || '',
     }));
 
     // Store in global for filters
