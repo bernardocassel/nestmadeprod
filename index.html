@@ -797,10 +797,10 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 </div>
 
 <!-- ════════════ LOCATION PAGE ════════════ -->
-<div id="s-location" class="screen">
-  <div style="max-width:900px;margin:0 auto;padding:0">
-    <!-- Header -->
-    <div style="display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);background:var(--bg-m);position:sticky;top:0;z-index:100">
+<div id="s-location" class="screen" style="background:var(--bg)">
+  <div style="max-width:900px;margin:0 auto;padding:0;background:var(--bg)">
+    <!-- Header - matches app navbar style -->
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100">
       <button class="btn ol sm" onclick="closeLocationPage()">← Back to listing</button>
       <div>
         <div id="locPageTitle" style="font-weight:700;font-size:.95rem;color:var(--text)">Location</div>
@@ -809,19 +809,19 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </div>
 
     <!-- Photo strip -->
-    <div id="locPagePhotos" style="display:flex;gap:4px;height:200px;overflow:hidden;background:var(--bg-l)"></div>
+    <div id="locPagePhotos" style="display:flex;gap:3px;height:210px;overflow:hidden;background:var(--bg-l)"></div>
 
     <!-- Full map -->
     <div id="locPageMap" style="height:420px;width:100%;min-height:420px;background:var(--bg-l)"></div>
 
-    <!-- Transport legend -->
-    <div style="padding:20px">
+    <!-- Transport & Address -->
+    <div style="padding:20px;background:var(--bg)">
       <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:12px;color:var(--text)">🚌 Nearby Transport</h3>
       <div id="locTransportList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       <p style="font-size:.76rem;color:var(--muted);margin-top:10px">Transport stops within 800m of the property</p>
 
-      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin:20px 0 12px;color:var(--text)">📍 Address</h3>
-      <div id="locFullAddr" style="font-size:.9rem;color:var(--muted);padding:12px;background:var(--bg-l);border-radius:10px"></div>
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin:20px 0 10px;color:var(--text)">📍 Address</h3>
+      <div id="locFullAddr" style="font-size:.88rem;color:var(--muted);padding:12px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border)"></div>
     </div>
   </div>
 </div>
