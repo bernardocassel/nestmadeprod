@@ -1016,6 +1016,73 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   <div id="lightboxCounter" style="color:#666;font-size:.85rem;margin-top:14px;font-weight:600"></div>
 </div>
 
+<!-- ════════════ EDIT LISTING MODAL ════════════ -->
+<div id="editListingModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 0">
+  <div style="background:var(--bg);width:100%;max-width:600px;border-radius:20px;margin:0 auto;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text)">Edit Listing</div>
+      <button onclick="closeEditListing()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="fg"><label class="lbl">Room Title</label><input class="inp" id="editTitle" placeholder="e.g. Sunny Private Room in Surfers Paradise"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg" style="margin:0"><label class="lbl">Weekly Rent (AU$)</label><input class="inp" type="number" id="editRent"></div>
+        <div class="fg" style="margin:0"><label class="lbl">Bond (AU$)</label><input class="inp" type="number" id="editBond"></div>
+      </div>
+      <div class="fg"><label class="lbl">Address</label><input class="inp" id="editAddr" placeholder="17 Cavill Ave, Surfers Paradise QLD 4217"></div>
+      <div class="fg"><label class="lbl">Available From</label><input class="inp" type="date" id="editAvailFrom"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg" style="margin:0">
+          <label class="lbl">Room Type</label>
+          <select class="inp" id="editRoomType">
+            <option value="private">Private Room</option>
+            <option value="shared">Shared Room</option>
+            <option value="studio">Studio/Entire Place</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0">
+          <label class="lbl">Bathroom</label>
+          <select class="inp" id="editBathroom">
+            <option value="shared">Shared</option>
+            <option value="private">Private (ensuite)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="lbl">Description</label><textarea class="inp" id="editDesc" rows="3" style="resize:none"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg" style="margin:0">
+          <label class="lbl">Pets</label>
+          <select class="inp" id="editPets">
+            <option value="false">No pets</option>
+            <option value="true">Pets welcome</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0">
+          <label class="lbl">Smoking</label>
+          <select class="inp" id="editSmoking">
+            <option value="false">No smoking</option>
+            <option value="true">Smoking allowed</option>
+          </select>
+        </div>
+      </div>
+      <div id="editStatusSection" style="padding:12px;background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.15);border-radius:10px;margin-top:8px">
+        <div class="fg" style="margin:0">
+          <label class="lbl">Listing Status</label>
+          <select class="inp" id="editStatus">
+            <option value="active">Active (visible to tenants)</option>
+            <option value="paused">Paused (hidden temporarily)</option>
+            <option value="draft">Draft (not submitted)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn ol" style="flex:1" onclick="closeEditListing()">Cancel</button>
+        <button class="btn lime" style="flex:2" onclick="saveEditListing()">Save Changes →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════ CHAT MODAL ════════════ -->
 <div id="chatModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:flex-end;justify-content:center">
   <div style="background:var(--bg);width:100%;max-width:560px;border-radius:20px 20px 0 0;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 -4px 30px rgba(0,0,0,.15)">
@@ -1402,7 +1469,7 @@ async function renderRealDashboard(m, listings) {
           <span class="s-dot"></span>
           ${l.status === 'active' ? 'Active' : l.status === 'pending_review' ? 'Under Review' : l.status === 'draft' ? 'Draft' : l.status}
         </span>
-        <button class="btn ol sm" onclick="toast('Edit coming soon','lime')">Edit</button>
+        <button class="btn ol sm" data-lid="${l.id}" onclick="openEditListing(this.dataset.lid)">Edit</button>
       </div>
     `).join('')}
 
@@ -4357,6 +4424,93 @@ async function loadHousemateReviews(listingId) {
       '<p style="font-size:.84rem;color:var(--muted);line-height:1.5">' + (r.comment || '') + '</p>' +
       '</div>';
   }).join('');
+}
+
+
+// ══════════════════════════════════════
+// EDIT LISTING
+// ══════════════════════════════════════
+var _editingListingId = null;
+
+async function openEditListing(id) {
+  if (!id || !_supabaseClient || !currentUser) return;
+  _editingListingId = id;
+
+  // Load current listing data
+  var res = await _supabaseClient.from('listings').select('*').eq('id', id).single();
+  if (res.error || !res.data) { toast('Error loading listing', 'error'); return; }
+  var l = res.data;
+
+  // Fill form
+  var set = function(eid, val) { var el = document.getElementById(eid); if (el && val !== null && val !== undefined) el.value = val; };
+  set('editTitle', l.title);
+  set('editRent', l.price_weekly);
+  set('editBond', l.bond_amount);
+  set('editAddr', l.address);
+  set('editDesc', l.description);
+  set('editRoomType', l.room_type || 'private');
+  set('editBathroom', l.bathroom || 'shared');
+  set('editPets', l.pets ? 'true' : 'false');
+  set('editSmoking', l.smoking ? 'true' : 'false');
+  set('editStatus', l.status || 'active');
+  if (l.available_from) set('editAvailFrom', l.available_from.split('T')[0]);
+
+  // Show modal
+  document.getElementById('editListingModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditListing() {
+  document.getElementById('editListingModal').style.display = 'none';
+  document.body.style.overflow = '';
+  _editingListingId = null;
+}
+
+async function saveEditListing() {
+  if (!_editingListingId || !_supabaseClient) return;
+
+  var get = function(eid) { var el = document.getElementById(eid); return el ? el.value : ''; };
+
+  var updates = {
+    title: get('editTitle'),
+    price_weekly: parseFloat(get('editRent')) || 0,
+    bond_amount: parseFloat(get('editBond')) || 0,
+    address: get('editAddr'),
+    description: get('editDesc'),
+    room_type: get('editRoomType'),
+    bathroom: get('editBathroom'),
+    pets: get('editPets') === 'true',
+    smoking: get('editSmoking') === 'true',
+    status: get('editStatus'),
+  };
+  var avail = get('editAvailFrom');
+  if (avail) updates.available_from = avail;
+
+  // Extract suburb from address
+  var addrParts = updates.address.split(',');
+  if (addrParts.length >= 2) {
+    updates.suburb = addrParts[addrParts.length - 2].trim().split(' ')[0];
+  }
+
+  var saveBtn = document.querySelector('#editListingModal .btn.lime');
+  if (saveBtn) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
+
+  var res = await _supabaseClient.from('listings').update(updates).eq('id', _editingListingId).eq('landlord_id', currentUser.id);
+
+  if (saveBtn) { saveBtn.textContent = 'Save Changes →'; saveBtn.disabled = false; }
+
+  if (res.error) {
+    toast('Error: ' + res.error.message, 'error');
+    return;
+  }
+
+  toast('✅ Listing updated!', 'lime');
+  closeEditListing();
+  // Reload the listings
+  setTimeout(function() {
+    var m = document.getElementById('llMain');
+    if (m) renderLLListings(m);
+  }, 300);
 }
 
 </script>
