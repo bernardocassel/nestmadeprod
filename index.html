@@ -661,13 +661,18 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         </div>
 
         <!-- LOCATION MINI WIDGET -->
-        <div id="locWidget" onclick="openLocationPage()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--bg-l);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:14px;transition:border-color .2s" onmouseover="this.style.borderColor='var(--lime)'" onmouseout="this.style.borderColor='var(--border)'">
-          <span style="font-size:1.3rem">📍</span>
-          <div style="flex:1">
-            <div id="locWidgetAddr" style="font-size:.82rem;font-weight:600;color:var(--text)">View location</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:1px">Tap to see map & transport nearby</div>
+        <div id="locWidget" onclick="openLocationPage()" style="border:1px solid var(--border);border-radius:14px;cursor:pointer;margin-bottom:14px;overflow:hidden;transition:border-color .2s" onmouseover="this.style.borderColor='var(--lime)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div id="locMiniMap" style="height:130px;width:100%;background:var(--bg-l);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem">
+            <span>📍 Loading map...</span>
           </div>
-          <span style="color:var(--muted);font-size:.85rem">›</span>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-m)">
+            <span style="font-size:1.1rem">📍</span>
+            <div style="flex:1">
+              <div id="locWidgetAddr" style="font-size:.82rem;font-weight:600;color:var(--text)">View location & transport</div>
+              <div style="font-size:.71rem;color:var(--muted)">Tap to open full map</div>
+            </div>
+            <span style="color:var(--lime);font-size:.85rem;font-weight:700">›</span>
+          </div>
         </div>
 
         <div class="pb" id="priceBreak"></div>
@@ -807,7 +812,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <div id="locPagePhotos" style="display:flex;gap:4px;height:200px;overflow:hidden;background:var(--bg-l)"></div>
 
     <!-- Full map -->
-    <div id="locPageMap" style="height:380px;width:100%"></div>
+    <div id="locPageMap" style="height:420px;width:100%;min-height:420px;background:var(--bg-l)"></div>
 
     <!-- Transport legend -->
     <div style="padding:20px">
@@ -1805,19 +1810,18 @@ function openDetail(id) {
   document.getElementById('detRevs').innerHTML = l.revs.map(r => `<div class="rev"><div class="rev-hdr"><div class="rev-av">${r.cc}</div><div><div class="rev-name">${r.name}</div><div class="rev-date">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)} · Verified stay</div></div></div><div class="rev-txt">${r.txt}</div></div>`).join('');
   // Set initial dates
   const today = new Date(); const out = new Date(today); out.setDate(out.getDate()+7);
-  document.getElementById('mIn').value = today.toISOString().split('T')[0];
-  document.getElementById('mOut').value = out.toISOString().split('T')[0];
+  const mInEl = document.getElementById('mIn');
+  const mOutEl = document.getElementById('mOut');
+  if (mInEl) mInEl.value = today.toISOString().split('T')[0];
+  if (mOutEl) mOutEl.value = out.toISOString().split('T')[0];
   calcPB();
   go('s-detail');
 
-  // Update location widget
-  var locAddr = document.getElementById('locWidgetAddr');
-  if (locAddr) locAddr.textContent = l.address || (l.suburb + ', Gold Coast QLD');
-
-  // Render mini map in detail page
+  // Render mini map in booking card widget + detail map
   setTimeout(function() {
+    renderMiniMap(l.address || l.suburb, l.suburb);
     renderDetailMap(l.address || l.suburb, l.suburb);
-  }, 300);
+  }, 400);
 
   // Show extras: bathroom, pets, smoking
   var extrasEl = document.getElementById('detExtras');
@@ -3301,6 +3305,49 @@ function removeNatEl(el) {
 // ══════════════════════════════════════
 var _detailMap = null;
 
+async function renderMiniMap(address, suburb) {
+  var miniEl = document.getElementById('locMiniMap');
+  if (!miniEl || typeof L === 'undefined') return;
+  
+  // Clear previous
+  miniEl.innerHTML = '';
+  miniEl.style.display = 'block';
+  
+  var searchAddr = (address || suburb || 'Gold Coast') + ', Gold Coast QLD Australia';
+  
+  try {
+    var resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchAddr) + '&limit=1&countrycodes=au');
+    var data = await resp.json();
+    var lat = -28.0167, lng = 153.4000;
+    if (data && data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
+
+    // Create mini map (non-interactive)
+    var miniMap = L.map('locMiniMap', { 
+      zoomControl: false, 
+      scrollWheelZoom: false, 
+      dragging: false,
+      touchZoom: false,
+      doubleClickZoom: false,
+      attributionControl: false
+    }).setView([lat, lng], 15);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
+    
+    var icon = L.divIcon({
+      html: '<div style="background:var(--lime);color:#000;border:2px solid #000;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900">🏠</div>',
+      iconSize: [28,28], iconAnchor: [14,14], className: ''
+    });
+    L.marker([lat, lng], { icon: icon }).addTo(miniMap);
+    
+    // Update address text
+    var locAddr = document.getElementById('locWidgetAddr');
+    if (locAddr) locAddr.textContent = address || (suburb + ', Gold Coast QLD');
+    
+  } catch(e) {
+    if (miniEl) miniEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;gap:6px;color:var(--muted)">📍 ' + (address || suburb || 'Gold Coast') + '</div>';
+  }
+}
+
 async function renderDetailMap(address, suburb) {
   var mapEl = document.getElementById('detMap');
   var addrEl = document.getElementById('detMapAddr');
@@ -3496,7 +3543,11 @@ function openLocationPage() {
   go('s-location');
 
   // Render full map
-  setTimeout(function() { renderLocationPageMap(address, CUR.suburb); }, 300);
+  setTimeout(function() { 
+    var mapEl = document.getElementById('locPageMap');
+    if (mapEl) mapEl.style.height = '420px';
+    renderLocationPageMap(address, CUR.suburb); 
+  }, 400);
 }
 
 function closeLocationPage() {
@@ -3525,6 +3576,7 @@ async function renderLocationPageMap(address, suburb) {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap', maxZoom: 19
     }).addTo(_locMap);
+    setTimeout(function() { if (_locMap) _locMap.invalidateSize(); }, 200);
 
     // Property marker
     var houseIcon = L.divIcon({
