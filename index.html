@@ -409,6 +409,20 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <button id="adminNavBtn" style="display:none;padding:7px 14px;border-radius:50px;font-size:.78rem;font-weight:700;border:1.5px solid var(--red);color:var(--red);background:transparent;cursor:pointer" onclick="go('s-admin');admTab('pending')">⚙️ Admin</button>
     <button class="nbtn ol t" id="signInBtn" data-en="Sign In" data-pt="Entrar" onclick="go('s-login')">Sign In</button>
     <button class="nbtn prim t" id="joinFreeBtn" data-en="Join Free" data-pt="Cadastrar" onclick="go('s-signup')">Join Free</button>
+    <!-- User menu dropdown (shown when logged in) -->
+    <div id="userMenuWrap" style="display:none;position:relative">
+      <button id="userAvatarBtn" onclick="goToOwnProfile()" onmouseenter="showDropdown()" style="display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:50px;background:var(--lime);border:none;cursor:pointer;font-weight:700;font-size:.85rem;color:#000">
+        <div id="navAvatar" style="width:30px;height:30px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--lime);overflow:hidden;flex-shrink:0">?</div>
+        <span id="navName">...</span>
+      </button>
+      <!-- Dropdown -->
+      <div id="userDropdown" onmouseenter="keepDropdown()" onmouseleave="hideDropdown()" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg-m);border:1px solid var(--border);border-radius:14px;min-width:180px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:200;overflow:hidden">
+        <div onclick="goToOwnProfile()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">👤 My Profile</div>
+        <div id="dropAdminBtn" onclick="go('s-admin')" style="display:none;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">⚙️ Admin Panel</div>
+        <div style="border-top:1px solid var(--border)"></div>
+        <div onclick="doLogout()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--red)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">🚪 Sign Out</div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -850,6 +864,63 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
       <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin:20px 0 10px;color:var(--text)">📍 Address</h3>
       <div id="locFullAddr" style="font-size:.88rem;color:var(--muted);padding:12px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ OWN PROFILE ════════════ -->
+<div id="s-own-profile" class="screen" style="background:var(--bg)">
+  <div style="max-width:600px;margin:0 auto;padding:0">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
+      <button class="btn ol sm" onclick="closeOwnProfile()">← Back</button>
+      <div style="flex:1;font-weight:700;font-size:.95rem;color:var(--text)">My Profile</div>
+      <button class="btn lime sm" onclick="saveOwnProfile()">Save</button>
+    </div>
+
+    <!-- Avatar upload -->
+    <div style="padding:24px 16px;text-align:center;border-bottom:1px solid var(--border)">
+      <div style="position:relative;display:inline-block">
+        <div id="ownAvatarPreview" style="width:90px;height:90px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:700;color:#000;overflow:hidden;margin:0 auto">?</div>
+        <button onclick="document.getElementById('avatarInput').click()" style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background:var(--text);border:2px solid var(--bg);color:var(--bg);font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center">📷</button>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)">
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:8px">Tap 📷 to change photo</p>
+    </div>
+
+    <!-- Form fields -->
+    <div style="padding:20px 16px">
+      <div class="fg"><label class="lbl">Full Name</label><input class="inp" id="ownName" placeholder="Your full name"></div>
+      <div class="fg"><label class="lbl">Username</label><input class="inp" id="ownUsername" placeholder="@username" oninput="this.value=this.value.replace(/[^a-z0-9._]/gi,'').toLowerCase()"></div>
+      <div class="fg"><label class="lbl">Nationality</label>
+        <select class="inp" id="ownNat">
+          <option>🇦🇺 Australia</option><option>🇧🇷 Brazil</option><option>🇨🇳 China</option>
+          <option>🇯🇵 Japan</option><option>🇮🇳 India</option><option>🇰🇷 South Korea</option>
+          <option>🇨🇴 Colombia</option><option>🇫🇷 France</option><option>🇩🇪 Germany</option>
+          <option>🇲🇽 Mexico</option><option>🇵🇭 Philippines</option><option>🇻🇳 Vietnam</option>
+          <option>🇮🇹 Italy</option><option>🇪🇸 Spain</option><option>🇵🇹 Portugal</option>
+          <option>🇦🇷 Argentina</option><option>🇨🇱 Chile</option><option>🇺🇸 United States</option>
+          <option>🇬🇧 United Kingdom</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="lbl">About me</label>
+        <textarea class="inp" id="ownBio" rows="4" placeholder="Tell housemates about your lifestyle, hobbies, study or work..." style="resize:none"></textarea>
+      </div>
+      <div class="fg">
+        <label class="lbl">Languages I speak</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="ownLangPicker">
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇦🇺 English</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇧🇷 Portuguese</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇪🇸 Spanish</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇨🇳 Mandarin</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇯🇵 Japanese</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇰🇷 Korean</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇮🇳 Hindi</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇫🇷 French</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇩🇪 German</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇮🇹 Italian</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1378,11 +1449,11 @@ function onUserLoggedIn(user) {
   const joinBtn = document.getElementById('joinFreeBtn');
   const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
   if (loginBtn) loginBtn.style.display = 'none';
-  if (joinBtn) {
-    joinBtn.textContent = name.split(' ')[0];
-    joinBtn.style.background = 'var(--lime)';
-    joinBtn.onclick = () => showUserMenu();
-  }
+  if (joinBtn) joinBtn.style.display = 'none';
+  // Show user avatar menu
+  var wrap = document.getElementById('userMenuWrap');
+  if (wrap) wrap.style.display = 'block';
+  updateNavAvatar(user);
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
   setTimeout(checkAdminRole, 500);
 
@@ -1446,12 +1517,56 @@ function onUserLoggedOut() {
   if (joinBtn) { joinBtn.textContent = 'Join Free'; joinBtn.onclick = () => go('s-signup'); }
 }
 
-function showUserMenu() {
-  // Menu simples de logout
-  if (confirm('Deseja sair da conta?')) {
-    _supabaseClient?.auth.signOut();
-    go('s-land');
+var _dropdownTimer = null;
+
+function showDropdown() {
+  clearTimeout(_dropdownTimer);
+  var dd = document.getElementById('userDropdown');
+  if (dd) dd.style.display = 'block';
+  // Show admin option if admin
+  var adminBtn = document.getElementById('dropAdminBtn');
+  if (adminBtn) adminBtn.style.display = isAdmin ? 'flex' : 'none';
+}
+
+function keepDropdown() {
+  clearTimeout(_dropdownTimer);
+}
+
+function hideDropdown() {
+  _dropdownTimer = setTimeout(function() {
+    var dd = document.getElementById('userDropdown');
+    if (dd) dd.style.display = 'none';
+  }, 200);
+}
+
+function goToOwnProfile() {
+  hideDropdown();
+  if (currentUser) openOwnProfile();
+}
+
+function updateNavAvatar(user) {
+  var navAvatar = document.getElementById('navAvatar');
+  var navName = document.getElementById('navName');
+  if (!navAvatar || !navName) return;
+  var name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+  var firstName = name.split(' ')[0];
+  navName.textContent = firstName;
+  // Check for avatar in profile
+  if (_supabaseClient && user.id) {
+    _supabaseClient.from('profiles').select('avatar_url').eq('id', user.id).single().then(function(res) {
+      if (res.data && res.data.avatar_url) {
+        navAvatar.innerHTML = '<img src="' + res.data.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+      } else {
+        navAvatar.textContent = firstName.charAt(0).toUpperCase();
+      }
+    });
+  } else {
+    navAvatar.textContent = firstName.charAt(0).toUpperCase();
   }
+}
+
+function showUserMenu() {
+  showDropdown();
 }
 
 // LOGIN COM GOOGLE
@@ -3900,6 +4015,122 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight') lightboxNext(e);
   if (e.key === 'Escape') closeLightbox();
 });
+
+
+// ══════════════════════════════════════
+// OWN PROFILE (edit)
+// ══════════════════════════════════════
+var _ownProfileNavSource = 's-browse';
+var _pendingAvatarBase64 = null;
+
+async function openOwnProfile() {
+  if (!currentUser || !_supabaseClient) return;
+  _ownProfileNavSource = sessionStorage.getItem('nm-screen') || 's-browse';
+  go('s-own-profile');
+
+  // Load current profile data
+  var res = await _supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+  var p = res.data || {};
+
+  // Fill form
+  var nameEl = document.getElementById('ownName');
+  var usernameEl = document.getElementById('ownUsername');
+  var natEl = document.getElementById('ownNat');
+  var bioEl = document.getElementById('ownBio');
+  if (nameEl) nameEl.value = p.full_name || currentUser.user_metadata?.full_name || '';
+  if (usernameEl) usernameEl.value = p.username || '';
+  if (bioEl) bioEl.value = p.bio || '';
+
+  // Set nationality
+  if (natEl && p.nationality) {
+    Array.from(natEl.options).forEach(function(opt) {
+      if (opt.text.includes(p.nationality) || opt.value === p.nationality) natEl.value = opt.value;
+    });
+  }
+
+  // Set languages
+  var langs = p.languages || [];
+  if (typeof langs === 'string') { try { langs = JSON.parse(langs); } catch(e) { langs = []; } }
+  document.querySelectorAll('#ownLangPicker .chip').forEach(function(btn) {
+    var lang = btn.textContent.trim().split(' ').slice(1).join(' ');
+    btn.classList.toggle('on', langs.includes(lang));
+  });
+
+  // Set avatar
+  var avatarEl = document.getElementById('ownAvatarPreview');
+  var firstName = (p.full_name || currentUser.email || 'U').split(' ')[0];
+  if (p.avatar_url) {
+    avatarEl.innerHTML = '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  } else {
+    avatarEl.textContent = firstName.charAt(0).toUpperCase();
+    avatarEl.style.background = 'var(--lime)';
+  }
+  _pendingAvatarBase64 = null;
+}
+
+function previewAvatar(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    // Compress avatar
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var size = 200;
+      canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      // Crop to square
+      var s = Math.min(img.width, img.height);
+      var sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      _pendingAvatarBase64 = canvas.toDataURL('image/jpeg', 0.85);
+      var avatarEl = document.getElementById('ownAvatarPreview');
+      avatarEl.innerHTML = '<img src="' + _pendingAvatarBase64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveOwnProfile() {
+  if (!currentUser || !_supabaseClient) return;
+  var name = document.getElementById('ownName')?.value || '';
+  var username = document.getElementById('ownUsername')?.value || '';
+  var nat = document.getElementById('ownNat')?.value || '';
+  var bio = document.getElementById('ownBio')?.value || '';
+  var langs = Array.from(document.querySelectorAll('#ownLangPicker .chip.on')).map(function(b) {
+    return b.textContent.trim().split(' ').slice(1).join(' ');
+  });
+
+  var updateData = {
+    full_name: name,
+    username: username,
+    nationality: nat,
+    bio: bio,
+    languages: langs,
+  };
+  if (_pendingAvatarBase64) updateData.avatar_url = _pendingAvatarBase64;
+
+  var res = await _supabaseClient.from('profiles').upsert({ id: currentUser.id, email: currentUser.email, ...updateData });
+  if (res.error) { toast('Error saving: ' + res.error.message, 'error'); return; }
+
+  toast('✅ Profile saved!', 'lime');
+
+  // Update navbar avatar
+  if (_pendingAvatarBase64) {
+    var navAv = document.getElementById('navAvatar');
+    if (navAv) navAv.innerHTML = '<img src="' + _pendingAvatarBase64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  }
+  var navName = document.getElementById('navName');
+  if (navName && name) navName.textContent = name.split(' ')[0];
+
+  setTimeout(function() { closeOwnProfile(); }, 800);
+}
+
+function closeOwnProfile() {
+  go(_ownProfileNavSource || 's-browse');
+}
 
 </script>
 </body>
