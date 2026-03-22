@@ -3480,12 +3480,22 @@ function openFavs() {
   var all = window.CURRENT_LISTINGS || [];
   var favList = all.filter(function(l) { return favs.has(l.id); });
   if (favList.length === 0) {
-    grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:14px">🤍</div><p>No saved rooms yet.</p><p style="font-size:.85rem;margin-top:8px">Tap the heart on any room to save it here.</p></div>';
+    grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:14px">&#129293;</div><p style="font-weight:600;font-size:1rem">No saved rooms yet.</p><p style="font-size:.85rem;margin-top:8px">Tap the heart on any room to save it here.</p><button class="btn lime" style="margin-top:20px" data-goto="s-browse" onclick="go(this.dataset.goto)">Browse Rooms</button></div>';
   } else {
-    renderListings(favList);
-    // Move grid content to favsGrid
-    var mainGrid = document.getElementById('listGrid');
-    if (mainGrid) grid.innerHTML = mainGrid.innerHTML;
+    // Render cards directly into favsGrid
+    grid.innerHTML = favList.map(function(l) {
+      var img = (l.imgs && l.imgs[0]) ? l.imgs[0] : '';
+      var imgHtml = img ? '<img src="' + img + '" alt="' + l.title + '" loading="lazy">' : '<div style="width:100%;height:100%;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:2.5rem">🏠</div>';
+      return '<div class="lcard" data-lid="' + l.id + '" onclick="openDetail(this.dataset.lid)" style="cursor:pointer">' +
+        '<div class="lcard-img">' + imgHtml +
+        '<div class="badges"><span class="badge g">Verified</span></div>' +
+        '<button class="fav-btn" data-favid="' + l.id + '" onclick="event.stopPropagation();toggleFav(this.dataset.favid,this)" title="Remove">❤️</button></div>' +
+        '<div class="lcard-body">' +
+        '<div class="lc-price">AU$' + l.price + '<small>/wk</small></div>' +
+        '<div class="lc-title">' + l.title + '</div>' +
+        '<div class="lc-sub">📍 ' + (l.suburb||'Gold Coast') + '</div>' +
+        '</div></div>';
+    }).join('');
   }
 }
 
