@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: blob: https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://*.openstreetmap.org https://js.stripe.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NestMate — Find Your Room in Gold Coast</title>
 <!-- v1774026145 -->
@@ -4457,9 +4458,21 @@ function renderChatMessages(msgs) {
   msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 
+var _lastMsgTime = 0;
+var _msgCount = 0;
+
 async function sendChatMsg() {
   if (!_supabaseClient) { toast('Not connected', 'error'); return; }
   if (!currentUser) { toast('Please sign in', ''); go('s-login'); return; }
+  // Rate limiting: max 5 messages per 10 seconds
+  var now = Date.now();
+  if (now - _lastMsgTime < 10000) {
+    _msgCount++;
+    if (_msgCount > 5) { toast('Too many messages. Please wait a moment.', ''); return; }
+  } else {
+    _msgCount = 1;
+    _lastMsgTime = now;
+  }
   var input = document.getElementById('chatInput');
   var msg = input ? input.value.trim() : '';
   if (!msg) return;
@@ -5168,6 +5181,28 @@ async function checkUnreadMessages() {
     badge.style.display = count > 0 ? 'inline' : 'none';
     badge.textContent = count;
   }
+}
+
+
+// ══════════════════════════════════════
+// SECURITY: Input sanitization
+// ══════════════════════════════════════
+function sanitize(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
+
+function sanitizeUrl(url) {
+  if (!url) return '';
+  // Only allow http/https/data URLs
+  if (!/^(https?:|data:image\/)/.test(url)) return '';
+  return url;
 }
 
 </script>
