@@ -5653,12 +5653,18 @@ async function loadMyBookings(tab) {
   var statuses = statusMap[tab] || statusMap.active;
 
   var res = await _supabaseClient.from('bookings')
-    .select('*, listings(id, title, suburb, photos, price_weekly, address), landlord:profiles!landlord_id(full_name, avatar_url)')
+    .select('*, listings(id, title, suburb, photos, price_weekly, address)')
     .eq('tenant_id', currentUser.id)
     .in('status', statuses)
     .order('created_at', { ascending: false });
 
-  if (res.error || !res.data || !res.data.length) {
+  if (res.error) {
+    console.error('My Bookings error:', res.error);
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red)">Error loading bookings: ' + res.error.message + '</div>';
+    return;
+  }
+
+  if (!res.data || !res.data.length) {
     var emptyMsg = {
       active: 'No active bookings yet.<br><br><button class="btn lime sm" onclick="closeMyBookings();go(\'s-browse\')">Browse Rooms →</button>',
       pending: 'No pending requests.',
@@ -5686,7 +5692,7 @@ async function loadMyBookings(tab) {
 
   list.innerHTML = res.data.map(function(b) {
     var l = b.listings || {};
-    var landlord = b.landlord || {};
+    var landlord = {};
     var photos = l.photos;
     if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
     var img = (photos && photos[0]) ? photos[0] : '';
