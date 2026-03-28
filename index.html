@@ -575,11 +575,12 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <h2 id="listCount">47 rooms in Gold Coast</h2>
           <p style="font-size:.75rem;color:var(--muted);margin-top:2px">All verified · Escrow protected · No daily rentals</p>
         </div>
-        <select class="sort-sel">
-          <option>Best Match</option>
-          <option>Price: Low → High</option>
-          <option>Price: High → Low</option>
-          <option>Top Rated</option>
+        <select class="sort-sel" id="sortSel" onchange="sortListings(this.value)">
+          <option value="best">Best Match</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="rating">Top Rated</option>
+          <option value="newest">Newest First</option>
         </select>
       </div>
       <div class="listing-grid" id="listGrid"></div>
@@ -1031,6 +1032,80 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <div style="padding:20px 16px">
       <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">⭐ Reviews from Landlords</div>
       <div id="profileReviews" style="color:var(--muted);font-size:.85rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ TERMS OF USE ════════════ -->
+<div id="s-terms" class="screen" style="background:var(--bg)">
+  <div style="max-width:700px;margin:0 auto;padding:0">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50">
+      <button class="btn ol sm" onclick="history.back()">← Back</button>
+      <div style="font-weight:700;font-size:.95rem">Terms of Use</div>
+    </div>
+    <div style="padding:24px 16px;font-size:.88rem;line-height:1.8;color:var(--text)">
+      <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;margin-bottom:8px">NestMate Terms of Use</h2>
+      <p style="color:var(--muted);margin-bottom:24px">Last updated: March 2026</p>
+
+      <h3 style="margin-bottom:8px">1. Acceptance</h3>
+      <p>By using NestMate you agree to these terms. NestMate is a platform connecting students and landlords in Gold Coast, Australia.</p>
+
+      <h3 style="margin:20px 0 8px">2. Platform Role</h3>
+      <p>NestMate is a marketplace platform. We do not own, manage, or control any properties listed. All rental agreements are between tenants and landlords directly.</p>
+
+      <h3 style="margin:20px 0 8px">3. Escrow Payments</h3>
+      <p>Payments are held in escrow and released to landlords only after the tenant confirms check-in. If an issue arises within 24 hours of check-in, the tenant may request a full refund.</p>
+
+      <h3 style="margin:20px 0 8px">4. User Obligations</h3>
+      <p>Users must provide accurate information, maintain respectful communication, and comply with Australian tenancy laws. Fraudulent listings or bookings will result in immediate account termination.</p>
+
+      <h3 style="margin:20px 0 8px">5. Fees</h3>
+      <p>NestMate charges a 5% platform fee on each booking, deducted from the total amount. This covers escrow protection, identity verification, and platform maintenance.</p>
+
+      <h3 style="margin:20px 0 8px">6. Cancellation</h3>
+      <p>Tenants may cancel before landlord approval for a full refund. After approval, cancellation policies are agreed between parties. Bond is released within 7 business days after check-out confirmation.</p>
+
+      <h3 style="margin:20px 0 8px">7. Liability</h3>
+      <p>NestMate is not liable for disputes between users, property damage, or losses arising from the use of the platform beyond the escrow amount held.</p>
+
+      <h3 style="margin:20px 0 8px">8. Governing Law</h3>
+      <p>These terms are governed by the laws of Queensland, Australia. Any disputes shall be resolved in the courts of Queensland.</p>
+
+      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">Contact: legal@nestmate.com.au</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ PRIVACY POLICY ════════════ -->
+<div id="s-privacy" class="screen" style="background:var(--bg)">
+  <div style="max-width:700px;margin:0 auto;padding:0">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50">
+      <button class="btn ol sm" onclick="history.back()">← Back</button>
+      <div style="font-weight:700;font-size:.95rem">Privacy Policy</div>
+    </div>
+    <div style="padding:24px 16px;font-size:.88rem;line-height:1.8;color:var(--text)">
+      <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;margin-bottom:8px">Privacy Policy</h2>
+      <p style="color:var(--muted);margin-bottom:24px">Last updated: March 2026</p>
+
+      <h3 style="margin-bottom:8px">1. Data We Collect</h3>
+      <p>We collect: name, email, nationality, profile photo, booking history, and messages. Payment data is processed by Stripe and never stored on our servers.</p>
+
+      <h3 style="margin:20px 0 8px">2. How We Use It</h3>
+      <p>Your data is used to: operate the platform, verify identity, process payments, send notifications, and improve our services. We never sell your data to third parties.</p>
+
+      <h3 style="margin:20px 0 8px">3. Storage</h3>
+      <p>Data is stored on Supabase servers in AWS Sydney region (ap-southeast-2), complying with Australian data residency requirements.</p>
+
+      <h3 style="margin:20px 0 8px">4. Your Rights</h3>
+      <p>Under the Australian Privacy Act 1988, you have the right to: access your data, correct inaccuracies, request deletion, and opt out of marketing communications.</p>
+
+      <h3 style="margin:20px 0 8px">5. Cookies</h3>
+      <p>We use essential cookies for authentication only. We do not use tracking or advertising cookies.</p>
+
+      <h3 style="margin:20px 0 8px">6. Contact</h3>
+      <p>For privacy requests: privacy@nestmate.com.au</p>
+
+      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">NestMate complies with the Australian Privacy Act 1988 and the Queensland Information Privacy Act 2009.</p>
     </div>
   </div>
 </div>
@@ -2517,7 +2592,9 @@ function llTab(tab, skipPhotoClear) {
                   (tab==='applications' && ico.includes('📥')) ||
                   (tab==='earnings' && ico.includes('💰')) ||
                   (tab==='contracts' && ico.includes('📄')) ||
-                  (tab==='add' && ico.includes('➕'));
+                  (tab==='add' && ico.includes('➕')) ||
+                  (tab==='reviews' && ico.includes('⭐')) ||
+                  (tab==='settings' && ico.includes('⚙️'));
     if(match) i.classList.add('on');
   });
   const m = document.getElementById('llMain');
@@ -2527,6 +2604,8 @@ function llTab(tab, skipPhotoClear) {
   else if (tab==='earnings') renderEarnings(m);
   else if (tab==='contracts') renderContracts(m);
   else if (tab==='add') renderAddListing(m, skipPhotoClear);
+  else if (tab==='reviews') renderLLReviews(m);
+  else if (tab==='settings') renderLLSettings(m);
 }
 
 async function renderOverview(m) {
@@ -5204,6 +5283,201 @@ function sanitizeUrl(url) {
   if (!/^(https?:|data:image\/)/.test(url)) return '';
   return url;
 }
+
+
+// ══════════════════════════════════════
+// SORT LISTINGS
+// ══════════════════════════════════════
+function sortListings(val) {
+  if (!window.CURRENT_LISTINGS) return;
+  var sorted = [...window.CURRENT_LISTINGS];
+  if (val === 'price_asc') sorted.sort((a,b) => a.price - b.price);
+  else if (val === 'price_desc') sorted.sort((a,b) => b.price - a.price);
+  else if (val === 'rating') sorted.sort((a,b) => (b.rating||0) - (a.rating||0));
+  else if (val === 'newest') sorted.reverse();
+  renderListings(sorted);
+}
+
+// ══════════════════════════════════════
+// LANDLORD — REVIEWS TAB
+// ══════════════════════════════════════
+async function renderLLReviews(m) {
+  if (!_supabaseClient || !currentUser) return;
+  m.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading reviews...</div>';
+
+  // Get all reviews about this landlord's tenants
+  var res = await _supabaseClient.from('reviews')
+    .select('*, subject:profiles!subject_id(full_name, avatar_url), listings(title)')
+    .eq('reviewer_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  // Also get reviews received about landlord
+  var res2 = await _supabaseClient.from('reviews')
+    .select('*, reviewer:profiles!reviewer_id(full_name, avatar_url), listings(title)')
+    .eq('subject_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  var written = res.data || [];
+  var received = res2.data || [];
+  var avgRating = received.length ? (received.reduce((s,r) => s+(r.rating||0),0)/received.length).toFixed(1) : '—';
+
+  m.innerHTML = `
+    <div style="padding:20px">
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">
+        <div style="padding:16px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:1.8rem;font-weight:800;color:var(--lime)">${avgRating}</div>
+          <div style="font-size:.75rem;color:var(--muted)">Your avg rating</div>
+        </div>
+        <div style="padding:16px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:1.8rem;font-weight:800;color:var(--text)">${received.length}</div>
+          <div style="font-size:.75rem;color:var(--muted)">Reviews received</div>
+        </div>
+        <div style="padding:16px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:1.8rem;font-weight:800;color:var(--text)">${written.length}</div>
+          <div style="font-size:.75rem;color:var(--muted)">Reviews written</div>
+        </div>
+      </div>
+
+      <!-- Reviews received -->
+      <div style="font-weight:700;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">⭐ Reviews about you</div>
+      ${received.length === 0 ? '<p style="color:var(--muted);font-size:.85rem;padding:20px 0">No reviews yet. Reviews from tenants will appear here after they move out.</p>' :
+        received.map(r => {
+          var reviewer = r.reviewer || {};
+          var initial = (reviewer.full_name||'T').charAt(0).toUpperCase();
+          var stars = '⭐'.repeat(Math.min(5,r.rating||5));
+          var date = new Date(r.created_at).toLocaleDateString('en-AU',{month:'short',year:'numeric'});
+          return '<div style="padding:14px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);margin-bottom:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+            '<div style="width:36px;height:36px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#000;overflow:hidden">' +
+            (reviewer.avatar_url ? '<img src="'+reviewer.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : initial) +
+            '</div>' +
+            '<div><div style="font-weight:600;font-size:.85rem">'+(reviewer.full_name||'Tenant')+'</div>' +
+            '<div style="font-size:.72rem;color:var(--muted)">' + stars + ' · ' + date + '</div></div></div>' +
+            '<p style="font-size:.84rem;color:var(--muted);line-height:1.5">'+(r.comment||'')+'</p></div>';
+        }).join('')
+      }
+
+      <!-- Reviews written -->
+      <div style="font-weight:700;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:24px 0 12px">📝 Reviews you wrote</div>
+      ${written.length === 0 ? '<p style="color:var(--muted);font-size:.85rem;padding:20px 0">You have not written any reviews yet. After a tenant moves out, you can leave them a review.</p>' :
+        written.map(r => {
+          var subj = r.subject || {};
+          var initial = (subj.full_name||'T').charAt(0).toUpperCase();
+          var stars = '⭐'.repeat(Math.min(5,r.rating||5));
+          var date = new Date(r.created_at).toLocaleDateString('en-AU',{month:'short',year:'numeric'});
+          return '<div style="padding:14px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);margin-bottom:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+            '<div style="width:36px;height:36px;border-radius:50%;background:var(--bg-l);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;overflow:hidden">' +
+            (subj.avatar_url ? '<img src="'+subj.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : initial) +
+            '</div>' +
+            '<div><div style="font-weight:600;font-size:.85rem">'+(subj.full_name||'Tenant')+'</div>' +
+            '<div style="font-size:.72rem;color:var(--muted)">' + stars + ' · ' + (r.listings&&r.listings.title||'') + ' · ' + date + '</div></div></div>' +
+            '<p style="font-size:.84rem;color:var(--muted);line-height:1.5">'+(r.comment||'')+'</p></div>';
+        }).join('')
+      }
+    </div>`;
+}
+
+// ══════════════════════════════════════
+// LANDLORD — SETTINGS TAB
+// ══════════════════════════════════════
+async function renderLLSettings(m) {
+  if (!_supabaseClient || !currentUser) return;
+
+  // Load current profile
+  var res = await _supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+  var p = res.data || {};
+
+  m.innerHTML = `
+    <div style="padding:20px;max-width:560px">
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:20px">⚙️ Settings</h2>
+
+      <!-- Profile section -->
+      <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">👤 Profile</div>
+        <div class="fg"><label class="lbl">Display Name</label><input class="inp" id="setName" value="${p.full_name||''}"></div>
+        <div class="fg"><label class="lbl">Phone Number</label><input class="inp" type="tel" id="setPhone" value="${p.phone||''}" placeholder="+61 4xx xxx xxx"></div>
+        <div class="fg"><label class="lbl">Bio</label><textarea class="inp" id="setBio" rows="3" style="resize:none">${p.bio||''}</textarea></div>
+      </div>
+
+      <!-- Notifications section -->
+      <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">🔔 Notifications</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-weight:600;font-size:.85rem">New booking requests</div><div style="font-size:.75rem;color:var(--muted)">Email when tenant requests your room</div></div>
+          <input type="checkbox" id="notifBooking" ${p.notif_booking!==false?'checked':''} style="width:18px;height:18px;cursor:pointer">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-weight:600;font-size:.85rem">New messages</div><div style="font-size:.75rem;color:var(--muted)">Email when tenant sends a message</div></div>
+          <input type="checkbox" id="notifMsg" ${p.notif_messages!==false?'checked':''} style="width:18px;height:18px;cursor:pointer">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <div><div style="font-weight:600;font-size:.85rem">Payment confirmations</div><div style="font-size:.75rem;color:var(--muted)">Email when payment is received</div></div>
+          <input type="checkbox" id="notifPay" ${p.notif_payments!==false?'checked':''} style="width:18px;height:18px;cursor:pointer">
+        </div>
+      </div>
+
+      <!-- Payout section -->
+      <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">💰 Payout Details</div>
+        <div style="padding:12px;background:rgba(200,241,53,.08);border:1px solid rgba(200,241,53,.2);border-radius:10px;margin-bottom:14px;font-size:.82rem;color:var(--muted)">
+          🔒 Bank details are encrypted and never shared with tenants. Payouts are processed 24h after tenant confirms check-in.
+        </div>
+        <div class="fg"><label class="lbl">Bank Name</label><input class="inp" id="setBankName" value="${p.bank_name||''}" placeholder="e.g. Commonwealth Bank"></div>
+        <div class="fg"><label class="lbl">BSB</label><input class="inp" id="setBSB" value="${p.bank_bsb||''}" placeholder="000-000" maxlength="7"></div>
+        <div class="fg"><label class="lbl">Account Number</label><input class="inp" id="setBankAcc" value="${p.bank_account||''}" placeholder="xxxxxxxxxx"></div>
+      </div>
+
+      <!-- Legal links -->
+      <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:20px">
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">📋 Legal</div>
+        <div onclick="go('s-terms')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;cursor:pointer;border-bottom:1px solid var(--border)">
+          <span style="font-size:.85rem">Terms of Use</span><span style="color:var(--muted)">→</span>
+        </div>
+        <div onclick="go('s-privacy')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;cursor:pointer">
+          <span style="font-size:.85rem">Privacy Policy</span><span style="color:var(--muted)">→</span>
+        </div>
+      </div>
+
+      <button class="btn lime full" onclick="saveLLSettings()">Save Settings →</button>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <button class="btn ol full" onclick="doLogout()" style="color:var(--red);border-color:var(--red)">🚪 Sign Out</button>
+      </div>
+    </div>`;
+}
+
+async function saveLLSettings() {
+  if (!_supabaseClient || !currentUser) return;
+  var btn = document.querySelector('#llMain .btn.lime');
+  if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+
+  var updates = {
+    full_name: document.getElementById('setName')?.value || '',
+    phone: document.getElementById('setPhone')?.value || '',
+    bio: document.getElementById('setBio')?.value || '',
+    notif_booking: document.getElementById('notifBooking')?.checked ?? true,
+    notif_messages: document.getElementById('notifMsg')?.checked ?? true,
+    notif_payments: document.getElementById('notifPay')?.checked ?? true,
+    bank_name: document.getElementById('setBankName')?.value || '',
+    bank_bsb: document.getElementById('setBSB')?.value || '',
+    bank_account: document.getElementById('setBankAcc')?.value || '',
+  };
+
+  var res = await _supabaseClient.from('profiles').upsert({ id: currentUser.id, email: currentUser.email, ...updates });
+
+  if (btn) { btn.textContent = 'Save Settings →'; btn.disabled = false; }
+
+  if (res.error) { toast('Error: ' + res.error.message, 'error'); return; }
+
+  // Update navbar name
+  var navName = document.getElementById('navName');
+  if (navName && updates.full_name) navName.textContent = updates.full_name.split(' ')[0];
+
+  toast('✅ Settings saved!', 'lime');
+}
+
+// Add Terms/Privacy links to landing footer if not present
 
 </script>
 </body>
