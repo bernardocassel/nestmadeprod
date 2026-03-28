@@ -760,6 +760,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="fg"><label class="lbl">Email</label><input class="inp" type="email" placeholder="you@email.com" id="loginEmail"></div>
       <div class="fg"><label class="lbl">Password</label><input class="inp" type="password" placeholder="••••••••" id="loginPwd"></div>
       <button class="btn lime full" onclick="doLogin()"><span class="t" data-en="Sign In →" data-pt="Entrar →">Sign In →</span></button>
+      <div style="text-align:center;margin-top:8px"><a onclick="doForgotPassword()" style="font-size:.78rem;color:var(--muted);cursor:pointer;text-decoration:underline">Forgot password?</a></div>
       <div class="sw-mode">No account? <a onclick="go('s-signup')">Join free</a></div>
     </div>
   </div>
@@ -1914,12 +1915,30 @@ async function doLogout() {
 }
 
 // Função legada mantida para compatibilidade
-function doLogin() {
-  if (supabase) loginWithGoogle();
-  else {
-    go('s-browse');
-    toast('✅ Modo demo — configure as credenciais para auth real.', 'lime');
+async function doLogin() {
+  if (!_supabaseClient) { toast('Connecting... try again', ''); setTimeout(initSupabase, 100); return; }
+  const email = document.getElementById('loginEmail')?.value?.trim();
+  const pwd = document.getElementById('loginPwd')?.value;
+  if (!email || !pwd) { toast('Please enter email and password', 'error'); return; }
+
+  const btn = document.querySelector('#s-login .btn.lime');
+  if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
+
+  const { data, error } = await _supabaseClient.auth.signInWithPassword({ email, password: pwd });
+
+  if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
+
+  if (error) {
+    if (error.message.includes('Invalid login')) {
+      toast('Wrong email or password', 'error');
+    } else if (error.message.includes('Email not confirmed')) {
+      toast('Please verify your email first', 'error');
+    } else {
+      toast('Error: ' + error.message, 'error');
+    }
+    return;
   }
+  toast('✅ Welcome back!', 'lime');
 }
 
 // ══════════════════════════════════════
@@ -5418,15 +5437,10 @@ async function renderLLSettings(m) {
         </div>
       </div>
 
-      <!-- Payout section -->
+      <!-- Payout section - Stripe Connect -->
       <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
-        <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">💰 Payout Details</div>
-        <div style="padding:12px;background:rgba(200,241,53,.08);border:1px solid rgba(200,241,53,.2);border-radius:10px;margin-bottom:14px;font-size:.82rem;color:var(--muted)">
-          🔒 Bank details are encrypted and never shared with tenants. Payouts are processed 24h after tenant confirms check-in.
-        </div>
-        <div class="fg"><label class="lbl">Bank Name</label><input class="inp" id="setBankName" value="${p.bank_name||''}" placeholder="e.g. Commonwealth Bank"></div>
-        <div class="fg"><label class="lbl">BSB</label><input class="inp" id="setBSB" value="${p.bank_bsb||''}" placeholder="000-000" maxlength="7"></div>
-        <div class="fg"><label class="lbl">Account Number</label><input class="inp" id="setBankAcc" value="${p.bank_account||''}" placeholder="xxxxxxxxxx"></div>
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">💰 Payout Account</div>
+        ${getStripeConnectHTML(p.stripe_account_id)}
       </div>
 
       <!-- Legal links -->
@@ -5478,6 +5492,81 @@ async function saveLLSettings() {
 }
 
 // Add Terms/Privacy links to landing footer if not present
+
+
+// ══════════════════════════════════════
+// STRIPE CONNECT — Landlord onboarding
+// ══════════════════════════════════════
+function getStripeConnectHTML(accountId) {
+  if (accountId) {
+    return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.2);border-radius:10px;margin-bottom:12px">' +
+      '<span style="font-size:1.4rem">✅</span>' +
+      '<div><div style="font-weight:700;font-size:.88rem;color:var(--teal)">Bank account connected!</div>' +
+      '<div style="font-size:.75rem;color:var(--muted)">Payouts processed 24h after tenant check-in</div></div></div>' +
+      '<button class="btn ol sm" onclick="stripeConnectOnboard()" style="width:100%">🔄 Update bank account</button>';
+  }
+  return '<div style="padding:12px;background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.15);border-radius:10px;margin-bottom:14px;font-size:.82rem;color:var(--muted)">' +
+    '⚠️ Connect a bank account to receive payments from tenants.</div>' +
+    '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px;line-height:1.5">NestMate uses <strong>Stripe</strong> to securely handle payouts. Your bank details are handled entirely by Stripe.</div>' +
+    '<button class="btn lime full" onclick="stripeConnectOnboard()" style="display:flex;align-items:center;justify-content:center;gap:8px">🏦 Connect Bank Account via Stripe</button>' +
+    '<p style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:8px">Takes ~5 minutes · Secured by Stripe</p>';
+}
+
+
+// ══════════════════════════════════════
+async function stripeConnectOnboard() {
+  if (!currentUser || !_supabaseClient) return;
+  toast('Redirecting to Stripe...', '');
+  try {
+    const res = await fetch('/api/stripe-connect-onboard', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (await _supabaseClient.auth.getSession()).data.session?.access_token
+      },
+      body: JSON.stringify({ userId: currentUser.id, email: currentUser.email })
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      toast('Error: ' + (data.error || 'Failed to connect'), 'error');
+    }
+  } catch(err) {
+    toast('Connection error: ' + err.message, 'error');
+  }
+}
+
+// Check if returning from Stripe Connect onboarding
+(function checkStripeConnectReturn() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('stripe_connect') === 'success') {
+    toast('✅ Bank account connected! You can now receive payments.', 'lime');
+    history.replaceState({}, '', window.location.pathname);
+    // Reload settings if on landlord page
+    setTimeout(function() {
+      if (currentUser) llTab('settings');
+    }, 500);
+  } else if (params.get('stripe_connect') === 'refresh') {
+    toast('Please complete the bank account setup.', '');
+    history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
+
+// ══════════════════════════════════════
+// FORGOT PASSWORD
+// ══════════════════════════════════════
+async function doForgotPassword() {
+  const email = document.getElementById('loginEmail')?.value?.trim();
+  if (!email) { toast('Enter your email first', ''); return; }
+  if (!_supabaseClient) return;
+  const { error } = await _supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.NESTMATE_CONFIG.APP_URL + '?reset=true',
+  });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('✅ Reset link sent to ' + email, 'lime');
+}
 
 </script>
 </body>
