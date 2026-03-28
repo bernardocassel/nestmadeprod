@@ -31,6 +31,18 @@ module.exports = async (req, res) => {
         <p style="color:#888;font-size:12px;margin-top:24px">RoomiStay · Gold Coast, Australia</p>
       </div>`
     }),
+    booking_pending_tenant: (data) => ({
+      to: data.tenantEmail,
+      subject: `Your booking request is being reviewed ⏳`,
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#1C2810">Request received! ⏳</h2>
+        <p>Your booking request for <strong>${data.listingTitle}</strong> has been sent to the landlord.</p>
+        <p>📅 Move-in: ${data.moveIn || 'Flexible'}<br>💰 Weekly rent: AU$${data.weeklyRent}/wk</p>
+        <p style="color:#888">The landlord has up to 24h to review your request. You'll receive an email once approved.</p>
+        <a href="${siteUrl}" style="display:inline-block;background:#C8F135;padding:12px 24px;border-radius:8px;text-decoration:none;color:#000;font-weight:700;margin-top:16px">View My Bookings →</a>
+        <p style="color:#888;font-size:12px;margin-top:24px">RoomiStay · Gold Coast, Australia</p>
+      </div>`
+    }),
     booking_approved: (data) => ({
       to: data.tenantEmail,
       subject: `Your room request was approved! 🎉`,
