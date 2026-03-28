@@ -1823,15 +1823,17 @@ function updateNavAvatar(user) {
   var name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
   var firstName = name.split(' ')[0];
   navName.textContent = firstName;
-  // Google avatar from user_metadata as fallback
   var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
-  // Check for avatar in profile, fallback to Google avatar
   if (_supabaseClient && user.id) {
     _supabaseClient.from('profiles').select('avatar_url').eq('id', user.id).single().then(function(res) {
       var avatarUrl = (res.data && res.data.avatar_url) ? res.data.avatar_url : googleAvatar;
       if (avatarUrl) {
-        navAvatar.innerHTML = '<img src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent=\'' + firstName.charAt(0).toUpperCase() + '\'">';
-        // If profile has no avatar but Google does, save it
+        var img = document.createElement('img');
+        img.src = avatarUrl;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+        img.onerror = function() { navAvatar.textContent = firstName.charAt(0).toUpperCase(); };
+        navAvatar.innerHTML = '';
+        navAvatar.appendChild(img);
         if (res.data && !res.data.avatar_url && googleAvatar) {
           _supabaseClient.from('profiles').upsert({ id: user.id, avatar_url: googleAvatar }, { onConflict: 'id' }).then(function(){});
         }
@@ -1841,7 +1843,12 @@ function updateNavAvatar(user) {
     });
   } else {
     if (googleAvatar) {
-      navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent=\'' + firstName.charAt(0).toUpperCase() + '\'">';
+      var img = document.createElement('img');
+      img.src = googleAvatar;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+      img.onerror = function() { navAvatar.textContent = firstName.charAt(0).toUpperCase(); };
+      navAvatar.innerHTML = '';
+      navAvatar.appendChild(img);
     } else {
       navAvatar.textContent = firstName.charAt(0).toUpperCase();
     }
