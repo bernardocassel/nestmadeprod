@@ -1121,9 +1121,9 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </div>
     <!-- Tabs -->
     <div style="display:flex;border-bottom:1px solid var(--border);background:var(--bg)">
-      <button id="mbTabActive" onclick="switchMBTab('active')" style="flex:1;padding:12px;font-size:.85rem;font-weight:700;border:none;border-bottom:2px solid var(--lime);background:none;color:var(--text);cursor:pointer">🏡 Active</button>
-      <button id="mbTabPending" onclick="switchMBTab('pending')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">⏳ Pending</button>
-      <button id="mbTabPast" onclick="switchMBTab('past')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">📋 Past</button>
+      <button id="mbTabActive" onclick="switchMBTab('active')" style="flex:1;padding:12px;font-size:.85rem;font-weight:700;border:none;border-bottom:2px solid var(--lime);background:none;color:var(--text);cursor:pointer">🏡 Active <span id="mbBadgeActive" style="display:none;background:var(--lime);color:#000;border-radius:50%;padding:1px 6px;font-size:.72rem;font-weight:800;margin-left:4px"></span></button>
+      <button id="mbTabPending" onclick="switchMBTab('pending')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">⏳ Pending <span id="mbBadgePending" style="display:none;background:var(--orange);color:#fff;border-radius:50%;padding:1px 6px;font-size:.72rem;font-weight:800;margin-left:4px"></span></button>
+      <button id="mbTabPast" onclick="switchMBTab('past')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">📋 Past <span id="mbBadgePast" style="display:none;background:var(--muted);color:#fff;border-radius:50%;padding:1px 6px;font-size:.72rem;font-weight:800;margin-left:4px"></span></button>
     </div>
     <div id="myBookingsList" style="padding:16px"></div>
   </div>
@@ -1947,7 +1947,7 @@ async function signUpWithEmail(email, password, fullName, role, nationality, bio
 // LOGOUT
 async function doLogout() {
   await _supabaseClient?.auth.signOut();
-  go('s-land');
+  window.location.href = window.location.pathname;
 }
 
 // Função legada mantida para compatibilidade
@@ -2310,7 +2310,37 @@ function openDetail(id) {
   if (!CUR && typeof LISTINGS !== 'undefined') {
     CUR = LISTINGS.find(l => String(l.id) === String(id));
   }
-  if (!CUR) { toast('Room not found', 'error'); return; }
+  if (!CUR) {
+    // Listing not in cache — fetch from Supabase
+    if (_supabaseClient && id) {
+      _supabaseClient.from('listings')
+        .select('*, profiles!landlord_id(full_name, rating_avg, rating_count, avatar_url)')
+        .eq('id', id).single().then(function(res) {
+          if (res.data) {
+            var l = res.data;
+            var photos = l.photos;
+            if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
+            CUR = {
+              id: l.id, title: l.title, suburb: l.suburb, address: l.address,
+              price: l.price_weekly, bond: l.bond_amount, type: l.room_type,
+              minWeeks: l.min_weeks, maxMonths: l.max_months, avail: l.available_from,
+              vibe: l.house_vibe, amenities: l.amenities || [], nats: l.nationalities || [],
+              description: l.description, status: l.status, landlordId: l.landlord_id,
+              gender: l.gender_preference, bathroom: l.bathroom, pets: l.pets,
+              smoking: l.smoking, utilities: l.utilities, flexible: l.flexible_dates,
+              imgs: photos || [],
+              landlordName: l.profiles?.full_name || 'Landlord',
+              landlordRating: l.profiles?.rating_avg || 0,
+              landlordAvatar: l.profiles?.avatar_url || '',
+            };
+            window.CURRENT_LISTINGS = window.CURRENT_LISTINGS || [];
+            window.CURRENT_LISTINGS.push(CUR);
+            openDetail(id);
+          } else { toast('Room not found', 'error'); }
+        });
+    } else { toast('Room not found', 'error'); }
+    return;
+  }
   const l = CUR;
   // Gallery
   const mainImg = l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500';
@@ -2591,6 +2621,7 @@ async function simulatePay(total) {
         
         // Send email to landlord via API (API fetches real email from DB)
         if (booking && booking.id) {
+          // Email to landlord
           fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2600,7 +2631,17 @@ async function simulatePay(total) {
               landlordId: CUR.landlordId,
               appUrl: window.NESTMATE_CONFIG.APP_URL,
             })
-          }).catch(e => console.log('Email failed (non-critical):', e));
+          }).catch(e => console.log('Email to landlord failed:', e));
+          // Email to tenant confirming pending
+          fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'booking_pending_tenant',
+              bookingId: booking.id,
+              appUrl: window.NESTMATE_CONFIG.APP_URL,
+            })
+          }).catch(e => console.log('Email to tenant failed:', e));
         }
       }
     }
@@ -2695,7 +2736,7 @@ async function renderEarnings(m) {
     const { data: payments, error } = await _supabaseClient
       .from('payments')
       .select('*, bookings(listings(title, suburb))')
-      .eq('receiver_id', currentUser.id)
+      .eq('landlord_id', currentUser.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -5612,7 +5653,18 @@ async function openMyBookings() {
   if (!currentUser || !_supabaseClient) { toast('Please sign in', ''); return; }
   _mbNavSource = sessionStorage.getItem('nm-screen') || 's-browse';
   go('s-my-bookings');
-  loadMyBookings('active');
+  // Check pending first, show that tab if has pending bookings
+  _supabaseClient.from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', currentUser.id)
+    .in('status', ['pending', 'payment_failed'])
+    .then(function(r) {
+      if (r.count && r.count > 0) {
+        switchMBTab('pending');
+      } else {
+        loadMyBookings('active');
+      }
+    });
 }
 
 function closeMyBookings() {
@@ -5649,6 +5701,25 @@ async function loadMyBookings(tab) {
     pending: ['pending', 'payment_failed'],
     past: ['checked_out', 'cancelled', 'declined'],
   };
+
+  // Load counts for all tabs and update badges
+  if (_supabaseClient && currentUser) {
+    ['active','pending','past'].forEach(function(t) {
+      var statuses = statusMap[t];
+      _supabaseClient.from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', currentUser.id)
+        .in('status', statuses)
+        .then(function(r) {
+          var badge = document.getElementById('mbBadge' + t.charAt(0).toUpperCase() + t.slice(1));
+          if (badge) {
+            var n = r.count || 0;
+            badge.textContent = n;
+            badge.style.display = n > 0 ? 'inline' : 'none';
+          }
+        });
+    });
+  }
 
   var statuses = statusMap[tab] || statusMap.active;
 
