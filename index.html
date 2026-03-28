@@ -5740,4 +5740,14 @@ async function loadMyBookings(tab) {
 }
 
 async function cancelBooking(bookingId) {
-  if (
+    var conf = confirm('Cancel this booking request?');
+  if (!conf) return;
+  if (!_supabaseClient) return;
+  var res = await _supabaseClient.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId).eq('tenant_id', currentUser.id);
+  if (res.error) { toast('Error: ' + res.error.message, 'error'); return; }
+  toast('Booking cancelled', '');
+  loadMyBookings(_mbCurrentTab || 'pending');
+}
+</script>
+</body>
+</html>
