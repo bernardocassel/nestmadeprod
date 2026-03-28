@@ -421,6 +421,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <!-- Dropdown -->
       <div id="userDropdown" onmouseenter="keepDropdown()" onmouseleave="hideDropdown()" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg-m);border:1px solid var(--border);border-radius:14px;min-width:180px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:200;overflow:hidden">
         <div onclick="goToOwnProfile()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">👤 My Profile</div>
+        <div onclick="openMyBookings()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">🏠 My Bookings</div>
         <div id="dropAdminBtn" onclick="go('s-admin')" style="display:none;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">⚙️ Admin Panel</div>
         <div onclick="openMessages()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">💬 Messages <span id="dropMsgBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.65rem;font-weight:700;margin-left:auto;align-items:center;justify-content:center">0</span></div>
         <div style="border-top:1px solid var(--border)"></div>
@@ -1108,6 +1109,23 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
       <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">NestMate complies with the Australian Privacy Act 1988 and the Queensland Information Privacy Act 2009.</p>
     </div>
+  </div>
+</div>
+
+<!-- ════════════ MY BOOKINGS (TENANT) ════════════ -->
+<div id="s-my-bookings" class="screen" style="background:var(--bg)">
+  <div style="max-width:700px;margin:0 auto;padding:0">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
+      <button class="btn ol sm" onclick="closeMyBookings()">← Back</button>
+      <div style="flex:1;font-weight:700;font-size:.95rem;color:var(--text)">🏠 My Bookings</div>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:1px solid var(--border);background:var(--bg)">
+      <button id="mbTabActive" onclick="switchMBTab('active')" style="flex:1;padding:12px;font-size:.85rem;font-weight:700;border:none;border-bottom:2px solid var(--lime);background:none;color:var(--text);cursor:pointer">🏡 Active</button>
+      <button id="mbTabPending" onclick="switchMBTab('pending')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">⏳ Pending</button>
+      <button id="mbTabPast" onclick="switchMBTab('past')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">📋 Past</button>
+    </div>
+    <div id="myBookingsList" style="padding:16px"></div>
   </div>
 </div>
 
@@ -2553,19 +2571,15 @@ async function simulatePay(total) {
       } else {
         console.log('Booking saved:', booking?.id);
         
-        // Send email to landlord
-        if (booking && CUR.landlordId) {
+        // Send email to landlord via API (API fetches real email from DB)
+        if (booking && booking.id) {
           fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               type: 'booking_received',
-              to: 'landlord@nestmate.com.au', // would need landlord email from profiles
-              tenantName: currentUser.user_metadata?.full_name || currentUser.email,
-              listingTitle: CUR.title,
-              moveIn: mIn,
-              total: total,
-              message: tenantMsg,
+              bookingId: booking.id,
+              landlordId: CUR.landlordId,
               appUrl: window.NESTMATE_CONFIG.APP_URL,
             })
           }).catch(e => console.log('Email failed (non-critical):', e));
@@ -5566,6 +5580,153 @@ async function doForgotPassword() {
   });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('✅ Reset link sent to ' + email, 'lime');
+}
+
+
+// ══════════════════════════════════════
+// MY BOOKINGS (TENANT DASHBOARD)
+// ══════════════════════════════════════
+var _mbNavSource = 's-browse';
+var _mbCurrentTab = 'active';
+
+async function openMyBookings() {
+  hideDropdown();
+  if (!currentUser || !_supabaseClient) { toast('Please sign in', ''); return; }
+  _mbNavSource = sessionStorage.getItem('nm-screen') || 's-browse';
+  go('s-my-bookings');
+  loadMyBookings('active');
+}
+
+function closeMyBookings() {
+  go(_mbNavSource || 's-browse');
+}
+
+function switchMBTab(tab) {
+  _mbCurrentTab = tab;
+  // Update tab styles
+  ['active','pending','past'].forEach(function(t) {
+    var btn = document.getElementById('mbTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (!btn) return;
+    if (t === tab) {
+      btn.style.borderBottom = '2px solid var(--lime)';
+      btn.style.color = 'var(--text)';
+      btn.style.fontWeight = '700';
+    } else {
+      btn.style.borderBottom = '2px solid transparent';
+      btn.style.color = 'var(--muted)';
+      btn.style.fontWeight = '600';
+    }
+  });
+  loadMyBookings(tab);
+}
+
+async function loadMyBookings(tab) {
+  var list = document.getElementById('myBookingsList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Loading...</div>';
+
+  // Define status groups
+  var statusMap = {
+    active: ['checked_in', 'paid', 'signed', 'approved', 'contract_sent'],
+    pending: ['pending', 'payment_failed'],
+    past: ['checked_out', 'cancelled', 'declined'],
+  };
+
+  var statuses = statusMap[tab] || statusMap.active;
+
+  var res = await _supabaseClient.from('bookings')
+    .select('*, listings(id, title, suburb, photos, price_weekly, address), landlord:profiles!landlord_id(full_name, avatar_url)')
+    .eq('tenant_id', currentUser.id)
+    .in('status', statuses)
+    .order('created_at', { ascending: false });
+
+  if (res.error || !res.data || !res.data.length) {
+    var emptyMsg = {
+      active: 'No active bookings yet.<br><br><button class="btn lime sm" onclick="closeMyBookings();go(\'s-browse\')">Browse Rooms →</button>',
+      pending: 'No pending requests.',
+      past: 'No past bookings.',
+    };
+    list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">' +
+      '<div style="font-size:3rem;margin-bottom:12px">🏠</div>' +
+      '<p style="font-weight:600;margin-bottom:8px">Nothing here yet</p>' +
+      '<p style="font-size:.85rem">' + (emptyMsg[tab]||'') + '</p></div>';
+    return;
+  }
+
+  var statusLabels = {
+    pending: { label: '⏳ Awaiting approval', color: 'var(--orange)' },
+    payment_failed: { label: '❌ Payment failed', color: 'var(--red)' },
+    approved: { label: '✅ Approved', color: 'var(--teal)' },
+    contract_sent: { label: '📄 Contract sent', color: 'var(--blue)' },
+    signed: { label: '✍️ Signed', color: 'var(--teal)' },
+    paid: { label: '💰 Paid - move in soon', color: 'var(--lime)' },
+    checked_in: { label: '🏡 Living here', color: 'var(--lime)' },
+    checked_out: { label: '✅ Completed', color: 'var(--muted)' },
+    cancelled: { label: '❌ Cancelled', color: 'var(--red)' },
+    declined: { label: '❌ Declined', color: 'var(--red)' },
+  };
+
+  list.innerHTML = res.data.map(function(b) {
+    var l = b.listings || {};
+    var landlord = b.landlord || {};
+    var photos = l.photos;
+    if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
+    var img = (photos && photos[0]) ? photos[0] : '';
+    var st = statusLabels[b.status] || { label: b.status, color: 'var(--muted)' };
+    var moveIn = b.move_in_date ? new Date(b.move_in_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var moveOut = b.move_out_date ? new Date(b.move_out_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var landlordInitial = (landlord.full_name||'L').charAt(0).toUpperCase();
+
+    return '<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px">' +
+      // Photo
+      (img ? '<div onclick="openDetail(this.dataset.lid)" data-lid="'+l.id+'" style="cursor:pointer"><img src="'+img+'" style="width:100%;height:160px;object-fit:cover;pointer-events:none"></div>' : '') +
+      '<div style="padding:14px">' +
+        // Status badge
+        '<div style="display:inline-flex;align-items:center;padding:4px 10px;background:rgba(0,0,0,.06);border-radius:20px;font-size:.75rem;font-weight:700;color:'+st.color+';margin-bottom:10px">'+st.label+'</div>' +
+        // Title
+        '<div style="font-weight:700;font-size:1rem;color:var(--text);margin-bottom:4px">'+( l.title||'Room')+'</div>' +
+        '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">📍 '+(l.suburb||'Gold Coast')+'</div>' +
+        // Dates
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">' +
+          '<div style="padding:10px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border)">' +
+            '<div style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase">Move in</div>' +
+            '<div style="font-weight:700;font-size:.85rem;margin-top:2px">'+moveIn+'</div></div>' +
+          '<div style="padding:10px;background:var(--bg-l);border-radius:10px;border:1px solid var(--border)">' +
+            '<div style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase">Move out</div>' +
+            '<div style="font-weight:700;font-size:.85rem;margin-top:2px">'+moveOut+'</div></div>' +
+        '</div>' +
+        // Price + landlord
+        '<div style="display:flex;align-items:center;justify-content:space-between">' +
+          '<div>' +
+            '<div style="font-size:.72rem;color:var(--muted)">Weekly rent</div>' +
+            '<div style="font-weight:800;font-size:1.1rem;color:var(--lime)">AU$'+(l.price_weekly||b.total_rent||0)+'/wk</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<div style="width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#000;overflow:hidden">' +
+            (landlord.avatar_url ? '<img src="'+landlord.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : landlordInitial) +
+            '</div>' +
+            '<div style="font-size:.78rem;color:var(--muted)">'+(landlord.full_name||'Landlord')+'</div>' +
+          '</div>' +
+        '</div>' +
+        // Action buttons
+        '<div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
+          '<button class="btn ol sm" style="flex:1" data-lid="'+l.id+'" onclick="openDetail(this.dataset.lid)">View Room</button>' +
+          (b.status === 'checked_in' || b.status === 'paid' ?
+            '<button class="btn lime sm" style="flex:1" data-lid="'+l.id+'" data-uid="'+b.landlord_id+'" onclick="_chatLandlordId=this.dataset.uid;_chatListingId=this.dataset.lid;openChatModal()">&#128172; Message</button>' :
+            b.status === 'pending' ?
+            '<button class="btn ol sm" style="flex:1;color:var(--red);border-color:var(--red)" data-bid="'+b.id+'" onclick="cancelBooking(this.dataset.bid)">Cancel Request</button>' : ''
+          ) +
+        '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+async function cancelBooking(bookingId) {
+  if (!confirm('Cancel this booking request?')) return;
+  var res = await _supabaseClient.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId).eq('tenant_id', currentUser.id);
+  if (res.error) { toast('Error: ' + res.error.message, 'error'); return; }
+  toast('Booking cancelled', '');
+  loadMyBookings(_mbCurrentTab);
 }
 
 </script>
