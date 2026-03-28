@@ -1521,7 +1521,7 @@ async function loadLandlordDashboard() {
       renderFirstTimeLandlord(m);
     } else {
       // Has listings → show real dashboard
-      renderRealDashboard(m, listings);
+      await renderRealDashboard(m, listings);
     }
   } catch(e) {
     console.error('Dashboard error:', e);
@@ -4985,7 +4985,7 @@ async function loadAllConversations() {
   listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Loading...</div>';
 
   var res = await _supabaseClient.from('messages')
-    .select('*, listing:listings(title,photos), sender:profiles!sender_id(id,full_name,avatar_url), recipient:profiles!recipient_id(id,full_name,avatar_url)')
+    .select('*, listing:listings(title,photos), sender:profiles!sender_id(id,full_name,avatar_url)')
     .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
     .order('created_at', { ascending: false });
 
@@ -5264,7 +5264,7 @@ async function loadInbox() {
 
   // Get all conversations (unique sender/recipient pairs)
   var res = await _supabaseClient.from('messages')
-    .select('*, listing:listings(title, suburb), sender:profiles!sender_id(id, full_name, avatar_url), recipient:profiles!recipient_id(id, full_name, avatar_url)')
+    .select('*, listing:listings(title, suburb), sender:profiles!sender_id(id, full_name, avatar_url)')
     .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
     .order('created_at', { ascending: false });
 
