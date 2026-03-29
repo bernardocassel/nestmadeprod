@@ -54,6 +54,29 @@ module.exports = async (req, res) => {
         <p style="color:#888;font-size:12px;margin-top:24px">RoomiStay · Gold Coast, Australia</p>
       </div>`
     }),
+    booking_approved_landlord: (data) => ({
+      to: data.landlordEmail,
+      subject: `You accepted a booking request ✅`,
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#1C2810">Booking confirmed! ✅</h2>
+        <p>You accepted <strong>${data.tenantName}</strong>'s request for <strong>${data.listingTitle}</strong>.</p>
+        <p>📅 Move-in: ${data.moveIn || 'TBC'}<br>💰 Weekly rent: AU$${data.weeklyRent}/wk</p>
+        <p style="color:#888">The tenant has been notified. Next step: send the digital contract.</p>
+        <a href="${siteUrl}" style="display:inline-block;background:#C8F135;padding:12px 24px;border-radius:8px;text-decoration:none;color:#000;font-weight:700;margin-top:16px">Go to Dashboard →</a>
+        <p style="color:#888;font-size:12px;margin-top:24px">RoomiStay · Gold Coast, Australia</p>
+      </div>`
+    }),
+    booking_declined: (data) => ({
+      to: data.tenantEmail,
+      subject: `Update on your booking request`,
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#1C2810">Booking update</h2>
+        <p>Unfortunately, your booking request for <strong>${data.listingTitle}</strong> was not accepted this time.</p>
+        <p style="color:#888">Don't worry — there are plenty of other great rooms available. Keep searching!</p>
+        <a href="${siteUrl}" style="display:inline-block;background:#C8F135;padding:12px 24px;border-radius:8px;text-decoration:none;color:#000;font-weight:700;margin-top:16px">Browse More Rooms →</a>
+        <p style="color:#888;font-size:12px;margin-top:24px">RoomiStay · Gold Coast, Australia</p>
+      </div>`
+    }),
     new_message: (data) => ({
       to: data.recipientEmail,
       subject: `New message from ${data.senderName}`,
