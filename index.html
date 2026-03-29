@@ -670,7 +670,6 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
             <div class="dbox"><label>Move-in</label><input type="date" id="mIn" oninput="calcPB();updateDateAvailabilityWarning()"></div>
             <div class="dbox"><label>Move-out</label><input type="date" id="mOut" oninput="calcPB();updateDateAvailabilityWarning()" readonly style="background:var(--bg-l)"></div>
           </div>
-          <div id="dateAvailWarning" style="display:none;font-size:.78rem;padding:8px 12px;border-radius:8px;margin-top:8px;align-items:center;gap:6px"></div>
         </div>
 
         <!-- Long Term Options -->
@@ -690,6 +689,9 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
             <button class="dpo" onclick="setBkDurSingle(this,12,'month')">12 months</button>
           </div>
         </div>
+
+        <!-- Availability Warning — shared for both stay types -->
+        <div id="dateAvailWarning" style="display:none;font-size:.78rem;padding:8px 12px;border-radius:8px;margin-top:8px;align-items:center;gap:6px"></div>
 
         <!-- LOCATION MINI WIDGET -->
         <div id="locWidget" onclick="openLocationPage()" style="border:1px solid var(--border);border-radius:14px;cursor:pointer;margin-bottom:14px;overflow:hidden;transition:border-color .2s" onmouseover="this.style.borderColor='var(--lime)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -4580,6 +4582,7 @@ function setBkDurSingle(btn, val, unit) {
 
 function setStayType(type) {
   _stayType = type;
+  setTimeout(updateDateAvailabilityWarning, 50);
   document.getElementById('stay-short').classList.toggle('on', type === 'short');
   document.getElementById('stay-long').classList.toggle('on', type === 'long');
   var shortOpts = document.getElementById('shortStayOpts');
