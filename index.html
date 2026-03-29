@@ -1175,7 +1175,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <div id="editPhotoGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
         <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-l);border:1.5px dashed var(--border);border-radius:10px;cursor:pointer;font-size:.85rem;color:var(--muted)">
           <span style="font-size:1.2rem">📷</span> Add more photos
-          <input type="file" accept="image/*" multiple style="display:none" onchange="addEditPhotos(this.files)">
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:none" onchange="addEditPhotos(this.files)">
         </label>
         <div id="editPhotoWarn" style="display:none;color:var(--red);font-size:.76rem;margin-top:4px">⚠️ Minimum 3 photos required</div>
       </div>
@@ -1210,7 +1210,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <label class="lbl">Room Photos</label>
         <div id="editPhotoGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
         <div style="border:2px dashed var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:var(--bg-l)" onclick="document.getElementById('editPhotoInput').click()">
-          <input type="file" id="editPhotoInput" accept="image/*" multiple style="display:none" onchange="addEditPhotos(this.files)">
+          <input type="file" id="editPhotoInput" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:none" onchange="addEditPhotos(this.files)">
           <div style="font-size:1.3rem;margin-bottom:4px">📷</div>
           <div style="font-size:.82rem;color:var(--muted)">Click to add more photos (max 12)</div>
         </div>
@@ -3173,11 +3173,11 @@ function renderAddListing(m, skipClear) {
           <span style="background:rgba(255,71,87,.12);color:var(--red);font-size:.64rem;font-weight:700;padding:2px 7px;border-radius:5px;margin-left:7px">OBRIGATÓRIO · Min. 3 fotos</span>
         </label>
         <div class="photo-upload-zone" id="photoZone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropPhotos(event)">
-          <input type="file" accept="image/*" multiple onchange="handlePhotos(this.files)" id="photoInput">
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple onchange="handlePhotos(this.files)" id="photoInput">
           <div class="ico">📷</div>
           <h4 style="color:var(--text)">Arraste fotos aqui ou clique para selecionar</h4>
           <p>Min 3 photos · Max 12 · JPG, PNG, HEIC</p>
-          <p style="margin-top:6px;font-size:.75rem">First photo will be the cover</p>
+          <p style="margin-top:6px;font-size:.75rem">First photo will be the cover · No HEIC (convert to JPG first)</p>
           <span class="req-badge">⚠️ Listing without photos will not be published</span>
         </div>
         <div id="photoWarn" class="photo-min-warn">⚠️ Adicione pelo menos 3 fotos para publicar este quarto. Anúncios sem fotos geram desconfiança e não serão aprovados pela equipe NestMate.</div>
@@ -3295,6 +3295,13 @@ function handlePhotos(files) {
   prog.style.display = 'block';
   let loaded = 0;
   Array.from(files).slice(0, 12 - uploadedPhotos.length).forEach((file, i) => {
+    // Reject HEIC/HEIF - not supported by browsers
+    const fname = (file.name || '').toLowerCase();
+    if (fname.endsWith('.heic') || fname.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
+      toast('⚠️ HEIC photos not supported. Please convert to JPG first (open in Photos app on Mac → Export → JPG)', 'error');
+      loaded++;
+      return;
+    }
     const reader = new FileReader();
     reader.onload = e => {
       uploadedPhotos.push({ src: e.target.result, name: file.name });
@@ -3427,7 +3434,7 @@ async function submitListing() {
   const vibeEl = document.getElementById('addVibe') || document.querySelector('#addForm select:last-of-type');
 
   if (!title) { toast('⚠️ Add a room title', 'error'); return; }
-  if (!rent || rent < 50) { toast('⚠️ Enter a valid weekly rent', 'error'); return; }
+  if (!rent || rent < 1) { toast('⚠️ Enter a valid weekly rent', 'error'); return; }
   if (!addr) { toast('⚠️ Enter the full address', 'error'); return; }
   if (!bond) { toast('⚠️ Enter the bond amount', 'error'); return; }
 
