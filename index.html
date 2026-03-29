@@ -2180,6 +2180,44 @@ async function checkListingAvailability(listingId, moveIn, moveOut) {
   }
 }
 
+async function doTestBooking() {
+  if (!isAdmin) { toast('Admin only', 'error'); return; }
+  if (!currentUser || !CUR) return;
+
+  const mIn = document.getElementById('mIn')?.value || document.getElementById('mInLong')?.value || '';
+  const mOut = document.getElementById('mOut')?.value || '';
+  const msgEl = document.querySelector('#moContent textarea');
+  const tenantMsg = msgEl ? msgEl.value : '';
+  const weeks = mOut && mIn ? Math.max(1, Math.round((new Date(mOut)-new Date(mIn))/(7*24*60*60*1000))) : (bkDurVal||4);
+  const total = CUR.price * weeks + (CUR.bond||0) + (CUR.fee||0);
+
+  toast('⏳ Creating test booking...', '');
+
+  try {
+    const { data: booking, error } = await _supabaseClient.from('bookings').insert({
+      tenant_id: currentUser.id,
+      landlord_id: CUR.landlordId,
+      listing_id: CUR.id,
+      move_in_date: mIn || null,
+      move_out_date: mOut || null,
+      total_rent: CUR.price * weeks,
+      total_amount: total,
+      bond_amount: CUR.bond || 0,
+      platform_fee: CUR.fee || 0,
+      status: 'pending',
+      stay_type: _stayType || 'long',
+      min_months: bkDurVal || 1,
+      tenant_message: tenantMsg || '[TEST BOOKING]',
+    }).select().single();
+
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    toast('✅ Test booking created! ID: ' + booking.id.slice(0,8), 'lime');
+    STEP = 4; renderStep();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
 async function doStripePayment(amountCents) {
   if (!currentUser) { toast('Please sign in', ''); return; }
   if (!stripe || !window._stripeCardElement) { toast('Payment system not ready', 'error'); return; }
@@ -2757,6 +2795,7 @@ function renderStep() {
       </div>
       <div class="sim-note">🔒 Secured by Stripe — PCI DSS compliant. Your card details are never stored.</div>
       <button class="btn lime full" id="stripePayBtn" onclick="doStripePayment(${totalCents})">Pay AU$${total} — Secure →</button>
+      ${isAdmin ? '<button class="btn ol full sm" style="margin-top:8px;border-color:var(--orange);color:var(--orange)" onclick="doTestBooking()">🧪 Admin Test (skip payment)</button>' : ''}
       <button class="btn ol full sm" style="margin-top:8px" onclick="STEP=2;renderStep()">← Back</button>`;
     // Mount Stripe Elements after DOM update
     setTimeout(function() {
