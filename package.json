@@ -1,7 +1,7 @@
 {
   "name": "nestmate",
   "version": "1.0.0",
-  "description": "NestMate - Student Housing Platform",
+  "description": "NestMate — Student Housing Platform",
   "dependencies": {
     "stripe": "^14.0.0",
     "@supabase/supabase-js": "^2.0.0"
