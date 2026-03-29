@@ -2795,8 +2795,16 @@ function renderStep() {
       </div>
       <div class="sim-note">🔒 Secured by Stripe — PCI DSS compliant. Your card details are never stored.</div>
       <button class="btn lime full" id="stripePayBtn" onclick="doStripePayment(${totalCents})">Pay AU$${total} — Secure →</button>
-      ${isAdmin ? '<button class="btn ol full sm" style="margin-top:8px;border-color:var(--orange);color:var(--orange)" onclick="doTestBooking()">🧪 Admin Test (skip payment)</button>' : ''}
       <button class="btn ol full sm" style="margin-top:8px" onclick="STEP=2;renderStep()">← Back</button>`;
+    // Add admin test button separately after render
+    if (isAdmin) {
+      var adminBtn = document.createElement('button');
+      adminBtn.className = 'btn ol full sm';
+      adminBtn.style.cssText = 'margin-top:8px;border-color:var(--orange);color:var(--orange);width:100%';
+      adminBtn.textContent = '🧪 Admin Test (skip payment)';
+      adminBtn.onclick = doTestBooking;
+      mc.appendChild(adminBtn);
+    }
     // Mount Stripe Elements after DOM update
     setTimeout(function() {
       if (!stripe) { 
