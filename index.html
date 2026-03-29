@@ -3639,8 +3639,10 @@ function renderAddListing(m, skipClear) {
   // Clear photos only on fresh open, not when restoring from tab switch
   if (!skipClear) {
     uploadedPhotos = [];
+    _roomsList = [{ type: 'private', beds: 1, name: '' }];
   }
   setTimeout(loadListingDraft, 400);
+  setTimeout(function() { renderRoomsList(); }, 100);
   m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Add New Listing</h1>
     <p style="color:var(--muted);font-size:.84rem;margin-bottom:22px">List your room and reach verified international students.</p>
@@ -3674,22 +3676,13 @@ function renderAddListing(m, skipClear) {
         <div class="fg" style="margin:0"><label class="lbl">Room Type</label><select class="inp" id="addType" onchange="updateCapacityFields(this.value)"><option value="private">Private Room</option><option value="ensuite">Ensuite Room</option><option value="studio">Studio (entire)</option><option value="shared">Shared Room</option></select></div>
         <div class="fg" style="margin:0"><label class="lbl">Bond Amount (AU$)</label><input class="inp" type="number" placeholder="e.g. 620" id="addBond"></div>
       </div>
-      <div class="form-grid" style="gap:14px;margin-top:14px" id="capacityFields">
-        <div class="fg" style="margin:0">
-          <label class="lbl">Number of Rooms <span style="color:var(--muted);font-size:.7rem;font-weight:400">(in this property)</span></label>
-          <input class="inp" type="number" min="1" max="20" value="1" id="addTotalRooms" placeholder="e.g. 3">
-          <p style="font-size:.72rem;color:var(--muted);margin-top:4px">How many rooms are available for rent in this property?</p>
-        </div>
-        <div class="fg" style="margin:0" id="bedsPerRoomField">
-          <label class="lbl">Beds per Room</label>
-          <select class="inp" id="addBedsPerRoom">
-            <option value="1">1 bed (private)</option>
-            <option value="2">2 beds (shared)</option>
-            <option value="3">3 beds (shared)</option>
-            <option value="4">4 beds (shared)</option>
-          </select>
-          <p style="font-size:.72rem;color:var(--muted);margin-top:4px">How many people share each room?</p>
-        </div>
+      <div class="fg" style="margin-top:14px" id="capacityFields">
+        <label class="lbl">Rooms available for rent
+          <span style="color:var(--muted);font-size:.7rem;font-weight:400;text-transform:none;letter-spacing:0"> — add each room individually</span>
+        </label>
+        <div id="roomsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+        <button type="button" class="btn ol sm" onclick="addRoomRow()" style="width:100%">+ Add Room</button>
+        <div id="roomsSummary" style="font-size:.78rem;color:var(--teal);margin-top:8px;display:none"></div>
       </div>
 
       <!-- DURATION -->
@@ -3908,10 +3901,90 @@ function clearListingDraft() {
 }
 
 function updateCapacityFields(roomType) {
-  var bedsField = document.getElementById('bedsPerRoomField');
-  if (bedsField) {
-    bedsField.style.display = (roomType === 'shared') ? 'block' : 'none';
+  // No longer needed but kept for compatibility
+}
+
+// Room list management
+var _roomsList = [{ type: 'private', beds: 1, name: '' }];
+
+function addRoomRow() {
+  _roomsList.push({ type: 'private', beds: 1, name: '' });
+  renderRoomsList();
+}
+
+function removeRoomRow(idx) {
+  if (_roomsList.length <= 1) { toast('At least 1 room required', ''); return; }
+  _roomsList.splice(idx, 1);
+  renderRoomsList();
+}
+
+function updateRoom(idx, field, value) {
+  if (!_roomsList[idx]) return;
+  _roomsList[idx][field] = value;
+  if (field === 'type') {
+    // If private, force 1 bed
+    if (value === 'private') _roomsList[idx].beds = 1;
+    renderRoomsList();
   }
+  updateRoomsSummary();
+}
+
+function renderRoomsList() {
+  var list = document.getElementById('roomsList');
+  if (!list) return;
+  var html = '';
+  _roomsList.forEach(function(r, i) {
+    var isShared = r.type === 'shared';
+    var selPriv = r.type === 'private' ? ' selected' : '';
+    var selShared = r.type === 'shared' ? ' selected' : '';
+    var sel2 = r.beds === 2 ? ' selected' : '';
+    var sel3 = r.beds === 3 ? ' selected' : '';
+    var sel4 = r.beds === 4 ? ' selected' : '';
+    var sel6 = r.beds === 6 ? ' selected' : '';
+    html += '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-l);border:1px solid var(--border);border-radius:10px;padding:10px 12px">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    html += '<select class="inp" style="flex:1;min-width:120px;padding:6px 10px;font-size:.82rem" data-idx="' + i + '" data-field="type" onchange="updateRoom(parseInt(this.dataset.idx),this.dataset.field,this.value)">';
+    html += '<option value="private"' + selPriv + '>🚪 Private room</option>';
+    html += '<option value="shared"' + selShared + '>👥 Shared room</option>';
+    html += '</select>';
+    if (isShared) {
+      html += '<select class="inp" style="width:130px;padding:6px 10px;font-size:.82rem" data-idx="' + i + '" data-field="beds" onchange="updateRoom(parseInt(this.dataset.idx),this.dataset.field,parseInt(this.value))">';
+      html += '<option value="2"' + sel2 + '>2 beds</option>';
+      html += '<option value="3"' + sel3 + '>3 beds</option>';
+      html += '<option value="4"' + sel4 + '>4 beds</option>';
+      html += '<option value="6"' + sel6 + '>6 beds</option>';
+      html += '</select>';
+    } else {
+      html += '<div style="width:130px;padding:6px 10px;font-size:.82rem;color:var(--muted);background:var(--bg-m);border:1px solid var(--border);border-radius:10px">1 bed (private)</div>';
+    }
+    html += '</div>';
+    html += '<div style="font-size:.72rem;color:var(--muted);margin-top:4px">Room ' + (i+1) + ' · ' + (isShared ? r.beds + ' people share this room' : 'Private for 1 person') + '</div>';
+    html += '</div>';
+    html += '<button type="button" data-idx="' + i + '" onclick="removeRoomRow(parseInt(this.dataset.idx))" style="background:rgba(255,71,87,.1);color:var(--red);border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:.9rem;flex-shrink:0">×</button>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
+  updateRoomsSummary();
+}
+
+function updateRoomsSummary() {
+  var total = _roomsList.reduce(function(sum, r) { return sum + (r.type === 'shared' ? r.beds : 1); }, 0);
+  var summary = document.getElementById('roomsSummary');
+  if (summary) {
+    summary.style.display = 'block';
+    summary.innerHTML = '🏠 ' + _roomsList.length + ' room' + (_roomsList.length>1?'s':'') +
+      ' · 👥 ' + total + ' total spot' + (total>1?'s':'') +
+      ' available for booking';
+  }
+}
+
+function getRoomsCapacity() {
+  var totalRooms = _roomsList.length;
+  var totalSpots = _roomsList.reduce(function(sum, r) { return sum + (r.type === 'shared' ? r.beds : 1); }, 0);
+  // For compatibility: store as total_rooms and beds_per_room (approximation)
+  // Also store full rooms config as JSON in a notes field
+  return { totalRooms: totalRooms, totalSpots: totalSpots, rooms: _roomsList };
 }
 
 async function submitListing() {
@@ -4047,8 +4120,8 @@ async function submitListing() {
       amenities: amenities,
       nationalities: nationalities,
       photos: photoUrls,
-      total_rooms: parseInt(document.getElementById('addTotalRooms')?.value || '1'),
-      beds_per_room: parseInt(document.getElementById('addBedsPerRoom')?.value || '1'),
+      total_rooms: getRoomsCapacity().totalRooms,
+      beds_per_room: Math.round(getRoomsCapacity().totalSpots / getRoomsCapacity().totalRooms) || 1,
       bathroom: document.getElementById('listBathroom')?.value || 'shared',
       pets: document.getElementById('listPets')?.value === 'yes',
       smoking: document.getElementById('listSmoking')?.value === 'yes',
