@@ -391,7 +391,36 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 .util-shared{background:rgba(255,107,53,.08);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
 
 .conv-item:hover{background:var(--bg-l)}
-.inbox-row:hover{background:var(--bg-l)}</style>
+.inbox-row:hover{background:var(--bg-l)}
+
+/* ── CUSTOM DATE PICKER ── */
+.cdp-wrap{position:relative}
+.cdp-input{display:flex;align-items:center;justify-content:space-between;background:var(--bg-l);border:1px solid var(--border);border-radius:9px;padding:9px 12px;cursor:pointer;transition:border-color .2s;user-select:none}
+.cdp-input:hover,.cdp-input.open{border-color:var(--lime)}
+.cdp-input-val{font-size:.86rem;color:var(--text)}
+.cdp-input-val.placeholder{color:var(--muted)}
+.cdp-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:500;background:var(--bg-m);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);padding:14px;min-width:280px}
+.cdp-popup.open{display:block}
+.cdp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cdp-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;color:var(--text);font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.cdp-nav-btn:hover{border-color:var(--lime);color:var(--lime)}
+.cdp-month-label{font-weight:700;font-size:.88rem;color:var(--text)}
+.cdp-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.cdp-wd{font-size:.65rem;font-weight:700;color:var(--muted);text-align:center;padding:4px 0;text-transform:uppercase}
+.cdp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cdp-day{font-size:.82rem;text-align:center;padding:7px 4px;border-radius:7px;cursor:pointer;transition:all .15s;color:var(--text)}
+.cdp-day:hover:not(.blocked):not(.past):not(.empty){background:var(--lime-pale);color:var(--lime)}
+.cdp-day.selected{background:var(--lime);color:#000;font-weight:700}
+.cdp-day.in-range{background:var(--lime-pale);color:var(--lime)}
+.cdp-day.blocked{background:rgba(255,71,87,.1);color:var(--red);cursor:not-allowed;text-decoration:line-through}
+.cdp-day.partial{background:rgba(255,107,53,.08);color:var(--orange);cursor:not-allowed}
+.cdp-day.past{color:var(--border);cursor:not-allowed}
+.cdp-day.empty{cursor:default}
+.cdp-day.today{font-weight:700;border:1px solid var(--lime)}
+.cdp-legend{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
+.cdp-leg{display:flex;align-items:center;gap:4px;font-size:.68rem;color:var(--muted)}
+.cdp-leg-dot{width:10px;height:10px;border-radius:3px}
+</style>
 </head>
 <body>
 
@@ -667,16 +696,41 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
             <button class="dpo" onclick="setBkDurSingle(this,4,'week')">4 weeks</button>
           </div>
           <div class="date-grid">
-            <div class="dbox"><label>Move-in</label><input type="date" id="mIn" oninput="calcPB();updateDateAvailabilityWarning()"></div>
-            <div class="dbox"><label>Move-out</label><input type="date" id="mOut" oninput="calcPB();updateDateAvailabilityWarning()" readonly style="background:var(--bg-l)"></div>
+            <div class="dbox" style="padding:0;overflow:visible">
+              <label style="padding:9px 12px 0;display:block">Move-in</label>
+              <div class="cdp-wrap" id="cdpWrapIn">
+                <div class="cdp-input" id="cdpInputIn" onclick="cdpToggle('cdpIn')">
+                  <span class="cdp-input-val placeholder" id="cdpValIn">Select date</span>
+                  <span style="color:var(--muted);font-size:.8rem">📅</span>
+                </div>
+                <div class="cdp-popup" id="cdpIn"></div>
+              </div>
+              <input type="hidden" id="mIn">
+            </div>
+            <div class="dbox" style="padding:0;overflow:visible">
+              <label style="padding:9px 12px 0;display:block">Move-out</label>
+              <div class="cdp-wrap" id="cdpWrapOut">
+                <div class="cdp-input" id="cdpInputOut" style="cursor:default;opacity:.7">
+                  <span class="cdp-input-val placeholder" id="cdpValOut">Auto-calculated</span>
+                </div>
+              </div>
+              <input type="hidden" id="mOut">
+            </div>
           </div>
         </div>
 
         <!-- Long Term Options -->
         <div id="longTermOpts">
-          <div class="dbox" style="margin-bottom:12px">
-            <label>Preferred move-in date</label>
-            <input type="date" id="mInLong" oninput="calcPB();updateDateAvailabilityWarning()">
+          <div class="dbox" style="margin-bottom:12px;padding:0;overflow:visible">
+            <label style="padding:9px 12px 0;display:block">Preferred move-in date</label>
+            <div class="cdp-wrap" id="cdpWrapLong">
+              <div class="cdp-input" id="cdpInputLong" onclick="cdpToggle('cdpLong')">
+                <span class="cdp-input-val placeholder" id="cdpValLong">Select date</span>
+                <span style="color:var(--muted);font-size:.8rem">📅</span>
+              </div>
+              <div class="cdp-popup" id="cdpLong"></div>
+            </div>
+            <input type="hidden" id="mInLong">
           </div>
           <div id="flexibleNote" style="font-size:.78rem;color:var(--teal);background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.2);border-radius:8px;padding:8px 10px;margin-bottom:12px;display:none">
             📅 <strong>Flexible dates</strong> — landlord accepts ±3 days from this date
@@ -2255,18 +2309,172 @@ function dateOverlapsBookedPeriods(moveIn, moveOut, bookedPeriods) {
 var _curBookedPeriods = [];
 var _curTotalSpots = 1;
 
+// ══════════════════════════════════════
+// CUSTOM DATE PICKER
+// ══════════════════════════════════════
+var _cdpState = {
+  cdpIn:   { year: null, month: null, selected: null, mode: 'in' },
+  cdpLong: { year: null, month: null, selected: null, mode: 'long' },
+};
+var _cdpOccupancy = {}; // day -> count of bookings
+var _cdpTotalSpots = 1;
+
+function cdpInit(id) {
+  var now = new Date();
+  if (!_cdpState[id]) _cdpState[id] = {};
+  _cdpState[id].year = now.getFullYear();
+  _cdpState[id].month = now.getMonth();
+  cdpRender(id);
+}
+
+function cdpToggle(id) {
+  var popup = document.getElementById(id);
+  var input = document.getElementById(id === 'cdpIn' ? 'cdpInputIn' : 'cdpInputLong');
+  if (!popup) return;
+  var isOpen = popup.classList.contains('open');
+  // Close all popups
+  document.querySelectorAll('.cdp-popup').forEach(function(p) { p.classList.remove('open'); });
+  document.querySelectorAll('.cdp-input').forEach(function(i) { i.classList.remove('open'); });
+  if (!isOpen) {
+    if (!_cdpState[id].year) cdpInit(id);
+    cdpRender(id);
+    popup.classList.add('open');
+    if (input) input.classList.add('open');
+  }
+}
+
+function cdpNav(id, delta) {
+  if (!_cdpState[id]) cdpInit(id);
+  _cdpState[id].month += delta;
+  if (_cdpState[id].month > 11) { _cdpState[id].month = 0; _cdpState[id].year++; }
+  if (_cdpState[id].month < 0)  { _cdpState[id].month = 11; _cdpState[id].year--; }
+  cdpRender(id);
+}
+
+function cdpRender(id) {
+  var popup = document.getElementById(id);
+  if (!popup) return;
+  if (!_cdpState[id]) cdpInit(id);
+  var st = _cdpState[id];
+  var today = new Date(); today.setHours(0,0,0,0);
+  var y = st.year, m = st.month;
+  var firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  var daysInMonth = new Date(y, m+1, 0).getDate();
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  var html = '<div class="cdp-nav">' +
+    '<button class="cdp-nav-btn" onclick="cdpNav('' + id + '',-1)">‹</button>' +
+    '<span class="cdp-month-label">' + monthNames[m] + ' ' + y + '</span>' +
+    '<button class="cdp-nav-btn" onclick="cdpNav('' + id + '',1)">›</button>' +
+  '</div>' +
+  '<div class="cdp-weekdays"><div class="cdp-wd">S</div><div class="cdp-wd">M</div><div class="cdp-wd">T</div><div class="cdp-wd">W</div><div class="cdp-wd">T</div><div class="cdp-wd">F</div><div class="cdp-wd">S</div></div>' +
+  '<div class="cdp-days">';
+
+  // Empty cells before first day
+  for (var i = 0; i < firstDay; i++) html += '<div class="cdp-day empty"></div>';
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    var date = new Date(y, m, d);
+    var dateStr = date.toISOString().split('T')[0];
+    var isPast = date < today;
+    var occ = _cdpOccupancy[dateStr] || 0;
+    var isBlocked = occ >= _cdpTotalSpots && _cdpTotalSpots > 0;
+    var isPartial = occ > 0 && occ < _cdpTotalSpots;
+    var isSelected = st.selected === dateStr;
+    var isToday = date.getTime() === today.getTime();
+
+    var cls = 'cdp-day';
+    if (isPast) cls += ' past';
+    else if (isBlocked) cls += ' blocked';
+    else if (isPartial) cls += ' partial';
+    if (isSelected) cls += ' selected';
+    if (isToday) cls += ' today';
+
+    var onclick = (!isPast && !isBlocked) ?
+      'onclick="cdpSelect('' + id + '','' + dateStr + '')"' : '';
+
+    var tooltip = isBlocked ? 'title="Fully booked"' :
+                  isPartial ? 'title="' + (_cdpTotalSpots - occ) + ' spot(s) left"' : '';
+
+    html += '<div class="' + cls + '" ' + onclick + ' ' + tooltip + '>' + d + '</div>';
+  }
+
+  html += '</div>';
+
+  // Legend
+  if (Object.keys(_cdpOccupancy).length > 0) {
+    html += '<div class="cdp-legend">' +
+      '<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,71,87,.3)"></div> Fully booked</div>' +
+      (_cdpTotalSpots > 1 ? '<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,107,53,.2)"></div> Partially booked</div>' : '') +
+      '<div class="cdp-leg"><div class="cdp-leg-dot" style="background:var(--lime)"></div> Selected</div>' +
+    '</div>';
+  }
+
+  popup.innerHTML = html;
+}
+
+function cdpSelect(id, dateStr) {
+  if (!_cdpState[id]) _cdpState[id] = {};
+  _cdpState[id].selected = dateStr;
+
+  // Format for display
+  var d = new Date(dateStr + 'T00:00:00');
+  var formatted = d.toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+
+  if (id === 'cdpIn') {
+    // Short stay move-in
+    document.getElementById('mIn').value = dateStr;
+    var valEl = document.getElementById('cdpValIn');
+    if (valEl) { valEl.textContent = formatted; valEl.classList.remove('placeholder'); }
+    // Auto-close and update move-out based on duration
+    document.getElementById('cdpIn').classList.remove('open');
+    document.getElementById('cdpInputIn').classList.remove('open');
+    // Update move-out
+    var dur = bkDurVal || 1;
+    var unit = bkDurUnit || 'week';
+    var outDate = new Date(dateStr + 'T00:00:00');
+    if (unit === 'week') outDate.setDate(outDate.getDate() + dur * 7);
+    else outDate.setMonth(outDate.getMonth() + dur);
+    var outStr = outDate.toISOString().split('T')[0];
+    document.getElementById('mOut').value = outStr;
+    var outFormatted = outDate.toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+    var outVal = document.getElementById('cdpValOut');
+    if (outVal) { outVal.textContent = outFormatted; outVal.classList.remove('placeholder'); }
+  } else if (id === 'cdpLong') {
+    // Long stay move-in
+    document.getElementById('mInLong').value = dateStr;
+    var valEl2 = document.getElementById('cdpValLong');
+    if (valEl2) { valEl2.textContent = formatted; valEl2.classList.remove('placeholder'); }
+    document.getElementById('cdpLong').classList.remove('open');
+    document.getElementById('cdpInputLong').classList.remove('open');
+  }
+
+  calcPB();
+  updateDateAvailabilityWarning();
+  cdpRender(id);
+}
+
+// Close picker when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cdp-wrap')) {
+    document.querySelectorAll('.cdp-popup').forEach(function(p) { p.classList.remove('open'); });
+    document.querySelectorAll('.cdp-input').forEach(function(i) { i.classList.remove('open'); });
+  }
+});
+
 async function loadAndApplyAvailability(listingId) {
   if (!listingId || !_supabaseClient) return;
   var result = await getBookedPeriods(listingId);
   _curBookedPeriods = result.periods;
   _curTotalSpots = result.totalSpots;
 
-  // Apply min date to all date inputs
-  var today = new Date().toISOString().split('T')[0];
-  ['mIn','mInLong'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.min = today;
-  });
+  // Populate CDP occupancy map for visual date picker
+  _cdpOccupancy = result.occupancy || {};
+  _cdpTotalSpots = result.totalSpots;
+
+  // Init date pickers
+  cdpInit('cdpIn');
+  cdpInit('cdpLong');
 
   // Show blocked dates info
   updateDateAvailabilityWarning();
@@ -4568,6 +4776,11 @@ function setBkDurSingle(btn, val, unit) {
   btn.classList.add('on');
   bkDurVal = val; bkDurUnit = unit;
   updateDateAvailabilityWarning();
+  // Update move-out display if move-in is already selected
+  if (_stayType === 'short') {
+    var mInVal = document.getElementById('mIn')?.value;
+    if (mInVal) cdpSelect('cdpIn', mInVal);
+  }
   if (_stayType === 'short' && unit === 'week') {
     var mInEl = document.getElementById('mIn');
     if (mInEl && mInEl.value) {
