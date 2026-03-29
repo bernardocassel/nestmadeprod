@@ -1593,11 +1593,24 @@ async function renderRealDashboard(m, listings) {
       .reduce((sum, b) => sum + (b.total_rent || 0), 0);
   } catch(e) {}
 
+  // Fetch active guests info
+  let activeGuests = [];
+  try {
+    const { data: guestData } = await _supabaseClient
+      .from('bookings')
+      .select('*, listings(title, suburb), profiles!tenant_id(full_name, nationality, avatar_url)')
+      .eq('landlord_id', currentUser.id)
+      .in('status', ['approved', 'paid', 'signed', 'checked_in', 'contract_sent']);
+    activeGuests = guestData || [];
+  } catch(e) {}
+
+  const activeGuestsCount = activeGuests.length;
+
   m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">
       Good morning, ${name} 👋
     </h1>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your NestMate dashboard.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your RoomiStay dashboard.</p>
     
     <div class="stats-row">
       <div class="stat-card">
@@ -1606,25 +1619,51 @@ async function renderRealDashboard(m, listings) {
         <div class="slabel">My listings</div>
         <div class="sdelta">${activeListings} active</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="cursor:pointer" onclick="llTab('applications')">
         <div class="ico">📥</div>
         <div class="sval">${pendingCount}</div>
         <div class="slabel">Pending requests</div>
         <div class="sdelta">${pendingCount > 0 ? '⚡ Action needed' : 'All clear'}</div>
       </div>
       <div class="stat-card">
+        <div class="ico">🏡</div>
+        <div class="sval">${activeGuestsCount}</div>
+        <div class="slabel">Active guests</div>
+        <div class="sdelta">${activeGuestsCount > 0 ? 'Currently hosted' : 'No guests yet'}</div>
+      </div>
+      <div class="stat-card">
         <div class="ico">💰</div>
         <div class="sval">AU$${earnings.toLocaleString()}</div>
         <div class="slabel">Total earned</div>
-        <div class="sdelta">Via NestMate escrow</div>
-      </div>
-      <div class="stat-card">
-        <div class="ico">⭐</div>
-        <div class="sval">${currentUser?.user_metadata?.rating || '—'}</div>
-        <div class="slabel">Your rating</div>
-        <div class="sdelta">Build your reputation</div>
+        <div class="sdelta">Via RoomiStay escrow</div>
       </div>
     </div>
+
+    ${activeGuestsCount > 0 ? `
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--text)">🏡 Current Guests</h3>
+      </div>
+      ${activeGuests.map(b => {
+        const t = b.profiles || {};
+        const l = b.listings || {};
+        const name2 = t.full_name || 'Tenant';
+        const initial = name2.charAt(0).toUpperCase();
+        const moveIn = b.move_in_date ? new Date(b.move_in_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        const moveOut = b.move_out_date ? new Date(b.move_out_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        const statusColors = {approved:'var(--teal)',paid:'var(--lime)',signed:'var(--teal)',checked_in:'var(--lime)',contract_sent:'var(--blue)'};
+        const statusLabels = {approved:'✅ Approved',paid:'💰 Paid',signed:'✍️ Signed',checked_in:'🏡 Checked in',contract_sent:'📄 Contract sent'};
+        return '<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
+          '<div style="width:40px;height:40px;border-radius:50%;background:rgba(200,241,53,.15);color:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0">' + initial + '</div>' +
+          '<div style="flex:1">' +
+            '<div style="font-weight:600;font-size:.88rem;color:var(--text)">' + name2 + '</div>' +
+            '<div style="font-size:.75rem;color:var(--muted);margin-top:2px">📍 ' + (l.title||'Room') + ' · ' + moveIn + ' → ' + moveOut + '</div>' +
+          '</div>' +
+          '<span style="font-size:.72rem;font-weight:700;color:' + (statusColors[b.status]||'var(--muted)') + ';background:rgba(0,0,0,.05);padding:3px 8px;border-radius:10px">' + (statusLabels[b.status]||b.status) + '</span>' +
+          '<button class="btn ol sm" style="font-size:.72rem;padding:4px 10px" data-uid="' + b.tenant_id + '" onclick="openProfile(this.dataset.uid)">👤 Profile</button>' +
+        '</div>';
+      }).join('')}
+    </div>` : ''}
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--text)">My Listings</h3>
@@ -2859,7 +2898,7 @@ async function renderApplications(m) {
       .from('bookings')
       .select(`*, listings(title, suburb), profiles!tenant_id(full_name, nationality, avatar_url)`)
       .eq('landlord_id', currentUser.id)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'approved', 'contract_sent', 'signed', 'paid', 'checked_in', 'declined', 'cancelled', 'checked_out'])
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -2874,24 +2913,64 @@ async function renderApplications(m) {
       return;
     }
 
-    m.innerHTML = headerHTML + '<div class="apps-list">' + bookings.map(b => {
+        const statusLabels = {
+      pending: { label: '⏳ Pending', color: 'var(--orange)' },
+      approved: { label: '✅ Approved', color: 'var(--teal)' },
+      contract_sent: { label: '📄 Contract sent', color: 'var(--blue)' },
+      signed: { label: '✍️ Signed', color: 'var(--teal)' },
+      paid: { label: '💰 Paid', color: 'var(--lime)' },
+      checked_in: { label: '🏡 Checked in', color: 'var(--lime)' },
+      checked_out: { label: '✅ Completed', color: 'var(--muted)' },
+      declined: { label: '❌ Declined', color: 'var(--red)' },
+      cancelled: { label: '❌ Cancelled', color: 'var(--red)' },
+    };
+    const pendingBks = bookings.filter(b => b.status === 'pending');
+    const activeBks = bookings.filter(b => ['approved','contract_sent','signed','paid','checked_in'].includes(b.status));
+    const pastBks = bookings.filter(b => ['checked_out','declined','cancelled'].includes(b.status));
+
+    function renderBkCard(b, showActions) {
       const tenant = b.profiles || {};
       const listing = b.listings || {};
-      const name = tenant.full_name || 'Student';
-      const initial = name.charAt(0).toUpperCase();
-      return `<div class="app-card">
-        <div class="app-av" style="background:rgba(200,241,53,.15);color:var(--lime)">${initial}</div>
-        <div class="app-info">
-          <h4>${name} <span style="font-size:.68rem;background:rgba(0,212,170,.1);color:var(--teal);padding:2px 7px;border-radius:6px;font-weight:600">🪪 Verified</span> <button class="btn ol sm" style="font-size:.7rem;padding:3px 8px;margin-left:4px" data-uid="${b.tenant_id||''}" onclick="openProfile(this.dataset.uid)">👤 Profile</button></h4>
-          <p>${listing.title || ''} · ${b.move_in_date} → ${b.move_out_date} · AU$${b.total_amount}</p>
-           ${b.tenant_message ? '<p style="margin-top:5px;font-style:italic;color:var(--muted)">"' + b.tenant_message + '"</p>' : ''}
-        </div>
-        <div class="app-actions">
-          <button class="btn-ok" onclick="acceptBooking('${b.id}', '${name}')">Accept</button>
-          <button style="background:transparent;color:var(--muted);border:none;font-size:.8rem;padding:7px" onclick="declineBooking('${b.id}')">Decline</button>
-        </div>
-      </div>`;
-    }).join('') + '</div>';
+      const bkName = tenant.full_name || 'Student';
+      const initial = bkName.charAt(0).toUpperCase();
+      const st = statusLabels[b.status] || { label: b.status, color: 'var(--muted)' };
+      const moveIn = b.move_in_date ? new Date(b.move_in_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const moveOut = b.move_out_date ? new Date(b.move_out_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      return '<div class="app-card" style="flex-wrap:wrap;align-items:flex-start">' +
+        '<div class="app-av" style="background:rgba(200,241,53,.15);color:var(--lime)">' + initial + '</div>' +
+        '<div class="app-info">' +
+          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">' +
+            '<span style="font-weight:600;font-size:.9rem">' + bkName + '</span>' +
+            '<span style="font-size:.68rem;background:rgba(0,212,170,.1);color:var(--teal);padding:2px 7px;border-radius:6px;font-weight:600">🪪 Verified</span>' +
+            '<button class="btn ol sm" style="font-size:.7rem;padding:3px 8px" data-uid="' + (b.tenant_id||'') + '" onclick="openProfile(this.dataset.uid)">👤 Profile</button>' +
+          '</div>' +
+          '<p style="font-size:.78rem;color:var(--muted)">📍 ' + (listing.title||'Room') + ' · ' + moveIn + ' → ' + moveOut + '</p>' +
+          '<p style="font-size:.78rem;color:var(--muted)">💰 AU$' + (b.total_rent||0) + ' total</p>' +
+          (b.tenant_message ? '<p style="margin-top:4px;font-size:.78rem;font-style:italic;color:var(--muted)">\"' + b.tenant_message + '\"</p>' : '') +
+          '<div style="margin-top:6px"><span style="font-size:.72rem;font-weight:700;color:' + st.color + '">' + st.label + '</span></div>' +
+        '</div>' +
+        (showActions ? '<div class="app-actions" style="flex-direction:column;gap:6px">' +
+          '<button class="btn-ok" style="width:100%" data-bid="' + b.id + '" data-name="' + bkName + '" onclick="acceptBooking(this.dataset.bid, this.dataset.name)">✓ Accept</button>' +
+          '<button style="background:transparent;color:var(--red);border:1px solid rgba(255,71,87,.2);border-radius:20px;padding:6px 12px;font-size:.78rem;font-weight:600;cursor:pointer;width:100%" data-bid="' + b.id + '" onclick="declineBooking(this.dataset.bid)">✗ Decline</button>' +
+        '</div>' : '') +
+      '</div>';
+    }
+
+    function renderBkSection(title, items, showActions) {
+      if (!items.length) return '';
+      return '<div style="margin-bottom:20px">' +
+        '<div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 8px">' + title + ' (' + items.length + ')</div>' +
+        '<div class="apps-list">' + items.map(b => renderBkCard(b, showActions)).join('') + '</div>' +
+      '</div>';
+    }
+
+    m.innerHTML = headerHTML + (
+      (!pendingBks.length && !activeBks.length && !pastBks.length) ?
+        '<div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)"><div style="font-size:2.5rem;margin-bottom:12px">📥</div><p style="color:var(--muted)">No applications yet.</p><p style="color:var(--muted);font-size:.82rem;margin-top:6px">Share your listing link to receive requests!</p></div>' :
+        renderBkSection('⏳ Awaiting your response', pendingBks, true) +
+        renderBkSection('🏡 Active / Confirmed', activeBks, false) +
+        renderBkSection('📋 Past', pastBks, false)
+    );
 
   } catch(e) {
     console.error('Applications error:', e);
@@ -2907,17 +2986,36 @@ async function acceptBooking(bookingId, tenantName) {
     .eq('id', bookingId);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('✅ ' + tenantName + ' accepted! Contract will be generated soon.', 'lime');
+  // Email to tenant (approved)
+  fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'booking_approved', bookingId: bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL })
+  }).catch(e => console.log('Email error:', e));
+  // Email to landlord (confirmation)
+  fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'booking_approved_landlord', bookingId: bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL })
+  }).catch(e => console.log('Email error:', e));
   renderApplications(document.getElementById('llMain'));
 }
 
 async function declineBooking(bookingId) {
+  if (!confirm('Decline this booking request?')) return;
   if (!_supabaseClient) return;
   const { error } = await _supabaseClient
     .from('bookings')
-    .update({ status: 'cancelled' })
+    .update({ status: 'declined' })
     .eq('id', bookingId);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Request declined.', '');
+  // Email to tenant
+  fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'booking_declined', bookingId: bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL })
+  }).catch(e => console.log('Email error:', e));
   renderApplications(document.getElementById('llMain'));
 }
 
