@@ -2358,27 +2358,28 @@ function cdpRender(id) {
   var st = _cdpState[id];
   var today = new Date(); today.setHours(0,0,0,0);
   var y = st.year, m = st.month;
-  var firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  var firstDay = new Date(y, m, 1).getDay();
   var daysInMonth = new Date(y, m+1, 0).getDate();
   var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-  var html = '<div class="cdp-nav">' +
-    '<button class="cdp-nav-btn" onclick="cdpNav('' + id + '',-1)">‹</button>' +
-    '<span class="cdp-month-label">' + monthNames[m] + ' ' + y + '</span>' +
-    '<button class="cdp-nav-btn" onclick="cdpNav('' + id + '',1)">›</button>' +
-  '</div>' +
-  '<div class="cdp-weekdays"><div class="cdp-wd">S</div><div class="cdp-wd">M</div><div class="cdp-wd">T</div><div class="cdp-wd">W</div><div class="cdp-wd">T</div><div class="cdp-wd">F</div><div class="cdp-wd">S</div></div>' +
-  '<div class="cdp-days">';
+  var parts = [];
+  parts.push('<div class="cdp-nav">');
+  parts.push('<button class="cdp-nav-btn" data-cdpid="' + id + '" data-delta="-1" onclick="cdpNav(this.dataset.cdpid, parseInt(this.dataset.delta))">&#8249;</button>');
+  parts.push('<span class="cdp-month-label">' + monthNames[m] + ' ' + y + '</span>');
+  parts.push('<button class="cdp-nav-btn" data-cdpid="' + id + '" data-delta="1" onclick="cdpNav(this.dataset.cdpid, parseInt(this.dataset.delta))">&#8250;</button>');
+  parts.push('</div>');
+  parts.push('<div class="cdp-weekdays"><div class="cdp-wd">S</div><div class="cdp-wd">M</div><div class="cdp-wd">T</div><div class="cdp-wd">W</div><div class="cdp-wd">T</div><div class="cdp-wd">F</div><div class="cdp-wd">S</div></div>');
+  parts.push('<div class="cdp-days">');
 
-  // Empty cells before first day
-  for (var i = 0; i < firstDay; i++) html += '<div class="cdp-day empty"></div>';
+  for (var i = 0; i < firstDay; i++) parts.push('<div class="cdp-day empty"></div>');
 
   for (var d = 1; d <= daysInMonth; d++) {
     var date = new Date(y, m, d);
-    var dateStr = date.toISOString().split('T')[0];
+    date.setHours(0,0,0,0);
+    var dateStr = y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     var isPast = date < today;
     var occ = _cdpOccupancy[dateStr] || 0;
-    var isBlocked = occ >= _cdpTotalSpots && _cdpTotalSpots > 0;
+    var isBlocked = _cdpTotalSpots > 0 && occ >= _cdpTotalSpots;
     var isPartial = occ > 0 && occ < _cdpTotalSpots;
     var isSelected = st.selected === dateStr;
     var isToday = date.getTime() === today.getTime();
@@ -2390,29 +2391,28 @@ function cdpRender(id) {
     if (isSelected) cls += ' selected';
     if (isToday) cls += ' today';
 
-    var onclick = (!isPast && !isBlocked) ?
-      'onclick="cdpSelect('' + id + '','' + dateStr + '')"' : '';
-
-    var tooltip = isBlocked ? 'title="Fully booked"' :
-                  isPartial ? 'title="' + (_cdpTotalSpots - occ) + ' spot(s) left"' : '';
-
-    html += '<div class="' + cls + '" ' + onclick + ' ' + tooltip + '>' + d + '</div>';
+    var dayHtml = '<div class="' + cls + '"';
+    if (!isPast && !isBlocked) {
+      dayHtml += ' data-cdpid="' + id + '" data-date="' + dateStr + '" onclick="cdpSelect(this.dataset.cdpid, this.dataset.date)"';
+    }
+    if (isBlocked) dayHtml += ' title="Fully booked"';
+    else if (isPartial) dayHtml += ' title="' + (_cdpTotalSpots - occ) + ' spot(s) left"';
+    dayHtml += '>' + d + '</div>';
+    parts.push(dayHtml);
   }
 
-  html += '</div>';
+  parts.push('</div>');
 
-  // Legend
   if (Object.keys(_cdpOccupancy).length > 0) {
-    html += '<div class="cdp-legend">' +
-      '<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,71,87,.3)"></div> Fully booked</div>' +
-      (_cdpTotalSpots > 1 ? '<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,107,53,.2)"></div> Partially booked</div>' : '') +
-      '<div class="cdp-leg"><div class="cdp-leg-dot" style="background:var(--lime)"></div> Selected</div>' +
-    '</div>';
+    parts.push('<div class="cdp-legend">');
+    parts.push('<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,71,87,.3)"></div> Fully booked</div>');
+    if (_cdpTotalSpots > 1) parts.push('<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,107,53,.2)"></div> Partially booked</div>');
+    parts.push('<div class="cdp-leg"><div class="cdp-leg-dot" style="background:var(--lime)"></div> Selected</div>');
+    parts.push('</div>');
   }
 
-  popup.innerHTML = html;
+  popup.innerHTML = parts.join('');
 }
-
 function cdpSelect(id, dateStr) {
   if (!_cdpState[id]) _cdpState[id] = {};
   _cdpState[id].selected = dateStr;
