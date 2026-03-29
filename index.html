@@ -649,6 +649,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="book-card">
         <div class="big-price" id="detPrice">AU$320 <small>/week</small></div>
         <div class="tag g" style="margin-bottom:14px" id="detAvail">Available now</div>
+        <div id="detSpotsInfo" style="font-size:.78rem;color:var(--muted);margin-bottom:10px;display:none"></div>
 
         <!-- Stay Type Picker -->
         <div style="display:flex;gap:8px;margin-bottom:16px">
@@ -2137,6 +2138,48 @@ function simulatePaymentFallback() {
   return new Promise(resolve => setTimeout(() => resolve({ success: true, simulated: true }), 1800));
 }
 
+async function checkListingAvailability(listingId, moveIn, moveOut) {
+  // Returns {available: bool, spotsLeft: int, totalSpots: int}
+  if (!_supabaseClient || !listingId) return { available: true, spotsLeft: 1, totalSpots: 1 };
+  try {
+    // Get listing capacity
+    const { data: listing } = await _supabaseClient
+      .from('listings')
+      .select('total_rooms, beds_per_room, room_type')
+      .eq('id', listingId)
+      .single();
+
+    const totalRooms = listing?.total_rooms || 1;
+    const bedsPerRoom = listing?.beds_per_room || 1;
+    const totalSpots = totalRooms * bedsPerRoom;
+
+    // Count active bookings overlapping with requested dates
+    let query = _supabaseClient
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('listing_id', listingId)
+      .in('status', ['pending', 'approved', 'contract_sent', 'signed', 'paid', 'checked_in']);
+
+    // Date overlap: existing booking overlaps if it starts before moveOut AND ends after moveIn
+    if (moveIn && moveOut) {
+      query = query
+        .lt('move_in_date', moveOut)
+        .gt('move_out_date', moveIn);
+    } else if (moveIn) {
+      query = query.gte('move_out_date', moveIn);
+    }
+
+    const { count } = await query;
+    const activeBookings = count || 0;
+    const spotsLeft = Math.max(0, totalSpots - activeBookings);
+
+    return { available: spotsLeft > 0, spotsLeft, totalSpots, activeBookings };
+  } catch(e) {
+    console.error('Availability check error:', e);
+    return { available: true, spotsLeft: 1, totalSpots: 1 }; // fail open
+  }
+}
+
 async function doStripePayment(amountCents) {
   if (!currentUser) { toast('Please sign in', ''); return; }
   if (!stripe || !window._stripeCardElement) { toast('Payment system not ready', 'error'); return; }
@@ -2145,9 +2188,21 @@ async function doStripePayment(amountCents) {
   if (btn) { btn.textContent = '⏳ Processing...'; btn.disabled = true; }
 
   try {
-    // 1. Save booking first to get bookingId
+    // 0. Check availability first
     const mIn = document.getElementById('mIn')?.value || document.getElementById('mInLong')?.value || '';
     const mOut = document.getElementById('mOut')?.value || '';
+
+    const avail = await checkListingAvailability(CUR?.id, mIn, mOut);
+    if (!avail.available) {
+      if (btn) { btn.textContent = 'Pay AU$' + (amountCents/100).toFixed(0) + ' — Secure →'; btn.disabled = false; }
+      toast('❌ Sorry — this listing is fully booked for the selected dates. Please choose different dates.', 'error');
+      return;
+    }
+    if (avail.spotsLeft === 1 && avail.totalSpots > 1) {
+      toast('⚡ Last spot available for these dates!', '');
+    }
+
+    // 1. Save booking first to get bookingId
     const msgEl = document.querySelector('#moContent textarea');
     const tenantMsg = msgEl ? msgEl.value : '';
     const weeks = mOut && mIn ? Math.max(1, Math.round((new Date(mOut)-new Date(mIn))/(7*24*60*60*1000))) : (bkDurVal||4);
@@ -2439,6 +2494,28 @@ function openDetail(id) {
   if (!CUR && typeof LISTINGS !== 'undefined') {
     CUR = LISTINGS.find(l => String(l.id) === String(id));
   }
+  // Show availability info
+  if (CUR && CUR.id && _supabaseClient) {
+    var spotsEl = document.getElementById('detSpotsInfo');
+    if (spotsEl) {
+      checkListingAvailability(CUR.id, null, null).then(function(avail) {
+        if (avail.totalSpots > 1) {
+          spotsEl.style.display = 'block';
+          if (avail.spotsLeft === 0) {
+            spotsEl.innerHTML = '🔴 <strong>Fully booked</strong> — no spots available';
+            spotsEl.style.color = 'var(--red)';
+          } else if (avail.spotsLeft === 1) {
+            spotsEl.innerHTML = '⚡ <strong>1 spot left</strong> out of ' + avail.totalSpots;
+            spotsEl.style.color = 'var(--orange)';
+          } else {
+            spotsEl.innerHTML = '✅ <strong>' + avail.spotsLeft + ' spots available</strong> out of ' + avail.totalSpots;
+            spotsEl.style.color = 'var(--teal)';
+          }
+        }
+      });
+    }
+  }
+
   if (!CUR) {
     // Listing not in cache — fetch from Supabase
     if (_supabaseClient && id) {
@@ -3191,8 +3268,25 @@ function renderAddListing(m, skipClear) {
       </div>
       <div class="fg" style="margin-top:14px"><label class="lbl">Full Address</label><input class="inp" placeholder="e.g. 17 Cavill Ave, Surfers Paradise QLD 4217" id="addAddr"></div>
       <div class="form-grid" style="gap:14px;margin-top:14px">
-        <div class="fg" style="margin:0"><label class="lbl">Room Type</label><select class="inp" id="addType"><option>Private Room</option><option>Ensuite Room</option><option>Studio (entire)</option><option>Shared Room (2 people)</option></select></div>
+        <div class="fg" style="margin:0"><label class="lbl">Room Type</label><select class="inp" id="addType" onchange="updateCapacityFields(this.value)"><option value="private">Private Room</option><option value="ensuite">Ensuite Room</option><option value="studio">Studio (entire)</option><option value="shared">Shared Room</option></select></div>
         <div class="fg" style="margin:0"><label class="lbl">Bond Amount (AU$)</label><input class="inp" type="number" placeholder="e.g. 620" id="addBond"></div>
+      </div>
+      <div class="form-grid" style="gap:14px;margin-top:14px" id="capacityFields">
+        <div class="fg" style="margin:0">
+          <label class="lbl">Number of Rooms <span style="color:var(--muted);font-size:.7rem;font-weight:400">(in this property)</span></label>
+          <input class="inp" type="number" min="1" max="20" value="1" id="addTotalRooms" placeholder="e.g. 3">
+          <p style="font-size:.72rem;color:var(--muted);margin-top:4px">How many rooms are available for rent in this property?</p>
+        </div>
+        <div class="fg" style="margin:0" id="bedsPerRoomField">
+          <label class="lbl">Beds per Room</label>
+          <select class="inp" id="addBedsPerRoom">
+            <option value="1">1 bed (private)</option>
+            <option value="2">2 beds (shared)</option>
+            <option value="3">3 beds (shared)</option>
+            <option value="4">4 beds (shared)</option>
+          </select>
+          <p style="font-size:.72rem;color:var(--muted);margin-top:4px">How many people share each room?</p>
+        </div>
       </div>
 
       <!-- DURATION -->
@@ -3410,6 +3504,13 @@ function clearListingDraft() {
   toast('Form cleared', '');
 }
 
+function updateCapacityFields(roomType) {
+  var bedsField = document.getElementById('bedsPerRoomField');
+  if (bedsField) {
+    bedsField.style.display = (roomType === 'shared') ? 'block' : 'none';
+  }
+}
+
 async function submitListing() {
   // Validate photos
   if (uploadedPhotos.length < 3) {
@@ -3543,6 +3644,8 @@ async function submitListing() {
       amenities: amenities,
       nationalities: nationalities,
       photos: photoUrls,
+      total_rooms: parseInt(document.getElementById('addTotalRooms')?.value || '1'),
+      beds_per_room: parseInt(document.getElementById('addBedsPerRoom')?.value || '1'),
       bathroom: document.getElementById('listBathroom')?.value || 'shared',
       pets: document.getElementById('listPets')?.value === 'yes',
       smoking: document.getElementById('listSmoking')?.value === 'yes',
