@@ -2128,14 +2128,104 @@ async function saveListing(data) {
 // STRIPE — Criar pagamento real
 // ══════════════════════════════════════
 async function createRealPayment(bookingId, amount) {
-  // For now use simulation - Stripe Elements UI needs to be added for real cards
-  // The /api/create-payment-intent endpoint is ready on the server
+  // Kept for compatibility - actual payment done via doStripePayment
   console.log('Payment for booking:', bookingId, 'Amount:', amount);
-  return simulatePaymentFallback();
+  return { success: true, simulated: false };
 }
 
 function simulatePaymentFallback() {
   return new Promise(resolve => setTimeout(() => resolve({ success: true, simulated: true }), 1800));
+}
+
+async function doStripePayment(amountCents) {
+  if (!currentUser) { toast('Please sign in', ''); return; }
+  if (!stripe || !window._stripeCardElement) { toast('Payment system not ready', 'error'); return; }
+
+  const btn = document.getElementById('stripePayBtn');
+  if (btn) { btn.textContent = '⏳ Processing...'; btn.disabled = true; }
+
+  try {
+    // 1. Save booking first to get bookingId
+    const mIn = document.getElementById('mIn')?.value || document.getElementById('mInLong')?.value || '';
+    const mOut = document.getElementById('mOut')?.value || '';
+    const msgEl = document.querySelector('#moContent textarea');
+    const tenantMsg = msgEl ? msgEl.value : '';
+    const weeks = mOut && mIn ? Math.max(1, Math.round((new Date(mOut)-new Date(mIn))/(7*24*60*60*1000))) : (bkDurVal||4);
+    const total = CUR.price * weeks + (CUR.bond||0) + (CUR.fee||0);
+
+    let bookingId = null;
+    if (_supabaseClient) {
+      const { data: booking, error: bookErr } = await _supabaseClient.from('bookings').insert({
+        tenant_id: currentUser.id,
+        landlord_id: CUR.landlordId,
+        listing_id: CUR.id,
+        move_in_date: mIn || null,
+        move_out_date: mOut || null,
+        total_rent: CUR.price * weeks,
+        total_amount: total,
+        bond_amount: CUR.bond || 0,
+        platform_fee: CUR.fee || 0,
+        status: 'pending',
+        stay_type: _stayType || 'long',
+        min_months: bkDurVal || 1,
+        tenant_message: tenantMsg,
+      }).select().single();
+      if (bookErr) { console.error('Booking save error:', bookErr); }
+      else { bookingId = booking?.id; console.log('Booking saved:', bookingId); }
+
+      // Send emails
+      if (bookingId) {
+        fetch('/api/send-email', { method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ type: 'booking_received', bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL }) })
+          .catch(e => console.log('Email error:', e));
+        fetch('/api/send-email', { method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ type: 'booking_pending_tenant', bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL }) })
+          .catch(e => console.log('Email error:', e));
+      }
+    }
+
+    // 2. Create PaymentIntent on server
+    const piRes = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: amountCents,
+        bookingId: bookingId,
+        listingId: CUR.id,
+        tenantId: currentUser.id,
+        landlordId: CUR.landlordId,
+        currency: 'aud',
+        description: 'RoomiStay booking — ' + CUR.title,
+      })
+    });
+    const piData = await piRes.json();
+    if (!piRes.ok || !piData.clientSecret) throw new Error(piData.error || 'Payment setup failed');
+
+    // 3. Confirm card payment with Stripe
+    const { paymentIntent, error } = await stripe.confirmCardPayment(piData.clientSecret, {
+      payment_method: { card: window._stripeCardElement, billing_details: { name: currentUser.user_metadata?.full_name || '' } }
+    });
+
+    if (error) {
+      var errEl = document.getElementById('stripe-card-errors');
+      if (errEl) errEl.textContent = error.message;
+      if (btn) { btn.textContent = 'Try again'; btn.disabled = false; }
+      return;
+    }
+
+    if (paymentIntent.status === 'succeeded') {
+      // Update booking status to paid
+      if (_supabaseClient && bookingId) {
+        await _supabaseClient.from('bookings').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', bookingId);
+      }
+      STEP = 4; renderStep();
+      toast('✅ Payment successful! Awaiting landlord confirmation.', 'lime');
+    }
+  } catch(err) {
+    console.error('Payment error:', err);
+    if (btn) { btn.textContent = 'Try again'; btn.disabled = false; }
+    toast('Payment error: ' + (err.message || 'Please try again'), 'error');
+  }
 }
 
 // Init - only once
@@ -2571,33 +2661,44 @@ function renderStep() {
       <button class="btn ol full sm" style="margin-top:8px" onclick="STEP=1;renderStep()">← Back</button>`;
   } else if (STEP===3) {
     const total = l.price*weeks + l.bond + l.fee;
+    const totalCents = Math.round(total * 100);
     mc.innerHTML = `
       <div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:12px;padding:16px;margin-bottom:16px">
         <div style="font-size:.84rem;font-weight:700;color:var(--lime);margin-bottom:6px">🔒 Escrow-Protected Payment</div>
         <p style="font-size:.8rem;color:var(--muted);line-height:1.55">Your money goes to a certified escrow — <strong>not directly to the landlord</strong>. Released only after you confirm check-in. If anything is wrong you get a full refund within 24h.</p>
       </div>
-      <div class="fg"><label class="lbl">Payment Method</label>
-        <div class="pay-methods">
-          <div class="pm on" onclick="selPay(this)"><span class="pico">💳</span>Card</div>
-          <div class="pm" onclick="selPay(this)"><span class="pico">🏦</span>Bank Transfer</div>
-          <div class="pm" onclick="selPay(this)"><span class="pico">📱</span>PayID</div>
-        </div>
-      </div>
-      <div class="form-grid" style="gap:10px">
-        <div class="fg" style="margin:0;grid-column:span 2"><label class="lbl">Card Number (simulation)</label><input class="inp" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)"></div>
-        <div class="fg" style="margin:0"><label class="lbl">Expiry</label><input class="inp" placeholder="MM/YY" maxlength="5"></div>
-        <div class="fg" style="margin:0"><label class="lbl">CVV</label><input class="inp" type="password" placeholder="•••" maxlength="3"></div>
-        <div class="fg" style="margin:0;grid-column:span 2"><label class="lbl">Name on Card</label><input class="inp" placeholder="Ana Silva"></div>
-      </div>
-      <div class="sum-box" style="margin-top:12px">
-        <div class="sum-r"><span>Rent × ${weeks} weeks</span><span>AU$${l.price*weeks}</span></div>
+      <div class="sum-box" style="margin-bottom:16px">
+        <div class="sum-r"><span>Rent × ${weeks} week${weeks>1?'s':''}</span><span>AU$${l.price*weeks}</span></div>
         <div class="sum-r"><span>Bond (escrow 🔒)</span><span>AU$${l.bond}</span></div>
-        <div class="sum-r"><span>NestMate fee</span><span>AU$${l.fee}</span></div>
+        <div class="sum-r"><span>Platform fee</span><span>AU$${l.fee}</span></div>
         <div class="sum-r"><span>Total charged today</span><span>AU$${total}</span></div>
       </div>
-      <div class="sim-note">🔒 Your payment is protected by Stripe — the most trusted payment gateway in Australia.</div>
-      <button class="btn lime full" onclick="simulatePay(${total})">Request Room — AU$${total} →</button>
+      <div class="fg">
+        <label class="lbl">Card Details</label>
+        <div id="stripe-card-element" style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:14px;min-height:44px"></div>
+        <div id="stripe-card-errors" style="color:var(--red);font-size:.78rem;margin-top:6px"></div>
+      </div>
+      <div class="sim-note">🔒 Secured by Stripe — PCI DSS compliant. Your card details are never stored.</div>
+      <button class="btn lime full" id="stripePayBtn" onclick="doStripePayment(${totalCents})">Pay AU$${total} — Secure →</button>
       <button class="btn ol full sm" style="margin-top:8px" onclick="STEP=2;renderStep()">← Back</button>`;
+    // Mount Stripe Elements after DOM update
+    setTimeout(function() {
+      if (!stripe) { 
+        document.getElementById('stripe-card-errors').textContent = 'Payment system unavailable. Please try again.';
+        return;
+      }
+      var elements = stripe.elements();
+      var cardStyle = {
+        base: { fontSize: '16px', color: getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#1C2810', '::placeholder': { color: '#aab7c4' } },
+        invalid: { color: '#fa755a' }
+      };
+      window._stripeCardElement = elements.create('card', { style: cardStyle, hidePostalCode: true });
+      window._stripeCardElement.mount('#stripe-card-element');
+      window._stripeCardElement.on('change', function(e) {
+        var el = document.getElementById('stripe-card-errors');
+        if (el) el.textContent = e.error ? e.error.message : '';
+      });
+    }, 100);
   } else if (STEP===4) {
     const ref = 'NM-'+Math.random().toString(36).substring(2,8).toUpperCase();
     mc.innerHTML = `
