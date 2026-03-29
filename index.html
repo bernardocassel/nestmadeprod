@@ -2271,8 +2271,24 @@ async function loadAndApplyAvailability(listingId) {
 }
 
 function updateDateAvailabilityWarning() {
-  var mIn = (document.getElementById('mIn') || document.getElementById('mInLong') || {}).value;
-  var mOut = (document.getElementById('mOut') || {}).value;
+  // Get move-in date based on stay type
+  var mIn, mOut;
+  if (_stayType === 'short') {
+    mIn = (document.getElementById('mIn') || {}).value;
+    mOut = (document.getElementById('mOut') || {}).value;
+  } else {
+    mIn = (document.getElementById('mInLong') || {}).value;
+    // Estimate move-out for long stay based on duration
+    if (mIn && bkDurVal) {
+      var estOut = new Date(mIn);
+      if (bkDurUnit === 'month') {
+        estOut.setMonth(estOut.getMonth() + parseInt(bkDurVal));
+      } else {
+        estOut.setDate(estOut.getDate() + parseInt(bkDurVal) * 7);
+      }
+      mOut = estOut.toISOString().split('T')[0];
+    }
+  }
   var warnEl = document.getElementById('dateAvailWarning');
   if (!warnEl) return;
 
@@ -2350,7 +2366,15 @@ async function doStripePayment(amountCents) {
     const mIn = document.getElementById('mIn')?.value || document.getElementById('mInLong')?.value || '';
     const mOut = document.getElementById('mOut')?.value || '';
 
-    const avail = await checkListingAvailability(CUR?.id, mIn, mOut);
+    // Estimate move_out for long stay
+    var moveOutForCheck = mOut;
+    if (!moveOutForCheck && mIn && bkDurVal) {
+      var estOut = new Date(mIn);
+      if (bkDurUnit === 'month') estOut.setMonth(estOut.getMonth() + parseInt(bkDurVal));
+      else estOut.setDate(estOut.getDate() + parseInt(bkDurVal) * 7);
+      moveOutForCheck = estOut.toISOString().split('T')[0];
+    }
+    const avail = await checkListingAvailability(CUR?.id, mIn, moveOutForCheck);
     if (!avail.available) {
       if (btn) { btn.textContent = 'Pay AU$' + (amountCents/100).toFixed(0) + ' — Secure →'; btn.disabled = false; }
       toast('❌ Sorry — this listing is fully booked for the selected dates. Please choose different dates.', 'error');
@@ -4541,6 +4565,7 @@ function setBkDurSingle(btn, val, unit) {
   parent.querySelectorAll('.dpo').forEach(function(b) { b.classList.remove('on'); });
   btn.classList.add('on');
   bkDurVal = val; bkDurUnit = unit;
+  updateDateAvailabilityWarning();
   if (_stayType === 'short' && unit === 'week') {
     var mInEl = document.getElementById('mIn');
     if (mInEl && mInEl.value) {
