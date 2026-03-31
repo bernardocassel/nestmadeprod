@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: blob: https://*.googleusercontent.com https://*.supabase.co https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://*.openstreetmap.org https://js.stripe.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: blob: https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://*.openstreetmap.org https://js.stripe.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NestMate — Find Your Room in Gold Coast</title>
 <!-- v1774026145 -->
@@ -12,7 +12,7 @@
     SUPABASE_URL: 'https://ihsteworauuydakhrkws.supabase.co',
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imloc3Rld29yYXV1eWRha2hya3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTQzMzQsImV4cCI6MjA4OTQzMDMzNH0.EeW_LVJJXCUhRmwox8VQLg0sSnJ8BNFgtQYYDysbNJg',
     STRIPE_KEY: 'pk_live_51TCUnxJiXVz8DVfLBuyZxoBGh5FwfGUB7lF6kCMjoQJB2yexreIndQnRYVhMw7FyuyvR5wOhWMhhLyDgi1SJ1Zsy00rX4yGAnG',
-    APP_URL: 'https://roomiestay.com'
+    APP_URL: 'https://nestmadeprod.vercel.app'
   };
 </script>
 
@@ -391,36 +391,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 .util-shared{background:rgba(255,107,53,.08);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
 
 .conv-item:hover{background:var(--bg-l)}
-.inbox-row:hover{background:var(--bg-l)}
-
-/* ── CUSTOM DATE PICKER ── */
-.cdp-wrap{position:relative}
-.cdp-input{display:flex;align-items:center;justify-content:space-between;background:var(--bg-l);border:1px solid var(--border);border-radius:9px;padding:9px 12px;cursor:pointer;transition:border-color .2s;user-select:none}
-.cdp-input:hover,.cdp-input.open{border-color:var(--lime)}
-.cdp-input-val{font-size:.86rem;color:var(--text)}
-.cdp-input-val.placeholder{color:var(--muted)}
-.cdp-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:500;background:var(--bg-m);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);padding:14px;min-width:280px}
-.cdp-popup.open{display:block}
-.cdp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.cdp-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;color:var(--text);font-size:.9rem;display:flex;align-items:center;justify-content:center}
-.cdp-nav-btn:hover{border-color:var(--lime);color:var(--lime)}
-.cdp-month-label{font-weight:700;font-size:.88rem;color:var(--text)}
-.cdp-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
-.cdp-wd{font-size:.65rem;font-weight:700;color:var(--muted);text-align:center;padding:4px 0;text-transform:uppercase}
-.cdp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cdp-day{font-size:.82rem;text-align:center;padding:7px 4px;border-radius:7px;cursor:pointer;transition:all .15s;color:var(--text)}
-.cdp-day:hover:not(.blocked):not(.past):not(.empty){background:var(--lime-pale);color:var(--lime)}
-.cdp-day.selected{background:var(--lime);color:#000;font-weight:700}
-.cdp-day.in-range{background:var(--lime-pale);color:var(--lime)}
-.cdp-day.blocked{background:rgba(255,71,87,.1);color:var(--red);cursor:not-allowed;text-decoration:line-through}
-.cdp-day.partial{background:rgba(255,107,53,.08);color:var(--orange);cursor:not-allowed}
-.cdp-day.past{color:var(--border);cursor:not-allowed}
-.cdp-day.empty{cursor:default}
-.cdp-day.today{font-weight:700;border:1px solid var(--lime)}
-.cdp-legend{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
-.cdp-leg{display:flex;align-items:center;gap:4px;font-size:.68rem;color:var(--muted)}
-.cdp-leg-dot{width:10px;height:10px;border-radius:3px}
-</style>
+.inbox-row:hover{background:var(--bg-l)}</style>
 </head>
 <body>
 
@@ -428,6 +399,11 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 <nav>
   <div class="logo" onclick="go('s-land')">Nest<span>Mate</span></div>
   <div class="nav-r">
+    <!-- Language selector -->
+    <div style="display:flex;gap:2px;background:var(--bg-l);border:1px solid var(--border);border-radius:20px;padding:3px">
+      <button id="lang-en" class="on" onclick="setLang('en')" style="padding:3px 10px;border-radius:16px;border:none;font-size:.72rem;font-weight:700;cursor:pointer;background:var(--lime);color:#000">EN</button>
+      <button id="lang-pt" onclick="setLang('pt')" style="padding:3px 10px;border-radius:16px;border:none;font-size:.72rem;font-weight:700;cursor:pointer;background:transparent;color:var(--muted)">PT</button>
+    </div>
     <div class="mode-sw" id="modeSw">
       <button class="msw on" onclick="setMode('tenant')" id="msw-tenant">🔍 <span class="t" data-en="Tenant" data-pt="Inquilino">Tenant</span></button>
       <button class="msw" onclick="setMode('landlord')" id="msw-landlord">🏠 <span class="t" data-en="Landlord" data-pt="Proprietário">Landlord</span></button>
@@ -527,9 +503,19 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
       <div class="fs">
         <h4>Weekly Rent</h4>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="font-size:.7rem;color:var(--muted);margin-bottom:3px">Min</div>
+            <input type="number" class="inp" id="priceMin" placeholder="150" min="0" max="2000" style="padding:6px 10px;font-size:.85rem" oninput="filterAll()">
+          </div>
+          <div style="flex:1">
+            <div style="font-size:.7rem;color:var(--muted);margin-bottom:3px">Max</div>
+            <input type="number" class="inp" id="priceMax" placeholder="600" min="0" max="2000" style="padding:6px 10px;font-size:.85rem" oninput="filterAll()">
+          </div>
+        </div>
         <div class="pr-row">
-          <input type="range" min="150" max="600" value="550" id="priceR" oninput="setPr(this.value);filterAll()">
-          <div class="pv" id="priceV">AU$550</div>
+          <input type="range" min="150" max="1500" value="1500" id="priceR" oninput="setPr(this.value);filterAll()">
+          <div class="pv" id="priceV">AU$1500</div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:3px"><span>AU$150</span><span>AU$600</span></div>
       </div>
@@ -576,6 +562,12 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <button class="chip" onclick="tglChip(this,'am')">🏊 Pool</button>
           <button class="chip" onclick="tglChip(this,'am')">Bills Incl.</button>
           <button class="chip" onclick="tglChip(this,'am')">Furnished</button>
+          <button class="chip" onclick="tglChip(this,'am')">🍳 Kitchen</button>
+          <button class="chip" onclick="tglChip(this,'am')">🐾 Pets OK</button>
+          <button class="chip" onclick="tglChip(this,'am')">🚬 Smoking OK</button>
+          <button class="chip" onclick="tglChip(this,'am')">🧺 Laundry</button>
+          <button class="chip" onclick="tglChip(this,'am')">🔒 Own Bathroom</button>
+          <button class="chip" onclick="tglChip(this,'am')">📺 TV</button>
         </div>
       </div>
 
@@ -626,6 +618,19 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <div class="det-layout">
       <div>
         <div id="detMeta" style="position:relative"></div>
+        <!-- Landlord profile card -->
+        <div class="det-section" id="detLandlordSection">
+          <span class="slabel">🏠 Listed by</span>
+          <div id="detLandlordCard" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-l);border-radius:12px;border:1px solid var(--border);cursor:pointer" onclick="openProfile(CUR&&CUR.landlordId)">
+            <div id="detLandlordAvatar" style="width:48px;height:48px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;color:#000;overflow:hidden;flex-shrink:0">?</div>
+            <div style="flex:1">
+              <div id="detLandlordName" style="font-weight:700;font-size:.9rem;color:var(--text)">Loading...</div>
+              <div id="detLandlordStats" style="font-size:.75rem;color:var(--muted);margin-top:2px"></div>
+              <div id="detLandlordRating" style="font-size:.75rem;color:var(--gold);margin-top:2px"></div>
+            </div>
+            <span style="color:var(--muted);font-size:.8rem">View profile →</span>
+          </div>
+        </div>
         <div class="det-section">
           <span class="slabel">About this room</span>
           <p id="detDesc" style="color:var(--muted);font-size:.9rem;line-height:1.75"></p>
@@ -678,7 +683,6 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="book-card">
         <div class="big-price" id="detPrice">AU$320 <small>/week</small></div>
         <div class="tag g" style="margin-bottom:14px" id="detAvail">Available now</div>
-        <div id="detSpotsInfo" style="font-size:.78rem;color:var(--muted);margin-bottom:10px;display:none"></div>
 
         <!-- Stay Type Picker -->
         <div style="display:flex;gap:8px;margin-bottom:16px">
@@ -696,41 +700,16 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
             <button class="dpo" onclick="setBkDurSingle(this,4,'week')">4 weeks</button>
           </div>
           <div class="date-grid">
-            <div class="dbox" style="padding:0;overflow:visible">
-              <label style="padding:9px 12px 0;display:block">Move-in</label>
-              <div class="cdp-wrap" id="cdpWrapIn">
-                <div class="cdp-input" id="cdpInputIn" onclick="cdpToggle('cdpIn')">
-                  <span class="cdp-input-val placeholder" id="cdpValIn">Select date</span>
-                  <span style="color:var(--muted);font-size:.8rem">📅</span>
-                </div>
-                <div class="cdp-popup" id="cdpIn"></div>
-              </div>
-              <input type="hidden" id="mIn">
-            </div>
-            <div class="dbox" style="padding:0;overflow:visible">
-              <label style="padding:9px 12px 0;display:block">Move-out</label>
-              <div class="cdp-wrap" id="cdpWrapOut">
-                <div class="cdp-input" id="cdpInputOut" style="cursor:default;opacity:.7">
-                  <span class="cdp-input-val placeholder" id="cdpValOut">Auto-calculated</span>
-                </div>
-              </div>
-              <input type="hidden" id="mOut">
-            </div>
+            <div class="dbox"><label>Move-in</label><input type="date" id="mIn" oninput="calcPB()" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></div>
+            <div class="dbox"><label>Move-out</label><input type="date" id="mOut" oninput="calcPB()" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" readonly style="background:var(--bg-l)"></div>
           </div>
         </div>
 
         <!-- Long Term Options -->
         <div id="longTermOpts">
-          <div class="dbox" style="margin-bottom:12px;padding:0;overflow:visible">
-            <label style="padding:9px 12px 0;display:block">Preferred move-in date</label>
-            <div class="cdp-wrap" id="cdpWrapLong">
-              <div class="cdp-input" id="cdpInputLong" onclick="cdpToggle('cdpLong')">
-                <span class="cdp-input-val placeholder" id="cdpValLong">Select date</span>
-                <span style="color:var(--muted);font-size:.8rem">📅</span>
-              </div>
-              <div class="cdp-popup" id="cdpLong"></div>
-            </div>
-            <input type="hidden" id="mInLong">
+          <div class="dbox" style="margin-bottom:12px">
+            <label>Preferred move-in date</label>
+            <input type="date" id="mInLong" oninput="calcPB()" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
           </div>
           <div id="flexibleNote" style="font-size:.78rem;color:var(--teal);background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.2);border-radius:8px;padding:8px 10px;margin-bottom:12px;display:none">
             📅 <strong>Flexible dates</strong> — landlord accepts ±3 days from this date
@@ -743,9 +722,6 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
             <button class="dpo" onclick="setBkDurSingle(this,12,'month')">12 months</button>
           </div>
         </div>
-
-        <!-- Availability Warning — shared for both stay types -->
-        <div id="dateAvailWarning" style="display:none;font-size:.78rem;padding:8px 12px;border-radius:8px;margin-top:8px;align-items:center;gap:6px"></div>
 
         <!-- LOCATION MINI WIDGET -->
         <div id="locWidget" onclick="openLocationPage()" style="border:1px solid var(--border);border-radius:14px;cursor:pointer;margin-bottom:14px;overflow:hidden;transition:border-color .2s" onmouseover="this.style.borderColor='var(--lime)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -1026,6 +1002,20 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <button type="button" class="chip" onclick="this.classList.toggle('on')">🇫🇷 French</button>
           <button type="button" class="chip" onclick="this.classList.toggle('on')">🇩🇪 German</button>
           <button type="button" class="chip" onclick="this.classList.toggle('on')">🇮🇹 Italian</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇷🇺 Russian</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇸🇦 Arabic</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇮🇷 Persian (Farsi)</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇹🇷 Turkish</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇻🇳 Vietnamese</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇹🇭 Thai</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇵🇭 Filipino</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇮🇩 Indonesian</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇲🇾 Malay</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇳🇱 Dutch</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇵🇱 Polish</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇺🇦 Ukrainian</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇬🇷 Greek</button>
+          <button type="button" class="chip" onclick="this.classList.toggle('on')">🇸🇪 Swedish</button>
         </div>
       </div>
     </div>
@@ -1131,7 +1121,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <h3 style="margin:20px 0 8px">8. Governing Law</h3>
       <p>These terms are governed by the laws of Queensland, Australia. Any disputes shall be resolved in the courts of Queensland.</p>
 
-      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">Contact: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d4b8b1b3b5b894bab1a7a0b9b5a0b1fab7bbb9fab5a1">[email&#160;protected]</a></p>
+      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">Contact: legal@nestmate.com.au</p>
     </div>
   </div>
 </div>
@@ -1163,7 +1153,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <p>We use essential cookies for authentication only. We do not use tracking or advertising cookies.</p>
 
       <h3 style="margin:20px 0 8px">6. Contact</h3>
-      <p>For privacy requests: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9aeae8f3ecfbf9e3daf4ffe9eef7fbeeffb4f9f5f7b4fbef">[email&#160;protected]</a></p>
+      <p>For privacy requests: privacy@nestmate.com.au</p>
 
       <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">NestMate complies with the Australian Privacy Act 1988 and the Queensland Information Privacy Act 2009.</p>
     </div>
@@ -1179,9 +1169,9 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </div>
     <!-- Tabs -->
     <div style="display:flex;border-bottom:1px solid var(--border);background:var(--bg)">
-      <button id="mbTabActive" onclick="switchMBTab('active')" style="flex:1;padding:12px;font-size:.85rem;font-weight:700;border:none;border-bottom:2px solid var(--lime);background:none;color:var(--text);cursor:pointer">🏡 Active <span id="mbBadgeActive" style="display:none;background:var(--lime);color:#000;border-radius:50%;padding:1px 6px;font-size:.72rem;font-weight:800;margin-left:4px"></span></button>
-      <button id="mbTabPending" onclick="switchMBTab('pending')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">⏳ Pending <span id="mbBadgePending" style="display:none;background:var(--orange);color:#fff;border-radius:50%;padding:1px 6px;font-size:.72rem;font-weight:800;margin-left:4px"></span></button>
-      <button id="mbTabPast" onclick="switchMBTab('past')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">📋 Past <span id="mbBadgePast" style="display:none;background:var(--muted);color:#fff;border-radius:50%;padding:1px 6px;font-size:.72rem;font-weight:800;margin-left:4px"></span></button>
+      <button id="mbTabActive" onclick="switchMBTab('active')" style="flex:1;padding:12px;font-size:.85rem;font-weight:700;border:none;border-bottom:2px solid var(--lime);background:none;color:var(--text);cursor:pointer">🏡 Active</button>
+      <button id="mbTabPending" onclick="switchMBTab('pending')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">⏳ Pending</button>
+      <button id="mbTabPast" onclick="switchMBTab('past')" style="flex:1;padding:12px;font-size:.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer">📋 Past</button>
     </div>
     <div id="myBookingsList" style="padding:16px"></div>
   </div>
@@ -1233,7 +1223,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <div id="editPhotoGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
         <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-l);border:1.5px dashed var(--border);border-radius:10px;cursor:pointer;font-size:.85rem;color:var(--muted)">
           <span style="font-size:1.2rem">📷</span> Add more photos
-          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:none" onchange="addEditPhotos(this.files)">
+          <input type="file" accept="image/*" multiple style="display:none" onchange="addEditPhotos(this.files)">
         </label>
         <div id="editPhotoWarn" style="display:none;color:var(--red);font-size:.76rem;margin-top:4px">⚠️ Minimum 3 photos required</div>
       </div>
@@ -1268,7 +1258,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <label class="lbl">Room Photos</label>
         <div id="editPhotoGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
         <div style="border:2px dashed var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:var(--bg-l)" onclick="document.getElementById('editPhotoInput').click()">
-          <input type="file" id="editPhotoInput" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:none" onchange="addEditPhotos(this.files)">
+          <input type="file" id="editPhotoInput" accept="image/*" multiple style="display:none" onchange="addEditPhotos(this.files)">
           <div style="font-size:1.3rem;margin-bottom:4px">📷</div>
           <div style="font-size:.82rem;color:var(--muted)">Click to add more photos (max 12)</div>
         </div>
@@ -1364,7 +1354,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 <!-- TOAST -->
 <div class="toast" id="toast"><span id="tIco">✅</span><span id="tMsg">Done</span></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ══════════════════════════════════════
 // DATA — 8 Gold Coast listings with real Unsplash photos
 // ══════════════════════════════════════
@@ -1579,7 +1569,7 @@ async function loadLandlordDashboard() {
       renderFirstTimeLandlord(m);
     } else {
       // Has listings → show real dashboard
-      await renderRealDashboard(m, listings);
+      renderRealDashboard(m, listings);
     }
   } catch(e) {
     console.error('Dashboard error:', e);
@@ -1590,40 +1580,70 @@ async function loadLandlordDashboard() {
 function renderFirstTimeLandlord(m) {
   const name = currentUser?.user_metadata?.full_name?.split(' ')[0] || 'there';
   m.innerHTML = `
-    <div style="max-width:580px;margin:0 auto;padding:40px 20px;text-align:center">
-      <div style="font-size:3rem;margin-bottom:16px">🏠</div>
-      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:8px;color:var(--text)">
-        Welcome, ${name}!
-      </h1>
-      <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:32px">
-        You don't have any listings yet.<br>
-        List your first room in a few minutes and start receiving requests from verified international students.
-      </p>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:32px;text-align:left">
-        <div style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:16px">
-          <div style="font-size:1.4rem;margin-bottom:8px">📷</div>
-          <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px">Add photos</div>
-          <div style="font-size:.75rem;color:var(--muted)">Minimum 3 photos required</div>
+    <div style="max-width:600px;margin:0 auto;padding:24px 16px">
+      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:4px">Welcome, ${name}! 👋</h1>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:24px">Follow these steps to start earning with RoomiStay</p>
+
+      <!-- Step by step guide -->
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px">
+        <div style="display:flex;gap:14px;padding:16px;background:var(--bg-l);border:2px solid var(--lime);border-radius:14px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#000;flex-shrink:0">1</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem">📷 Complete your profile</div>
+            <div style="font-size:.78rem;color:var(--muted);margin:3px 0 8px">Add a photo and bio so tenants trust you</div>
+            <button class="btn lime sm" onclick="openOwnProfile()">Complete Profile →</button>
+          </div>
         </div>
-        <div style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:16px">
-          <div style="font-size:1.4rem;margin-bottom:8px">💰</div>
-          <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px">Set your price</div>
-          <div style="font-size:.75rem;color:var(--muted)">Weekly rent + bond amount</div>
+
+        <div style="display:flex;gap:14px;padding:16px;background:var(--bg-l);border:1px solid var(--border);border-radius:14px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-m);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--muted);flex-shrink:0">2</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem">🏠 List your room</div>
+            <div style="font-size:.78rem;color:var(--muted);margin:3px 0 8px">Add photos, set your price, describe the space</div>
+            <button class="btn ol sm" onclick="llTab('add')">Add Listing →</button>
+          </div>
         </div>
-        <div style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:16px">
-          <div style="font-size:1.4rem;margin-bottom:8px">✅</div>
-          <div style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px">Go live</div>
-          <div style="font-size:.75rem;color:var(--muted)">Reviewed in under 24h</div>
+
+        <div style="display:flex;gap:14px;padding:16px;background:var(--bg-l);border:1px solid var(--border);border-radius:14px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-m);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--muted);flex-shrink:0">3</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem">💰 Set up payouts</div>
+            <div style="font-size:.78rem;color:var(--muted);margin:3px 0 8px">Connect your bank account to receive payments securely</div>
+            <button class="btn ol sm" onclick="llTab('settings')">Connect Bank →</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;padding:16px;background:var(--bg-l);border:1px solid var(--border);border-radius:14px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-m);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--muted);flex-shrink:0">4</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem">🪪 Verify your identity (KYC)</div>
+            <div style="font-size:.78rem;color:var(--muted);margin:3px 0 8px">Get the verified badge — tenants prefer verified landlords</div>
+            <button class="btn ol sm" onclick="startKYC()">Start Verification →</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;padding:16px;background:var(--bg-l);border:1px solid var(--border);border-radius:14px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-m);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--muted);flex-shrink:0">5</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem">📥 Receive & approve requests</div>
+            <div style="font-size:.78rem;color:var(--muted);margin:3px 0 8px">Review tenant profiles, accept or decline applications</div>
+            <div style="font-size:.75rem;color:var(--teal);font-weight:600">← Requests appear in Applications tab</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;padding:16px;background:var(--bg-l);border:1px solid var(--border);border-radius:14px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-m);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--muted);flex-shrink:0">6</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem">🎉 Get paid!</div>
+            <div style="font-size:.78rem;color:var(--muted)">Money is released to your account 24h after tenant confirms check-in. RoomiStay takes 5% — you keep 95%.</div>
+          </div>
         </div>
       </div>
 
-      <button class="btn lime" style="width:100%;justify-content:center;font-size:1rem;padding:15px" onclick="llTab('add')">
-        ➕ List My First Room
-      </button>
-      <p style="margin-top:12px;font-size:.75rem;color:var(--muted)">Free to list · No subscription required · Pay only when you earn</p>
-    </div>
-  `;
+      <div style="padding:14px;background:rgba(200,241,53,.08);border:1px solid rgba(200,241,53,.2);border-radius:12px;font-size:.8rem;color:var(--muted);text-align:center">
+        💬 Need help? Click the chat bubble in the bottom right corner
+      </div>
+    </div>`;
 }
 
 async function renderRealDashboard(m, listings) {
@@ -1651,24 +1671,11 @@ async function renderRealDashboard(m, listings) {
       .reduce((sum, b) => sum + (b.total_rent || 0), 0);
   } catch(e) {}
 
-  // Fetch active guests info
-  let activeGuests = [];
-  try {
-    const { data: guestData } = await _supabaseClient
-      .from('bookings')
-      .select('*, listings(title, suburb), profiles!tenant_id(full_name, nationality, avatar_url)')
-      .eq('landlord_id', currentUser.id)
-      .in('status', ['approved', 'paid', 'signed', 'checked_in', 'contract_sent']);
-    activeGuests = guestData || [];
-  } catch(e) {}
-
-  const activeGuestsCount = activeGuests.length;
-
   m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">
       Good morning, ${name} 👋
     </h1>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your RoomiStay dashboard.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your NestMate dashboard.</p>
     
     <div class="stats-row">
       <div class="stat-card">
@@ -1677,51 +1684,25 @@ async function renderRealDashboard(m, listings) {
         <div class="slabel">My listings</div>
         <div class="sdelta">${activeListings} active</div>
       </div>
-      <div class="stat-card" style="cursor:pointer" onclick="llTab('applications')">
+      <div class="stat-card">
         <div class="ico">📥</div>
         <div class="sval">${pendingCount}</div>
         <div class="slabel">Pending requests</div>
         <div class="sdelta">${pendingCount > 0 ? '⚡ Action needed' : 'All clear'}</div>
       </div>
       <div class="stat-card">
-        <div class="ico">🏡</div>
-        <div class="sval">${activeGuestsCount}</div>
-        <div class="slabel">Active guests</div>
-        <div class="sdelta">${activeGuestsCount > 0 ? 'Currently hosted' : 'No guests yet'}</div>
-      </div>
-      <div class="stat-card">
         <div class="ico">💰</div>
         <div class="sval">AU$${earnings.toLocaleString()}</div>
         <div class="slabel">Total earned</div>
-        <div class="sdelta">Via RoomiStay escrow</div>
+        <div class="sdelta">Via NestMate escrow</div>
+      </div>
+      <div class="stat-card">
+        <div class="ico">⭐</div>
+        <div class="sval">${currentUser?.user_metadata?.rating || '—'}</div>
+        <div class="slabel">Your rating</div>
+        <div class="sdelta">Build your reputation</div>
       </div>
     </div>
-
-    ${activeGuestsCount > 0 ? `
-    <div style="margin-bottom:20px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--text)">🏡 Current Guests</h3>
-      </div>
-      ${activeGuests.map(b => {
-        const t = b.profiles || {};
-        const l = b.listings || {};
-        const name2 = t.full_name || 'Tenant';
-        const initial = name2.charAt(0).toUpperCase();
-        const moveIn = b.move_in_date ? new Date(b.move_in_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
-        const moveOut = b.move_out_date ? new Date(b.move_out_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
-        const statusColors = {approved:'var(--teal)',paid:'var(--lime)',signed:'var(--teal)',checked_in:'var(--lime)',contract_sent:'var(--blue)'};
-        const statusLabels = {approved:'✅ Approved',paid:'💰 Paid',signed:'✍️ Signed',checked_in:'🏡 Checked in',contract_sent:'📄 Contract sent'};
-        return '<div style="background:var(--bg-m);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
-          '<div style="width:40px;height:40px;border-radius:50%;background:rgba(200,241,53,.15);color:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0">' + initial + '</div>' +
-          '<div style="flex:1">' +
-            '<div style="font-weight:600;font-size:.88rem;color:var(--text)">' + name2 + '</div>' +
-            '<div style="font-size:.75rem;color:var(--muted);margin-top:2px">📍 ' + (l.title||'Room') + ' · ' + moveIn + ' → ' + moveOut + '</div>' +
-          '</div>' +
-          '<span style="font-size:.72rem;font-weight:700;color:' + (statusColors[b.status]||'var(--muted)') + ';background:rgba(0,0,0,.05);padding:3px 8px;border-radius:10px">' + (statusLabels[b.status]||b.status) + '</span>' +
-          '<button class="btn ol sm" style="font-size:.72rem;padding:4px 10px" data-uid="' + b.tenant_id + '" onclick="openProfile(this.dataset.uid)">👤 Profile</button>' +
-        '</div>';
-      }).join('')}
-    </div>` : ''}
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--text)">My Listings</h3>
@@ -1920,35 +1901,17 @@ function updateNavAvatar(user) {
   var name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
   var firstName = name.split(' ')[0];
   navName.textContent = firstName;
-  var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+  // Check for avatar in profile
   if (_supabaseClient && user.id) {
     _supabaseClient.from('profiles').select('avatar_url').eq('id', user.id).single().then(function(res) {
-      var avatarUrl = (res.data && res.data.avatar_url) ? res.data.avatar_url : googleAvatar;
-      if (avatarUrl) {
-        var img = document.createElement('img');
-        img.src = avatarUrl;
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
-        img.onerror = function() { navAvatar.textContent = firstName.charAt(0).toUpperCase(); };
-        navAvatar.innerHTML = '';
-        navAvatar.appendChild(img);
-        if (res.data && !res.data.avatar_url && googleAvatar) {
-          _supabaseClient.from('profiles').upsert({ id: user.id, avatar_url: googleAvatar }, { onConflict: 'id' }).then(function(){});
-        }
+      if (res.data && res.data.avatar_url) {
+        navAvatar.innerHTML = '<img src="' + res.data.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
       } else {
         navAvatar.textContent = firstName.charAt(0).toUpperCase();
       }
     });
   } else {
-    if (googleAvatar) {
-      var img = document.createElement('img');
-      img.src = googleAvatar;
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
-      img.onerror = function() { navAvatar.textContent = firstName.charAt(0).toUpperCase(); };
-      navAvatar.innerHTML = '';
-      navAvatar.appendChild(img);
-    } else {
-      navAvatar.textContent = firstName.charAt(0).toUpperCase();
-    }
+    navAvatar.textContent = firstName.charAt(0).toUpperCase();
   }
 }
 
@@ -2044,7 +2007,7 @@ async function signUpWithEmail(email, password, fullName, role, nationality, bio
 // LOGOUT
 async function doLogout() {
   await _supabaseClient?.auth.signOut();
-  window.location.href = window.location.pathname;
+  go('s-land');
 }
 
 // Função legada mantida para compatibilidade
@@ -2186,493 +2149,14 @@ async function saveListing(data) {
 // STRIPE — Criar pagamento real
 // ══════════════════════════════════════
 async function createRealPayment(bookingId, amount) {
-  // Kept for compatibility - actual payment done via doStripePayment
+  // For now use simulation - Stripe Elements UI needs to be added for real cards
+  // The /api/create-payment-intent endpoint is ready on the server
   console.log('Payment for booking:', bookingId, 'Amount:', amount);
-  return { success: true, simulated: false };
+  return simulatePaymentFallback();
 }
 
 function simulatePaymentFallback() {
   return new Promise(resolve => setTimeout(() => resolve({ success: true, simulated: true }), 1800));
-}
-
-async function checkListingAvailability(listingId, moveIn, moveOut) {
-  if (!_supabaseClient || !listingId) return { available: true, spotsLeft: 1, totalSpots: 1 };
-  try {
-    const { data: listing } = await _supabaseClient
-      .from('listings').select('total_rooms, beds_per_room, room_type').eq('id', listingId).single();
-    const totalRooms = listing?.total_rooms || 1;
-    const bedsPerRoom = listing?.beds_per_room || 1;
-    const totalSpots = totalRooms * bedsPerRoom;
-
-    let query = _supabaseClient.from('bookings')
-      .select('id', { count: 'exact', head: true })
-      .eq('listing_id', listingId)
-      .in('status', ['pending', 'approved', 'contract_sent', 'signed', 'paid', 'checked_in']);
-
-    if (moveIn && moveOut) {
-      // Overlap: starts before moveOut AND ends AFTER moveIn (day of checkout is free)
-      query = query.lt('move_in_date', moveOut).gt('move_out_date', moveIn);
-    } else if (moveIn) {
-      query = query.gt('move_out_date', moveIn);
-    }
-
-    const { count } = await query;
-    const activeBookings = count || 0;
-    const spotsLeft = Math.max(0, totalSpots - activeBookings);
-    return { available: spotsLeft > 0, spotsLeft, totalSpots, activeBookings };
-  } catch(e) {
-    console.error('Availability check error:', e);
-    return { available: true, spotsLeft: 1, totalSpots: 1 };
-  }
-}
-
-// Returns array of fully-booked date ranges for a listing
-// considering capacity (only blocks if ALL spots are taken)
-async function getBookedPeriods(listingId) {
-  if (!_supabaseClient || !listingId) return { periods: [], totalSpots: 1 };
-  try {
-    const { data: listing } = await _supabaseClient
-      .from('listings').select('total_rooms, beds_per_room').eq('id', listingId).single();
-    const totalSpots = (listing?.total_rooms || 1) * (listing?.beds_per_room || 1);
-
-    // Get all active bookings with dates
-    const { data: bookings } = await _supabaseClient
-      .from('bookings')
-      .select('move_in_date, move_out_date')
-      .eq('listing_id', listingId)
-      .in('status', ['pending', 'approved', 'contract_sent', 'signed', 'paid', 'checked_in'])
-      .not('move_in_date', 'is', null)
-      .not('move_out_date', 'is', null);
-
-    if (!bookings || bookings.length === 0) return { periods: [], totalSpots };
-
-    // Build day-by-day occupancy map
-    const occupancy = {};
-    bookings.forEach(b => {
-      const start = new Date(b.move_in_date);
-      const end = new Date(b.move_out_date);
-      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-        const key = d.toISOString().split('T')[0];
-        occupancy[key] = (occupancy[key] || 0) + 1;
-      }
-    });
-
-    // Find days where occupancy >= totalSpots (fully booked)
-    const fullyBookedDays = Object.keys(occupancy)
-      .filter(day => occupancy[day] >= totalSpots)
-      .sort();
-
-    // Convert to ranges
-    const periods = [];
-    if (fullyBookedDays.length > 0) {
-      let rangeStart = fullyBookedDays[0];
-      let rangeEnd = fullyBookedDays[0];
-      for (let i = 1; i < fullyBookedDays.length; i++) {
-        const prev = new Date(fullyBookedDays[i-1]);
-        const curr = new Date(fullyBookedDays[i]);
-        const diff = (curr - prev) / (1000*60*60*24);
-        if (diff === 1) {
-          rangeEnd = fullyBookedDays[i];
-        } else {
-          periods.push({ start: rangeStart, end: rangeEnd });
-          rangeStart = fullyBookedDays[i];
-          rangeEnd = fullyBookedDays[i];
-        }
-      }
-      periods.push({ start: rangeStart, end: rangeEnd });
-    }
-
-    return { periods, totalSpots, occupancy };
-  } catch(e) {
-    console.error('getBookedPeriods error:', e);
-    return { periods: [], totalSpots: 1 };
-  }
-}
-
-// Check if a date range overlaps with fully booked periods
-function dateOverlapsBookedPeriods(moveIn, moveOut, bookedPeriods) {
-  if (!moveIn || !bookedPeriods || bookedPeriods.length === 0) return false;
-  const inDate = new Date(moveIn);
-  const outDate = moveOut ? new Date(moveOut) : null;
-  return bookedPeriods.some(function(p) {
-    const pStart = new Date(p.start);
-    const pEnd = new Date(p.end);
-    pEnd.setDate(pEnd.getDate() + 1); // inclusive
-    if (outDate) {
-      return inDate < pEnd && outDate > pStart;
-    }
-    return inDate >= pStart && inDate <= pEnd;
-  });
-}
-
-// Global cache of booked periods for current listing
-var _curBookedPeriods = [];
-var _curTotalSpots = 1;
-
-// ══════════════════════════════════════
-// CUSTOM DATE PICKER
-// ══════════════════════════════════════
-var _cdpState = {
-  cdpIn:   { year: null, month: null, selected: null, mode: 'in' },
-  cdpLong: { year: null, month: null, selected: null, mode: 'long' },
-};
-var _cdpOccupancy = {}; // day -> count of bookings
-var _cdpTotalSpots = 1;
-
-function cdpInit(id) {
-  var now = new Date();
-  if (!_cdpState[id]) _cdpState[id] = {};
-  _cdpState[id].year = now.getFullYear();
-  _cdpState[id].month = now.getMonth();
-  cdpRender(id);
-}
-
-function cdpToggle(id) {
-  var popup = document.getElementById(id);
-  var input = document.getElementById(id === 'cdpIn' ? 'cdpInputIn' : 'cdpInputLong');
-  if (!popup) return;
-  var isOpen = popup.classList.contains('open');
-  // Close all popups
-  document.querySelectorAll('.cdp-popup').forEach(function(p) { p.classList.remove('open'); });
-  document.querySelectorAll('.cdp-input').forEach(function(i) { i.classList.remove('open'); });
-  if (!isOpen) {
-    if (!_cdpState[id].year) cdpInit(id);
-    cdpRender(id);
-    popup.classList.add('open');
-    if (input) input.classList.add('open');
-  }
-}
-
-function cdpNav(id, delta) {
-  if (!_cdpState[id]) cdpInit(id);
-  _cdpState[id].month += delta;
-  if (_cdpState[id].month > 11) { _cdpState[id].month = 0; _cdpState[id].year++; }
-  if (_cdpState[id].month < 0)  { _cdpState[id].month = 11; _cdpState[id].year--; }
-  cdpRender(id);
-}
-
-function cdpRender(id) {
-  var popup = document.getElementById(id);
-  if (!popup) return;
-  if (!_cdpState[id]) cdpInit(id);
-  var st = _cdpState[id];
-  var today = new Date(); today.setHours(0,0,0,0);
-  var y = st.year, m = st.month;
-  var firstDay = new Date(y, m, 1).getDay();
-  var daysInMonth = new Date(y, m+1, 0).getDate();
-  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-  var parts = [];
-  parts.push('<div class="cdp-nav">');
-  parts.push('<button class="cdp-nav-btn" data-cdpid="' + id + '" data-delta="-1" onclick="cdpNav(this.dataset.cdpid, parseInt(this.dataset.delta))">&#8249;</button>');
-  parts.push('<span class="cdp-month-label">' + monthNames[m] + ' ' + y + '</span>');
-  parts.push('<button class="cdp-nav-btn" data-cdpid="' + id + '" data-delta="1" onclick="cdpNav(this.dataset.cdpid, parseInt(this.dataset.delta))">&#8250;</button>');
-  parts.push('</div>');
-  parts.push('<div class="cdp-weekdays"><div class="cdp-wd">S</div><div class="cdp-wd">M</div><div class="cdp-wd">T</div><div class="cdp-wd">W</div><div class="cdp-wd">T</div><div class="cdp-wd">F</div><div class="cdp-wd">S</div></div>');
-  parts.push('<div class="cdp-days">');
-
-  for (var i = 0; i < firstDay; i++) parts.push('<div class="cdp-day empty"></div>');
-
-  for (var d = 1; d <= daysInMonth; d++) {
-    var date = new Date(y, m, d);
-    date.setHours(0,0,0,0);
-    var dateStr = y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-    var isPast = date < today;
-    var occ = _cdpOccupancy[dateStr] || 0;
-    var isBlocked = _cdpTotalSpots > 0 && occ >= _cdpTotalSpots;
-    var isPartial = occ > 0 && occ < _cdpTotalSpots;
-    var isSelected = st.selected === dateStr;
-    var isToday = date.getTime() === today.getTime();
-
-    var cls = 'cdp-day';
-    if (isPast) cls += ' past';
-    else if (isBlocked) cls += ' blocked';
-    else if (isPartial) cls += ' partial';
-    if (isSelected) cls += ' selected';
-    if (isToday) cls += ' today';
-
-    var dayHtml = '<div class="' + cls + '"';
-    if (!isPast && !isBlocked) {
-      dayHtml += ' data-cdpid="' + id + '" data-date="' + dateStr + '" onclick="cdpSelect(this.dataset.cdpid, this.dataset.date)"';
-    }
-    if (isBlocked) dayHtml += ' title="Fully booked"';
-    else if (isPartial) dayHtml += ' title="' + (_cdpTotalSpots - occ) + ' spot(s) left"';
-    dayHtml += '>' + d + '</div>';
-    parts.push(dayHtml);
-  }
-
-  parts.push('</div>');
-
-  if (Object.keys(_cdpOccupancy).length > 0) {
-    parts.push('<div class="cdp-legend">');
-    parts.push('<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,71,87,.3)"></div> Fully booked</div>');
-    if (_cdpTotalSpots > 1) parts.push('<div class="cdp-leg"><div class="cdp-leg-dot" style="background:rgba(255,107,53,.2)"></div> Partially booked</div>');
-    parts.push('<div class="cdp-leg"><div class="cdp-leg-dot" style="background:var(--lime)"></div> Selected</div>');
-    parts.push('</div>');
-  }
-
-  popup.innerHTML = parts.join('');
-}
-function cdpSelect(id, dateStr) {
-  if (!_cdpState[id]) _cdpState[id] = {};
-  _cdpState[id].selected = dateStr;
-
-  // Format for display
-  var d = new Date(dateStr + 'T00:00:00');
-  var formatted = d.toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
-
-  if (id === 'cdpIn') {
-    // Short stay move-in
-    document.getElementById('mIn').value = dateStr;
-    var valEl = document.getElementById('cdpValIn');
-    if (valEl) { valEl.textContent = formatted; valEl.classList.remove('placeholder'); }
-    // Auto-close and update move-out based on duration
-    document.getElementById('cdpIn').classList.remove('open');
-    document.getElementById('cdpInputIn').classList.remove('open');
-    // Update move-out
-    var dur = bkDurVal || 1;
-    var unit = bkDurUnit || 'week';
-    var outDate = new Date(dateStr + 'T00:00:00');
-    if (unit === 'week') outDate.setDate(outDate.getDate() + dur * 7);
-    else outDate.setMonth(outDate.getMonth() + dur);
-    var outStr = outDate.toISOString().split('T')[0];
-    document.getElementById('mOut').value = outStr;
-    var outFormatted = outDate.toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
-    var outVal = document.getElementById('cdpValOut');
-    if (outVal) { outVal.textContent = outFormatted; outVal.classList.remove('placeholder'); }
-  } else if (id === 'cdpLong') {
-    // Long stay move-in
-    document.getElementById('mInLong').value = dateStr;
-    var valEl2 = document.getElementById('cdpValLong');
-    if (valEl2) { valEl2.textContent = formatted; valEl2.classList.remove('placeholder'); }
-    document.getElementById('cdpLong').classList.remove('open');
-    document.getElementById('cdpInputLong').classList.remove('open');
-  }
-
-  calcPB();
-  updateDateAvailabilityWarning();
-  cdpRender(id);
-}
-
-// Close picker when clicking outside
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.cdp-wrap')) {
-    document.querySelectorAll('.cdp-popup').forEach(function(p) { p.classList.remove('open'); });
-    document.querySelectorAll('.cdp-input').forEach(function(i) { i.classList.remove('open'); });
-  }
-});
-
-async function loadAndApplyAvailability(listingId) {
-  if (!listingId || !_supabaseClient) return;
-  var result = await getBookedPeriods(listingId);
-  _curBookedPeriods = result.periods;
-  _curTotalSpots = result.totalSpots;
-
-  // Populate CDP occupancy map for visual date picker
-  _cdpOccupancy = result.occupancy || {};
-  _cdpTotalSpots = result.totalSpots;
-
-  // Init date pickers
-  cdpInit('cdpIn');
-  cdpInit('cdpLong');
-
-  // Show blocked dates info
-  updateDateAvailabilityWarning();
-}
-
-function updateDateAvailabilityWarning() {
-  // Get move-in date based on stay type
-  var mIn, mOut;
-  if (_stayType === 'short') {
-    mIn = (document.getElementById('mIn') || {}).value;
-    mOut = (document.getElementById('mOut') || {}).value;
-  } else {
-    mIn = (document.getElementById('mInLong') || {}).value;
-    // Estimate move-out for long stay based on duration
-    if (mIn && bkDurVal) {
-      var estOut = new Date(mIn);
-      if (bkDurUnit === 'month') {
-        estOut.setMonth(estOut.getMonth() + parseInt(bkDurVal));
-      } else {
-        estOut.setDate(estOut.getDate() + parseInt(bkDurVal) * 7);
-      }
-      mOut = estOut.toISOString().split('T')[0];
-    }
-  }
-  var warnEl = document.getElementById('dateAvailWarning');
-  if (!warnEl) return;
-
-  if (!mIn) { warnEl.style.display = 'none'; return; }
-
-  var isBlocked = dateOverlapsBookedPeriods(mIn, mOut, _curBookedPeriods);
-  if (isBlocked) {
-    warnEl.style.display = 'flex';
-    warnEl.innerHTML = '❌ These dates are fully booked. Please select different dates.';
-    warnEl.style.color = 'var(--red)';
-    warnEl.style.background = 'rgba(255,71,87,.08)';
-    warnEl.style.border = '1px solid rgba(255,71,87,.2)';
-  } else if (_curBookedPeriods.length > 0) {
-    // Show blocked periods info
-    var blockedStr = _curBookedPeriods.map(function(p) {
-      return p.start + (p.end !== p.start ? ' → ' + p.end : '');
-    }).join(', ');
-    warnEl.style.display = 'flex';
-    warnEl.innerHTML = '📅 Dates unavailable: ' + blockedStr;
-    warnEl.style.color = 'var(--muted)';
-    warnEl.style.background = 'var(--bg-l)';
-    warnEl.style.border = '1px solid var(--border)';
-  } else {
-    warnEl.style.display = 'none';
-  }
-}
-
-async function doTestBooking() {
-  if (!isAdmin) { toast('Admin only', 'error'); return; }
-  if (!currentUser || !CUR) return;
-
-  const mIn = document.getElementById('mIn')?.value || document.getElementById('mInLong')?.value || '';
-  const mOut = document.getElementById('mOut')?.value || '';
-  const msgEl = document.querySelector('#moContent textarea');
-  const tenantMsg = msgEl ? msgEl.value : '';
-  const weeks = mOut && mIn ? Math.max(1, Math.round((new Date(mOut)-new Date(mIn))/(7*24*60*60*1000))) : (bkDurVal||4);
-  const total = CUR.price * weeks + (CUR.bond||0) + (CUR.fee||0);
-
-  toast('⏳ Creating test booking...', '');
-
-  try {
-    const { data: booking, error } = await _supabaseClient.from('bookings').insert({
-      tenant_id: currentUser.id,
-      landlord_id: CUR.landlordId,
-      listing_id: CUR.id,
-      move_in_date: mIn || null,
-      move_out_date: mOut || null,
-      total_rent: CUR.price * weeks,
-      total_amount: total,
-      bond_amount: CUR.bond || 0,
-      platform_fee: CUR.fee || 0,
-      status: 'pending',
-      stay_type: _stayType || 'long',
-      min_months: bkDurVal || 1,
-      tenant_message: tenantMsg || '[TEST BOOKING]',
-    }).select().single();
-
-    if (error) { toast('Error: ' + error.message, 'error'); return; }
-    toast('✅ Test booking created! ID: ' + booking.id.slice(0,8), 'lime');
-    STEP = 4; renderStep();
-  } catch(e) {
-    toast('Error: ' + e.message, 'error');
-  }
-}
-
-async function doStripePayment(amountCents) {
-  if (!currentUser) { toast('Please sign in', ''); return; }
-  if (!stripe || !window._stripeCardElement) { toast('Payment system not ready', 'error'); return; }
-
-  const btn = document.getElementById('stripePayBtn');
-  if (btn) { btn.textContent = '⏳ Processing...'; btn.disabled = true; }
-
-  try {
-    // 0. Check availability first
-    const mIn = document.getElementById('mIn')?.value || document.getElementById('mInLong')?.value || '';
-    const mOut = document.getElementById('mOut')?.value || '';
-
-    // Estimate move_out for long stay
-    var moveOutForCheck = mOut;
-    if (!moveOutForCheck && mIn && bkDurVal) {
-      var estOut = new Date(mIn);
-      if (bkDurUnit === 'month') estOut.setMonth(estOut.getMonth() + parseInt(bkDurVal));
-      else estOut.setDate(estOut.getDate() + parseInt(bkDurVal) * 7);
-      moveOutForCheck = estOut.toISOString().split('T')[0];
-    }
-    const avail = await checkListingAvailability(CUR?.id, mIn, moveOutForCheck);
-    if (!avail.available) {
-      if (btn) { btn.textContent = 'Pay AU$' + (amountCents/100).toFixed(0) + ' — Secure →'; btn.disabled = false; }
-      toast('❌ Sorry — this listing is fully booked for the selected dates. Please choose different dates.', 'error');
-      return;
-    }
-    if (avail.spotsLeft === 1 && avail.totalSpots > 1) {
-      toast('⚡ Last spot available for these dates!', '');
-    }
-
-    // 1. Save booking first to get bookingId
-    const msgEl = document.querySelector('#moContent textarea');
-    const tenantMsg = msgEl ? msgEl.value : '';
-    const weeks = mOut && mIn ? Math.max(1, Math.round((new Date(mOut)-new Date(mIn))/(7*24*60*60*1000))) : (bkDurVal||4);
-    const total = CUR.price * weeks + (CUR.bond||0) + (CUR.fee||0);
-
-    let bookingId = null;
-    if (_supabaseClient) {
-      const { data: booking, error: bookErr } = await _supabaseClient.from('bookings').insert({
-        tenant_id: currentUser.id,
-        landlord_id: CUR.landlordId,
-        listing_id: CUR.id,
-        move_in_date: mIn || null,
-        move_out_date: mOut || null,
-        total_rent: CUR.price * weeks,
-        total_amount: total,
-        bond_amount: CUR.bond || 0,
-        platform_fee: CUR.fee || 0,
-        status: 'pending',
-        stay_type: _stayType || 'long',
-        min_months: bkDurVal || 1,
-        tenant_message: tenantMsg,
-      }).select().single();
-      if (bookErr) { console.error('Booking save error:', bookErr); }
-      else { bookingId = booking?.id; console.log('Booking saved:', bookingId); }
-
-      // Send emails
-      if (bookingId) {
-        fetch('/api/send-email', { method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ type: 'booking_received', bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL }) })
-          .catch(e => console.log('Email error:', e));
-        fetch('/api/send-email', { method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ type: 'booking_pending_tenant', bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL }) })
-          .catch(e => console.log('Email error:', e));
-      }
-    }
-
-    // 2. Create PaymentIntent on server
-    const piRes = await fetch('/api/create-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: amountCents,
-        bookingId: bookingId,
-        listingId: CUR.id,
-        tenantId: currentUser.id,
-        landlordId: CUR.landlordId,
-        currency: 'aud',
-        description: 'RoomiStay booking — ' + CUR.title,
-      })
-    });
-    const piData = await piRes.json();
-    if (!piRes.ok || !piData.clientSecret) throw new Error(piData.error || 'Payment setup failed');
-
-    // 3. Confirm card payment with Stripe
-    const { paymentIntent, error } = await stripe.confirmCardPayment(piData.clientSecret, {
-      payment_method: { card: window._stripeCardElement, billing_details: { name: currentUser.user_metadata?.full_name || '' } }
-    });
-
-    if (error) {
-      var errEl = document.getElementById('stripe-card-errors');
-      if (errEl) errEl.textContent = error.message;
-      if (btn) { btn.textContent = 'Try again'; btn.disabled = false; }
-      return;
-    }
-
-    if (paymentIntent.status === 'succeeded') {
-      // Update booking status to paid
-      if (_supabaseClient && bookingId) {
-        await _supabaseClient.from('bookings').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', bookingId);
-      }
-      STEP = 4; renderStep();
-      toast('✅ Payment successful! Awaiting landlord confirmation.', 'lime');
-    }
-  } catch(err) {
-    console.error('Payment error:', err);
-    if (btn) { btn.textContent = 'Try again'; btn.disabled = false; }
-    toast('Payment error: ' + (err.message || 'Please try again'), 'error');
-  }
 }
 
 // Init - only once
@@ -2886,59 +2370,7 @@ function openDetail(id) {
   if (!CUR && typeof LISTINGS !== 'undefined') {
     CUR = LISTINGS.find(l => String(l.id) === String(id));
   }
-  // Show availability info
-  if (CUR && CUR.id && _supabaseClient) {
-    var spotsEl = document.getElementById('detSpotsInfo');
-    if (spotsEl) {
-      checkListingAvailability(CUR.id, null, null).then(function(avail) {
-        if (avail.totalSpots > 1) {
-          spotsEl.style.display = 'block';
-          if (avail.spotsLeft === 0) {
-            spotsEl.innerHTML = '🔴 <strong>Fully booked</strong> — no spots available';
-            spotsEl.style.color = 'var(--red)';
-          } else if (avail.spotsLeft === 1) {
-            spotsEl.innerHTML = '⚡ <strong>1 spot left</strong> out of ' + avail.totalSpots;
-            spotsEl.style.color = 'var(--orange)';
-          } else {
-            spotsEl.innerHTML = '✅ <strong>' + avail.spotsLeft + ' spots available</strong> out of ' + avail.totalSpots;
-            spotsEl.style.color = 'var(--teal)';
-          }
-        }
-      });
-    }
-  }
-
-  if (!CUR) {
-    // Listing not in cache — fetch from Supabase
-    if (_supabaseClient && id) {
-      _supabaseClient.from('listings')
-        .select('*, profiles!landlord_id(full_name, rating_avg, rating_count, avatar_url)')
-        .eq('id', id).single().then(function(res) {
-          if (res.data) {
-            var l = res.data;
-            var photos = l.photos;
-            if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
-            CUR = {
-              id: l.id, title: l.title, suburb: l.suburb, address: l.address,
-              price: l.price_weekly, bond: l.bond_amount, type: l.room_type,
-              minWeeks: l.min_weeks, maxMonths: l.max_months, avail: l.available_from,
-              vibe: l.house_vibe, amenities: l.amenities || [], nats: l.nationalities || [],
-              description: l.description, status: l.status, landlordId: l.landlord_id,
-              gender: l.gender_preference, bathroom: l.bathroom, pets: l.pets,
-              smoking: l.smoking, utilities: l.utilities, flexible: l.flexible_dates,
-              imgs: photos || [],
-              landlordName: l.profiles?.full_name || 'Landlord',
-              landlordRating: l.profiles?.rating_avg || 0,
-              landlordAvatar: l.profiles?.avatar_url || '',
-            };
-            window.CURRENT_LISTINGS = window.CURRENT_LISTINGS || [];
-            window.CURRENT_LISTINGS.push(CUR);
-            openDetail(id);
-          } else { toast('Room not found', 'error'); }
-        });
-    } else { toast('Room not found', 'error'); }
-    return;
-  }
+  if (!CUR) { toast('Room not found', 'error'); return; }
   const l = CUR;
   // Gallery
   const mainImg = l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500';
@@ -2980,12 +2412,11 @@ function openDetail(id) {
   setStayType('long');
   calcPB();
   go('s-detail');
-  // Load availability and apply to date inputs
-  if (CUR && CUR.id) loadAndApplyAvailability(CUR.id);
 
   // Load community data
   loadHousemates(l.id);
   loadHousemateReviews(l.id);
+  loadDetailLandlord(l.landlordId);
 
   // Render mini map in booking card widget + detail map
   setTimeout(function() {
@@ -3132,53 +2563,33 @@ function renderStep() {
       <button class="btn ol full sm" style="margin-top:8px" onclick="STEP=1;renderStep()">← Back</button>`;
   } else if (STEP===3) {
     const total = l.price*weeks + l.bond + l.fee;
-    const totalCents = Math.round(total * 100);
     mc.innerHTML = `
       <div style="background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:12px;padding:16px;margin-bottom:16px">
         <div style="font-size:.84rem;font-weight:700;color:var(--lime);margin-bottom:6px">🔒 Escrow-Protected Payment</div>
         <p style="font-size:.8rem;color:var(--muted);line-height:1.55">Your money goes to a certified escrow — <strong>not directly to the landlord</strong>. Released only after you confirm check-in. If anything is wrong you get a full refund within 24h.</p>
       </div>
-      <div class="sum-box" style="margin-bottom:16px">
-        <div class="sum-r"><span>Rent × ${weeks} week${weeks>1?'s':''}</span><span>AU$${l.price*weeks}</span></div>
+      <div class="fg"><label class="lbl">Payment Method</label>
+        <div class="pay-methods">
+          <div class="pm on" onclick="selPay(this)"><span class="pico">💳</span>Card</div>
+          <div class="pm" onclick="selPay(this)"><span class="pico">🏦</span>Bank Transfer</div>
+          <div class="pm" onclick="selPay(this)"><span class="pico">📱</span>PayID</div>
+        </div>
+      </div>
+      <div class="form-grid" style="gap:10px">
+        <div class="fg" style="margin:0;grid-column:span 2"><label class="lbl">Card Number (simulation)</label><input class="inp" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)"></div>
+        <div class="fg" style="margin:0"><label class="lbl">Expiry</label><input class="inp" placeholder="MM/YY" maxlength="5"></div>
+        <div class="fg" style="margin:0"><label class="lbl">CVV</label><input class="inp" type="password" placeholder="•••" maxlength="3"></div>
+        <div class="fg" style="margin:0;grid-column:span 2"><label class="lbl">Name on Card</label><input class="inp" placeholder="Ana Silva"></div>
+      </div>
+      <div class="sum-box" style="margin-top:12px">
+        <div class="sum-r"><span>Rent × ${weeks} weeks</span><span>AU$${l.price*weeks}</span></div>
         <div class="sum-r"><span>Bond (escrow 🔒)</span><span>AU$${l.bond}</span></div>
-        <div class="sum-r"><span>Platform fee</span><span>AU$${l.fee}</span></div>
+        <div class="sum-r"><span>NestMate fee</span><span>AU$${l.fee}</span></div>
         <div class="sum-r"><span>Total charged today</span><span>AU$${total}</span></div>
       </div>
-      <div class="fg">
-        <label class="lbl">Card Details</label>
-        <div id="stripe-card-element" style="background:var(--bg-l);border:1px solid var(--border);border-radius:12px;padding:14px;min-height:44px"></div>
-        <div id="stripe-card-errors" style="color:var(--red);font-size:.78rem;margin-top:6px"></div>
-      </div>
-      <div class="sim-note">🔒 Secured by Stripe — PCI DSS compliant. Your card details are never stored.</div>
-      <button class="btn lime full" id="stripePayBtn" onclick="doStripePayment(${totalCents})">Pay AU$${total} — Secure →</button>
+      <div class="sim-note">🔒 Your payment is protected by Stripe — the most trusted payment gateway in Australia.</div>
+      <button class="btn lime full" onclick="simulatePay(${total})">Request Room — AU$${total} →</button>
       <button class="btn ol full sm" style="margin-top:8px" onclick="STEP=2;renderStep()">← Back</button>`;
-    // Add admin test button separately after render
-    if (isAdmin) {
-      var adminBtn = document.createElement('button');
-      adminBtn.className = 'btn ol full sm';
-      adminBtn.style.cssText = 'margin-top:8px;border-color:var(--orange);color:var(--orange);width:100%';
-      adminBtn.textContent = '🧪 Admin Test (skip payment)';
-      adminBtn.onclick = doTestBooking;
-      mc.appendChild(adminBtn);
-    }
-    // Mount Stripe Elements after DOM update
-    setTimeout(function() {
-      if (!stripe) { 
-        document.getElementById('stripe-card-errors').textContent = 'Payment system unavailable. Please try again.';
-        return;
-      }
-      var elements = stripe.elements();
-      var cardStyle = {
-        base: { fontSize: '16px', color: getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#1C2810', '::placeholder': { color: '#aab7c4' } },
-        invalid: { color: '#fa755a' }
-      };
-      window._stripeCardElement = elements.create('card', { style: cardStyle, hidePostalCode: true });
-      window._stripeCardElement.mount('#stripe-card-element');
-      window._stripeCardElement.on('change', function(e) {
-        var el = document.getElementById('stripe-card-errors');
-        if (el) el.textContent = e.error ? e.error.message : '';
-      });
-    }, 100);
   } else if (STEP===4) {
     const ref = 'NM-'+Math.random().toString(36).substring(2,8).toUpperCase();
     mc.innerHTML = `
@@ -3241,7 +2652,6 @@ async function simulatePay(total) {
         
         // Send email to landlord via API (API fetches real email from DB)
         if (booking && booking.id) {
-          // Email to landlord
           fetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3251,17 +2661,7 @@ async function simulatePay(total) {
               landlordId: CUR.landlordId,
               appUrl: window.NESTMATE_CONFIG.APP_URL,
             })
-          }).catch(e => console.log('Email to landlord failed:', e));
-          // Email to tenant confirming pending
-          fetch('/api/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              type: 'booking_pending_tenant',
-              bookingId: booking.id,
-              appUrl: window.NESTMATE_CONFIG.APP_URL,
-            })
-          }).catch(e => console.log('Email to tenant failed:', e));
+          }).catch(e => console.log('Email failed (non-critical):', e));
         }
       }
     }
@@ -3310,7 +2710,7 @@ function llTab(tab, skipPhotoClear) {
     if(match) i.classList.add('on');
   });
   const m = document.getElementById('llMain');
-  if (tab==='overview') loadLandlordDashboard();
+  if (tab==='overview') { loadLandlordDashboard(); updateLLCompletionBar(); }
   else if (tab==='listings') renderLLListings(m);
   else if (tab==='applications') renderApplications(m);
   else if (tab==='earnings') renderEarnings(m);
@@ -3356,7 +2756,7 @@ async function renderEarnings(m) {
     const { data: payments, error } = await _supabaseClient
       .from('payments')
       .select('*, bookings(listings(title, suburb))')
-      .eq('landlord_id', currentUser.id)
+      .eq('receiver_id', currentUser.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -3479,7 +2879,7 @@ async function renderApplications(m) {
       .from('bookings')
       .select(`*, listings(title, suburb), profiles!tenant_id(full_name, nationality, avatar_url)`)
       .eq('landlord_id', currentUser.id)
-      .in('status', ['pending', 'approved', 'contract_sent', 'signed', 'paid', 'checked_in', 'declined', 'cancelled', 'checked_out'])
+      .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -3494,64 +2894,24 @@ async function renderApplications(m) {
       return;
     }
 
-        const statusLabels = {
-      pending: { label: '⏳ Pending', color: 'var(--orange)' },
-      approved: { label: '✅ Approved', color: 'var(--teal)' },
-      contract_sent: { label: '📄 Contract sent', color: 'var(--blue)' },
-      signed: { label: '✍️ Signed', color: 'var(--teal)' },
-      paid: { label: '💰 Paid', color: 'var(--lime)' },
-      checked_in: { label: '🏡 Checked in', color: 'var(--lime)' },
-      checked_out: { label: '✅ Completed', color: 'var(--muted)' },
-      declined: { label: '❌ Declined', color: 'var(--red)' },
-      cancelled: { label: '❌ Cancelled', color: 'var(--red)' },
-    };
-    const pendingBks = bookings.filter(b => b.status === 'pending');
-    const activeBks = bookings.filter(b => ['approved','contract_sent','signed','paid','checked_in'].includes(b.status));
-    const pastBks = bookings.filter(b => ['checked_out','declined','cancelled'].includes(b.status));
-
-    function renderBkCard(b, showActions) {
+    m.innerHTML = headerHTML + '<div class="apps-list">' + bookings.map(b => {
       const tenant = b.profiles || {};
       const listing = b.listings || {};
-      const bkName = tenant.full_name || 'Student';
-      const initial = bkName.charAt(0).toUpperCase();
-      const st = statusLabels[b.status] || { label: b.status, color: 'var(--muted)' };
-      const moveIn = b.move_in_date ? new Date(b.move_in_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
-      const moveOut = b.move_out_date ? new Date(b.move_out_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
-      return '<div class="app-card" style="flex-wrap:wrap;align-items:flex-start">' +
-        '<div class="app-av" style="background:rgba(200,241,53,.15);color:var(--lime)">' + initial + '</div>' +
-        '<div class="app-info">' +
-          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">' +
-            '<span style="font-weight:600;font-size:.9rem">' + bkName + '</span>' +
-            '<span style="font-size:.68rem;background:rgba(0,212,170,.1);color:var(--teal);padding:2px 7px;border-radius:6px;font-weight:600">🪪 Verified</span>' +
-            '<button class="btn ol sm" style="font-size:.7rem;padding:3px 8px" data-uid="' + (b.tenant_id||'') + '" onclick="openProfile(this.dataset.uid)">👤 Profile</button>' +
-          '</div>' +
-          '<p style="font-size:.78rem;color:var(--muted)">📍 ' + (listing.title||'Room') + ' · ' + moveIn + ' → ' + moveOut + '</p>' +
-          '<p style="font-size:.78rem;color:var(--muted)">💰 AU$' + (b.total_rent||0) + ' total</p>' +
-          (b.tenant_message ? '<p style="margin-top:4px;font-size:.78rem;font-style:italic;color:var(--muted)">\"' + b.tenant_message + '\"</p>' : '') +
-          '<div style="margin-top:6px"><span style="font-size:.72rem;font-weight:700;color:' + st.color + '">' + st.label + '</span></div>' +
-        '</div>' +
-        (showActions ? '<div class="app-actions" style="flex-direction:column;gap:6px">' +
-          '<button class="btn-ok" style="width:100%" data-bid="' + b.id + '" data-name="' + bkName + '" onclick="acceptBooking(this.dataset.bid, this.dataset.name)">✓ Accept</button>' +
-          '<button style="background:transparent;color:var(--red);border:1px solid rgba(255,71,87,.2);border-radius:20px;padding:6px 12px;font-size:.78rem;font-weight:600;cursor:pointer;width:100%" data-bid="' + b.id + '" onclick="declineBooking(this.dataset.bid)">✗ Decline</button>' +
-        '</div>' : '') +
-      '</div>';
-    }
-
-    function renderBkSection(title, items, showActions) {
-      if (!items.length) return '';
-      return '<div style="margin-bottom:20px">' +
-        '<div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 8px">' + title + ' (' + items.length + ')</div>' +
-        '<div class="apps-list">' + items.map(b => renderBkCard(b, showActions)).join('') + '</div>' +
-      '</div>';
-    }
-
-    m.innerHTML = headerHTML + (
-      (!pendingBks.length && !activeBks.length && !pastBks.length) ?
-        '<div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)"><div style="font-size:2.5rem;margin-bottom:12px">📥</div><p style="color:var(--muted)">No applications yet.</p><p style="color:var(--muted);font-size:.82rem;margin-top:6px">Share your listing link to receive requests!</p></div>' :
-        renderBkSection('⏳ Awaiting your response', pendingBks, true) +
-        renderBkSection('🏡 Active / Confirmed', activeBks, false) +
-        renderBkSection('📋 Past', pastBks, false)
-    );
+      const name = tenant.full_name || 'Student';
+      const initial = name.charAt(0).toUpperCase();
+      return `<div class="app-card">
+        <div class="app-av" style="background:rgba(200,241,53,.15);color:var(--lime)">${initial}</div>
+        <div class="app-info">
+          <h4>${name} <span style="font-size:.68rem;background:rgba(0,212,170,.1);color:var(--teal);padding:2px 7px;border-radius:6px;font-weight:600">🪪 Verified</span> <button class="btn ol sm" style="font-size:.7rem;padding:3px 8px;margin-left:4px" data-uid="${b.tenant_id||''}" onclick="openProfile(this.dataset.uid)">👤 Profile</button></h4>
+          <p>${listing.title || ''} · ${b.move_in_date} → ${b.move_out_date} · AU$${b.total_amount}</p>
+           ${b.tenant_message ? '<p style="margin-top:5px;font-style:italic;color:var(--muted)">"' + b.tenant_message + '"</p>' : ''}
+        </div>
+        <div class="app-actions">
+          <button class="btn-ok" onclick="acceptBooking('${b.id}', '${name}')">Accept</button>
+          <button style="background:transparent;color:var(--muted);border:none;font-size:.8rem;padding:7px" onclick="declineBooking('${b.id}')">Decline</button>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
 
   } catch(e) {
     console.error('Applications error:', e);
@@ -3567,36 +2927,17 @@ async function acceptBooking(bookingId, tenantName) {
     .eq('id', bookingId);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('✅ ' + tenantName + ' accepted! Contract will be generated soon.', 'lime');
-  // Email to tenant (approved)
-  fetch('/api/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'booking_approved', bookingId: bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL })
-  }).catch(e => console.log('Email error:', e));
-  // Email to landlord (confirmation)
-  fetch('/api/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'booking_approved_landlord', bookingId: bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL })
-  }).catch(e => console.log('Email error:', e));
   renderApplications(document.getElementById('llMain'));
 }
 
 async function declineBooking(bookingId) {
-  if (!confirm('Decline this booking request?')) return;
   if (!_supabaseClient) return;
   const { error } = await _supabaseClient
     .from('bookings')
-    .update({ status: 'declined' })
+    .update({ status: 'cancelled' })
     .eq('id', bookingId);
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('Request declined.', '');
-  // Email to tenant
-  fetch('/api/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'booking_declined', bookingId: bookingId, appUrl: window.NESTMATE_CONFIG.APP_URL })
-  }).catch(e => console.log('Email error:', e));
   renderApplications(document.getElementById('llMain'));
 }
 
@@ -3639,10 +2980,8 @@ function renderAddListing(m, skipClear) {
   // Clear photos only on fresh open, not when restoring from tab switch
   if (!skipClear) {
     uploadedPhotos = [];
-    _roomsList = [{ type: 'private', beds: 1, name: '' }];
   }
   setTimeout(loadListingDraft, 400);
-  setTimeout(function() { renderRoomsList(); }, 100);
   m.innerHTML = `
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">Add New Listing</h1>
     <p style="color:var(--muted);font-size:.84rem;margin-bottom:22px">List your room and reach verified international students.</p>
@@ -3655,11 +2994,11 @@ function renderAddListing(m, skipClear) {
           <span style="background:rgba(255,71,87,.12);color:var(--red);font-size:.64rem;font-weight:700;padding:2px 7px;border-radius:5px;margin-left:7px">OBRIGATÓRIO · Min. 3 fotos</span>
         </label>
         <div class="photo-upload-zone" id="photoZone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropPhotos(event)">
-          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple onchange="handlePhotos(this.files)" id="photoInput">
+          <input type="file" accept="image/*" multiple onchange="handlePhotos(this.files)" id="photoInput">
           <div class="ico">📷</div>
           <h4 style="color:var(--text)">Arraste fotos aqui ou clique para selecionar</h4>
           <p>Min 3 photos · Max 12 · JPG, PNG, HEIC</p>
-          <p style="margin-top:6px;font-size:.75rem">First photo will be the cover · No HEIC (convert to JPG first)</p>
+          <p style="margin-top:6px;font-size:.75rem">First photo will be the cover</p>
           <span class="req-badge">⚠️ Listing without photos will not be published</span>
         </div>
         <div id="photoWarn" class="photo-min-warn">⚠️ Adicione pelo menos 3 fotos para publicar este quarto. Anúncios sem fotos geram desconfiança e não serão aprovados pela equipe NestMate.</div>
@@ -3673,16 +3012,8 @@ function renderAddListing(m, skipClear) {
       </div>
       <div class="fg" style="margin-top:14px"><label class="lbl">Full Address</label><input class="inp" placeholder="e.g. 17 Cavill Ave, Surfers Paradise QLD 4217" id="addAddr"></div>
       <div class="form-grid" style="gap:14px;margin-top:14px">
-        <div class="fg" style="margin:0"><label class="lbl">Room Type</label><select class="inp" id="addType" onchange="updateCapacityFields(this.value)"><option value="private">Private Room</option><option value="ensuite">Ensuite Room</option><option value="studio">Studio (entire)</option><option value="shared">Shared Room</option></select></div>
+        <div class="fg" style="margin:0"><label class="lbl">Room Type</label><select class="inp" id="addType"><option>Private Room</option><option>Ensuite Room</option><option>Studio (entire)</option><option>Shared Room (2 people)</option></select></div>
         <div class="fg" style="margin:0"><label class="lbl">Bond Amount (AU$)</label><input class="inp" type="number" placeholder="e.g. 620" id="addBond"></div>
-      </div>
-      <div class="fg" style="margin-top:14px" id="capacityFields">
-        <label class="lbl">Rooms available for rent
-          <span style="color:var(--muted);font-size:.7rem;font-weight:400;text-transform:none;letter-spacing:0"> — add each room individually</span>
-        </label>
-        <div id="roomsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
-        <button type="button" class="btn ol sm" onclick="addRoomRow()" style="width:100%">+ Add Room</button>
-        <div id="roomsSummary" style="font-size:.78rem;color:var(--teal);margin-top:8px;display:none"></div>
       </div>
 
       <!-- DURATION -->
@@ -3785,13 +3116,6 @@ function handlePhotos(files) {
   prog.style.display = 'block';
   let loaded = 0;
   Array.from(files).slice(0, 12 - uploadedPhotos.length).forEach((file, i) => {
-    // Reject HEIC/HEIF - not supported by browsers
-    const fname = (file.name || '').toLowerCase();
-    if (fname.endsWith('.heic') || fname.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
-      toast('⚠️ HEIC photos not supported. Please convert to JPG first (open in Photos app on Mac → Export → JPG)', 'error');
-      loaded++;
-      return;
-    }
     const reader = new FileReader();
     reader.onload = e => {
       uploadedPhotos.push({ src: e.target.result, name: file.name });
@@ -3900,93 +3224,6 @@ function clearListingDraft() {
   toast('Form cleared', '');
 }
 
-function updateCapacityFields(roomType) {
-  // No longer needed but kept for compatibility
-}
-
-// Room list management
-var _roomsList = [{ type: 'private', beds: 1, name: '' }];
-
-function addRoomRow() {
-  _roomsList.push({ type: 'private', beds: 1, name: '' });
-  renderRoomsList();
-}
-
-function removeRoomRow(idx) {
-  if (_roomsList.length <= 1) { toast('At least 1 room required', ''); return; }
-  _roomsList.splice(idx, 1);
-  renderRoomsList();
-}
-
-function updateRoom(idx, field, value) {
-  if (!_roomsList[idx]) return;
-  _roomsList[idx][field] = value;
-  if (field === 'type') {
-    // If private, force 1 bed
-    if (value === 'private') _roomsList[idx].beds = 1;
-    renderRoomsList();
-  }
-  updateRoomsSummary();
-}
-
-function renderRoomsList() {
-  var list = document.getElementById('roomsList');
-  if (!list) return;
-  var html = '';
-  _roomsList.forEach(function(r, i) {
-    var isShared = r.type === 'shared';
-    var selPriv = r.type === 'private' ? ' selected' : '';
-    var selShared = r.type === 'shared' ? ' selected' : '';
-    var sel2 = r.beds === 2 ? ' selected' : '';
-    var sel3 = r.beds === 3 ? ' selected' : '';
-    var sel4 = r.beds === 4 ? ' selected' : '';
-    var sel6 = r.beds === 6 ? ' selected' : '';
-    html += '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-l);border:1px solid var(--border);border-radius:10px;padding:10px 12px">';
-    html += '<div style="flex:1;min-width:0">';
-    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-    html += '<select class="inp" style="flex:1;min-width:120px;padding:6px 10px;font-size:.82rem" data-idx="' + i + '" data-field="type" onchange="updateRoom(parseInt(this.dataset.idx),this.dataset.field,this.value)">';
-    html += '<option value="private"' + selPriv + '>🚪 Private room</option>';
-    html += '<option value="shared"' + selShared + '>👥 Shared room</option>';
-    html += '</select>';
-    if (isShared) {
-      html += '<select class="inp" style="width:130px;padding:6px 10px;font-size:.82rem" data-idx="' + i + '" data-field="beds" onchange="updateRoom(parseInt(this.dataset.idx),this.dataset.field,parseInt(this.value))">';
-      html += '<option value="2"' + sel2 + '>2 beds</option>';
-      html += '<option value="3"' + sel3 + '>3 beds</option>';
-      html += '<option value="4"' + sel4 + '>4 beds</option>';
-      html += '<option value="6"' + sel6 + '>6 beds</option>';
-      html += '</select>';
-    } else {
-      html += '<div style="width:130px;padding:6px 10px;font-size:.82rem;color:var(--muted);background:var(--bg-m);border:1px solid var(--border);border-radius:10px">1 bed (private)</div>';
-    }
-    html += '</div>';
-    html += '<div style="font-size:.72rem;color:var(--muted);margin-top:4px">Room ' + (i+1) + ' · ' + (isShared ? r.beds + ' people share this room' : 'Private for 1 person') + '</div>';
-    html += '</div>';
-    html += '<button type="button" data-idx="' + i + '" onclick="removeRoomRow(parseInt(this.dataset.idx))" style="background:rgba(255,71,87,.1);color:var(--red);border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:.9rem;flex-shrink:0">×</button>';
-    html += '</div>';
-  });
-  list.innerHTML = html;
-  updateRoomsSummary();
-}
-
-function updateRoomsSummary() {
-  var total = _roomsList.reduce(function(sum, r) { return sum + (r.type === 'shared' ? r.beds : 1); }, 0);
-  var summary = document.getElementById('roomsSummary');
-  if (summary) {
-    summary.style.display = 'block';
-    summary.innerHTML = '🏠 ' + _roomsList.length + ' room' + (_roomsList.length>1?'s':'') +
-      ' · 👥 ' + total + ' total spot' + (total>1?'s':'') +
-      ' available for booking';
-  }
-}
-
-function getRoomsCapacity() {
-  var totalRooms = _roomsList.length;
-  var totalSpots = _roomsList.reduce(function(sum, r) { return sum + (r.type === 'shared' ? r.beds : 1); }, 0);
-  // For compatibility: store as total_rooms and beds_per_room (approximation)
-  // Also store full rooms config as JSON in a notes field
-  return { totalRooms: totalRooms, totalSpots: totalSpots, rooms: _roomsList };
-}
-
 async function submitListing() {
   // Validate photos
   if (uploadedPhotos.length < 3) {
@@ -4011,7 +3248,7 @@ async function submitListing() {
   const vibeEl = document.getElementById('addVibe') || document.querySelector('#addForm select:last-of-type');
 
   if (!title) { toast('⚠️ Add a room title', 'error'); return; }
-  if (!rent || rent < 1) { toast('⚠️ Enter a valid weekly rent', 'error'); return; }
+  if (!rent || rent < 50) { toast('⚠️ Enter a valid weekly rent', 'error'); return; }
   if (!addr) { toast('⚠️ Enter the full address', 'error'); return; }
   if (!bond) { toast('⚠️ Enter the bond amount', 'error'); return; }
 
@@ -4120,8 +3357,6 @@ async function submitListing() {
       amenities: amenities,
       nationalities: nationalities,
       photos: photoUrls,
-      total_rooms: getRoomsCapacity().totalRooms,
-      beds_per_room: Math.round(getRoomsCapacity().totalSpots / getRoomsCapacity().totalRooms) || 1,
       bathroom: document.getElementById('listBathroom')?.value || 'shared',
       pets: document.getElementById('listPets')?.value === 'yes',
       smoking: document.getElementById('listSmoking')?.value === 'yes',
@@ -4848,12 +4083,6 @@ function setBkDurSingle(btn, val, unit) {
   parent.querySelectorAll('.dpo').forEach(function(b) { b.classList.remove('on'); });
   btn.classList.add('on');
   bkDurVal = val; bkDurUnit = unit;
-  updateDateAvailabilityWarning();
-  // Update move-out display if move-in is already selected
-  if (_stayType === 'short') {
-    var mInVal = document.getElementById('mIn')?.value;
-    if (mInVal) cdpSelect('cdpIn', mInVal);
-  }
   if (_stayType === 'short' && unit === 'week') {
     var mInEl = document.getElementById('mIn');
     if (mInEl && mInEl.value) {
@@ -4868,7 +4097,6 @@ function setBkDurSingle(btn, val, unit) {
 
 function setStayType(type) {
   _stayType = type;
-  setTimeout(updateDateAvailabilityWarning, 50);
   document.getElementById('stay-short').classList.toggle('on', type === 'short');
   document.getElementById('stay-long').classList.toggle('on', type === 'long');
   var shortOpts = document.getElementById('shortStayOpts');
@@ -5777,7 +5005,7 @@ async function loadAllConversations() {
   listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Loading...</div>';
 
   var res = await _supabaseClient.from('messages')
-    .select('*, listing:listings(title,photos), sender:profiles!sender_id(id,full_name,avatar_url)')
+    .select('*, listing:listings(title,photos), sender:profiles!sender_id(id,full_name,avatar_url), recipient:profiles!recipient_id(id,full_name,avatar_url)')
     .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
     .order('created_at', { ascending: false });
 
@@ -6056,7 +5284,7 @@ async function loadInbox() {
 
   // Get all conversations (unique sender/recipient pairs)
   var res = await _supabaseClient.from('messages')
-    .select('*, listing:listings(title, suburb), sender:profiles!sender_id(id, full_name, avatar_url)')
+    .select('*, listing:listings(title, suburb), sender:profiles!sender_id(id, full_name, avatar_url), recipient:profiles!recipient_id(id, full_name, avatar_url)')
     .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
     .order('created_at', { ascending: false });
 
@@ -6445,18 +5673,7 @@ async function openMyBookings() {
   if (!currentUser || !_supabaseClient) { toast('Please sign in', ''); return; }
   _mbNavSource = sessionStorage.getItem('nm-screen') || 's-browse';
   go('s-my-bookings');
-  // Check pending first, show that tab if has pending bookings
-  _supabaseClient.from('bookings')
-    .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', currentUser.id)
-    .in('status', ['pending', 'payment_failed'])
-    .then(function(r) {
-      if (r.count && r.count > 0) {
-        switchMBTab('pending');
-      } else {
-        loadMyBookings('active');
-      }
-    });
+  loadMyBookings('active');
 }
 
 function closeMyBookings() {
@@ -6494,40 +5711,15 @@ async function loadMyBookings(tab) {
     past: ['checked_out', 'cancelled', 'declined'],
   };
 
-  // Load counts for all tabs and update badges
-  if (_supabaseClient && currentUser) {
-    ['active','pending','past'].forEach(function(t) {
-      var statuses = statusMap[t];
-      _supabaseClient.from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('tenant_id', currentUser.id)
-        .in('status', statuses)
-        .then(function(r) {
-          var badge = document.getElementById('mbBadge' + t.charAt(0).toUpperCase() + t.slice(1));
-          if (badge) {
-            var n = r.count || 0;
-            badge.textContent = n;
-            badge.style.display = n > 0 ? 'inline' : 'none';
-          }
-        });
-    });
-  }
-
   var statuses = statusMap[tab] || statusMap.active;
 
   var res = await _supabaseClient.from('bookings')
-    .select('*, listings(id, title, suburb, photos, price_weekly, address)')
+    .select('*, listings(id, title, suburb, photos, price_weekly, address), landlord:profiles!landlord_id(full_name, avatar_url)')
     .eq('tenant_id', currentUser.id)
     .in('status', statuses)
     .order('created_at', { ascending: false });
 
-  if (res.error) {
-    console.error('My Bookings error:', res.error);
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red)">Error loading bookings: ' + res.error.message + '</div>';
-    return;
-  }
-
-  if (!res.data || !res.data.length) {
+  if (res.error || !res.data || !res.data.length) {
     var emptyMsg = {
       active: 'No active bookings yet.<br><br><button class="btn lime sm" onclick="closeMyBookings();go(\'s-browse\')">Browse Rooms →</button>',
       pending: 'No pending requests.',
@@ -6555,7 +5747,7 @@ async function loadMyBookings(tab) {
 
   list.innerHTML = res.data.map(function(b) {
     var l = b.listings || {};
-    var landlord = {};
+    var landlord = b.landlord || {};
     var photos = l.photos;
     if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
     var img = (photos && photos[0]) ? photos[0] : '';
@@ -6609,14 +5801,227 @@ async function loadMyBookings(tab) {
 }
 
 async function cancelBooking(bookingId) {
-    var conf = confirm('Cancel this booking request?');
-  if (!conf) return;
-  if (!_supabaseClient) return;
+  if (!confirm('Cancel this booking request?')) return;
   var res = await _supabaseClient.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId).eq('tenant_id', currentUser.id);
   if (res.error) { toast('Error: ' + res.error.message, 'error'); return; }
   toast('Booking cancelled', '');
-  loadMyBookings(_mbCurrentTab || 'pending');
+  loadMyBookings(_mbCurrentTab);
 }
+
+
+// ══════════════════════════════════════
+// LANDLORD PROFILE ON DETAIL PAGE
+// ══════════════════════════════════════
+async function loadDetailLandlord(landlordId) {
+  if (!landlordId || !_supabaseClient) return;
+  var card = document.getElementById('detLandlordCard');
+  if (!card) return;
+
+  var res = await _supabaseClient.from('profiles')
+    .select('id, full_name, avatar_url, rating_avg, rating_count, created_at, bio')
+    .eq('id', landlordId)
+    .single();
+
+  if (res.error || !res.data) return;
+  var p = res.data;
+
+  var avatarEl = document.getElementById('detLandlordAvatar');
+  var nameEl = document.getElementById('detLandlordName');
+  var statsEl = document.getElementById('detLandlordStats');
+  var ratingEl = document.getElementById('detLandlordRating');
+
+  if (avatarEl) {
+    if (p.avatar_url) {
+      avatarEl.innerHTML = '<img src="'+p.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    } else {
+      avatarEl.textContent = (p.full_name||'L').charAt(0).toUpperCase();
+    }
+  }
+  if (nameEl) nameEl.textContent = p.full_name || 'Landlord';
+
+  // Count bookings for this landlord
+  var bRes = await _supabaseClient.from('bookings')
+    .select('id', {count:'exact', head:true})
+    .eq('landlord_id', landlordId)
+    .in('status', ['checked_in','checked_out','paid','signed']);
+
+  var totalRentals = bRes.count || 0;
+  var memberSince = p.created_at ? new Date(p.created_at).toLocaleDateString('en-AU',{month:'short',year:'numeric'}) : '';
+
+  if (statsEl) statsEl.textContent = totalRentals + ' rentals · Member since ' + memberSince;
+  if (ratingEl && p.rating_avg) {
+    ratingEl.textContent = '⭐ ' + parseFloat(p.rating_avg).toFixed(1) + ' (' + (p.rating_count||0) + ' reviews)';
+  }
+}
+
+// ══════════════════════════════════════
+// LANDLORD PROFILE COMPLETION
+// ══════════════════════════════════════
+async function updateLLCompletionBar() {
+  if (!currentUser || !_supabaseClient) return;
+  var res = await _supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+  var p = res.data || {};
+
+  var steps = [
+    { label: 'Add profile photo', done: !!p.avatar_url },
+    { label: 'Complete bio', done: !!(p.bio && p.bio.length > 20) },
+    { label: 'Add phone number', done: !!p.phone },
+    { label: 'Connect bank account (Stripe)', done: !!p.stripe_account_id },
+    { label: 'Add your first listing', done: false }, // checked separately
+    { label: 'Complete KYC verification', done: !!p.kyc_verified },
+  ];
+
+  // Check if has listing
+  var lRes = await _supabaseClient.from('listings').select('id',{count:'exact',head:true}).eq('landlord_id', currentUser.id);
+  steps[4].done = (lRes.count || 0) > 0;
+
+  var done = steps.filter(s => s.done).length;
+  var pct = Math.round(done / steps.length * 100);
+  var next = steps.find(s => !s.done);
+
+  var bar = document.getElementById('llCompleteBar');
+  var pctEl = document.getElementById('llCompletePct');
+  var nextEl = document.getElementById('llCompleteNext');
+
+  if (bar) bar.style.width = pct + '%';
+  if (bar) bar.style.background = pct === 100 ? 'var(--teal)' : 'var(--lime)';
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (nextEl) nextEl.textContent = next ? '→ ' + next.label : '✅ Profile complete!';
+}
+
+// ══════════════════════════════════════
+// SUPPORT CHAT
+// ══════════════════════════════════════
+var _supportOpen = false;
+var _supportHistory = [];
+
+function toggleSupportChat() {
+  _supportOpen = !_supportOpen;
+  var panel = document.getElementById('supportPanel');
+  var icon = document.getElementById('supportIcon');
+  if (panel) panel.style.display = _supportOpen ? 'flex' : 'none';
+  if (icon) icon.textContent = _supportOpen ? '✕' : '💬';
+}
+
+function supportQuickReply(msg) {
+  var input = document.getElementById('supportInput');
+  if (input) input.value = msg;
+  sendSupportMsg();
+}
+
+async function sendSupportMsg() {
+  var input = document.getElementById('supportInput');
+  var msg = input ? input.value.trim() : '';
+  if (!msg) return;
+  input.value = '';
+
+  var msgsEl = document.getElementById('supportMessages');
+
+  // Show user message
+  var userDiv = document.createElement('div');
+  userDiv.style.cssText = 'background:var(--lime);color:#000;padding:10px 14px;border-radius:12px 4px 12px 12px;font-size:.85rem;max-width:85%;align-self:flex-end;margin-left:auto';
+  userDiv.textContent = msg;
+  msgsEl.appendChild(userDiv);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  _supportHistory.push({ role: 'user', content: msg });
+
+  // Show typing indicator
+  var typingDiv = document.createElement('div');
+  typingDiv.style.cssText = 'background:var(--bg-l);padding:10px 14px;border-radius:4px 12px 12px 12px;font-size:.85rem;max-width:85%;color:var(--muted)';
+  typingDiv.textContent = '...';
+  msgsEl.appendChild(typingDiv);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  try {
+    // Call Claude API for support responses
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: 'You are a helpful support agent for RoomiStay, a student room rental platform in Gold Coast, Australia. Keep responses short, friendly, and helpful. Key info: escrow protects payments, 5% platform fee, KYC required, landlords get paid 24h after tenant check-in.',
+        messages: _supportHistory,
+      })
+    });
+    var data = await res.json();
+    var reply = data.content && data.content[0] ? data.content[0].text : 'Thanks for your message! Our team will get back to you soon.';
+
+    typingDiv.textContent = reply;
+    typingDiv.style.color = 'var(--text)';
+    _supportHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    typingDiv.textContent = 'Thanks for your message! Email us at support@roomiestay.com for help.';
+  }
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+
+// ══════════════════════════════════════
+// KYC VERIFICATION
+// ══════════════════════════════════════
+function startKYC() {
+  if (!currentUser) { toast('Please sign in', ''); return; }
+  var modal = document.createElement('div');
+  modal.id = 'kycOverlay';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg);border-radius:20px;padding:28px;max-width:420px;width:100%';
+  box.innerHTML = '<h3 style="font-family:Syne,sans-serif;font-weight:800;margin-bottom:12px">\ud83e\udeb9 Identity Verification</h3>' +
+    '<p style="color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:16px">To protect our community, we verify all landlord identities. You will need:</p>' +
+    '<div style="background:var(--bg-l);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.85rem">' +
+    '<div style="margin-bottom:8px">\ud83d\udcd8 <strong>Government ID</strong> \u2014 passport or driver licence</div>' +
+    '<div style="margin-bottom:8px">\ud83e\udd73 <strong>Selfie</strong> \u2014 a live photo of yourself</div>' +
+    '<div>\ud83d\udcc4 <strong>Proof of address</strong> \u2014 utility bill or lease (optional)</div></div>' +
+    '<p style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Verification is powered by Stripe Identity. Takes ~5 minutes and your data is encrypted.</p>' +
+    '<div style="display:flex;gap:10px">' +
+    '<button id="kycCloseBtn" style="flex:1;padding:12px;border:1px solid var(--border);border-radius:10px;background:none;cursor:pointer;color:var(--text)">Later</button>' +
+    '<button id="kycStartBtn" style="flex:2;padding:12px;border-radius:10px;background:var(--lime);border:none;font-weight:700;cursor:pointer">Start Verification \u2192</button>' +
+    '</div>';
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  document.getElementById('kycCloseBtn').onclick = function() { modal.remove(); };
+  document.getElementById('kycStartBtn').onclick = function() {
+    modal.remove();
+    toast('KYC verification coming soon \u2014 we will email you when ready!', 'lime');
+  };
+}
+
 </script>
+
+<!-- Support Chat Bubble -->
+<div id="supportBubble" onclick="toggleSupportChat()" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--lime);box-shadow:0 4px 20px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:8990;font-size:1.4rem;transition:transform .2s" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
+  <span id="supportIcon">💬</span>
+  <div id="supportUnreadDot" style="display:none;position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:var(--red);border:2px solid var(--bg)"></div>
+</div>
+
+<!-- Support Chat Panel -->
+<div id="supportPanel" style="display:none;position:fixed;bottom:90px;right:24px;width:320px;max-height:480px;background:var(--bg);border:1px solid var(--border);border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.15);z-index:8989;overflow:hidden;flex-direction:column">
+  <div style="padding:16px;background:var(--lime);display:flex;align-items:center;gap:10px">
+    <div style="width:36px;height:36px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🏠</div>
+    <div>
+      <div style="font-weight:700;font-size:.9rem;color:#000">RoomiStay Support</div>
+      <div style="font-size:.72rem;color:rgba(0,0,0,.6)">Usually replies in minutes</div>
+    </div>
+    <button onclick="toggleSupportChat()" style="margin-left:auto;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#000">✕</button>
+  </div>
+  <div id="supportMessages" style="flex:1;overflow-y:auto;padding:16px;min-height:200px;max-height:300px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:var(--bg-l);padding:10px 14px;border-radius:12px;border-radius:4px 12px 12px 12px;font-size:.85rem;max-width:85%">
+      👋 Hi! Welcome to RoomiStay. How can we help you today?
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+      <button onclick="supportQuickReply('How does escrow work?')" style="padding:6px 12px;background:var(--bg-m);border:1px solid var(--border);border-radius:20px;font-size:.75rem;cursor:pointer;color:var(--text)">How does escrow work?</button>
+      <button onclick="supportQuickReply('I have a problem with my booking')" style="padding:6px 12px;background:var(--bg-m);border:1px solid var(--border);border-radius:20px;font-size:.75rem;cursor:pointer;color:var(--text)">Booking problem</button>
+      <button onclick="supportQuickReply('How do I list my room?')" style="padding:6px 12px;background:var(--bg-m);border:1px solid var(--border);border-radius:20px;font-size:.75rem;cursor:pointer;color:var(--text)">List my room</button>
+    </div>
+  </div>
+  <div style="padding:10px;border-top:1px solid var(--border);display:flex;gap:8px">
+    <input id="supportInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;background:var(--bg-l);color:var(--text);font-size:.85rem" onkeydown="if(event.key==='Enter')sendSupportMsg()">
+    <button onclick="sendSupportMsg()" style="width:36px;height:36px;border-radius:50%;background:var(--lime);border:none;cursor:pointer;font-size:1rem">➤</button>
+  </div>
+</div>
+
 </body>
 </html>
