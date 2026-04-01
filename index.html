@@ -400,9 +400,16 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   <div class="logo" onclick="go('s-land')">Nest<span>Mate</span></div>
   <div class="nav-r">
     <!-- Language selector -->
-    <div style="display:flex;gap:2px;background:var(--bg-l);border:1px solid var(--border);border-radius:20px;padding:3px">
-      <button id="lang-en" class="on" onclick="setLang('en')" style="padding:3px 10px;border-radius:16px;border:none;font-size:.72rem;font-weight:700;cursor:pointer;background:var(--lime);color:#000">EN</button>
-      <button id="lang-pt" onclick="setLang('pt')" style="padding:3px 10px;border-radius:16px;border:none;font-size:.72rem;font-weight:700;cursor:pointer;background:transparent;color:var(--muted)">PT</button>
+    <div style="position:relative">
+      <button id="langPickerBtn" onclick="toggleLangPicker()" style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--bg-l);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:700;color:var(--text)">
+        <span id="langFlag">🌐</span>
+        <span id="langLabel">EN</span>
+        <span style="font-size:.6rem;color:var(--muted)">▼</span>
+      </button>
+      <div id="langPickerDropdown" style="display:none;position:absolute;top:calc(100%+6px);right:0;background:var(--bg);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:300;min-width:180px;overflow:hidden;max-height:320px;overflow-y:auto">
+        <div style="padding:8px;border-bottom:1px solid var(--border)"><input id="langSearch" type="text" placeholder="Search language..." style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-l);color:var(--text);font-size:.8rem" oninput="filterLangList(this.value)"></div>
+        <div id="langList"></div>
+      </div>
     </div>
     <div class="mode-sw" id="modeSw">
       <button class="msw on" onclick="setMode('tenant')" id="msw-tenant">🔍 <span class="t" data-en="Tenant" data-pt="Inquilino">Tenant</span></button>
@@ -2436,13 +2443,13 @@ function renderListings(list) {
   document.getElementById('listGrid').innerHTML = list.map(l => {
     const durLabel = l.minWeeks <= 1 ? 'From 1 week' : 'From ' + l.minWeeks + ' weeks';
     return `<div class="lcard" onclick="openDetail('${l.id}')">
-      <div class="lcard-img">
-        <img src="${l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500'}" alt="${l.title}" loading="lazy" onerror="this.src='https://picsum.photos/id/1029/800/500'">
+      <div class="lcard-img" id="lci-${l.id}" style="position:relative;overflow:hidden" data-imgs='${JSON.stringify(l.imgs&&l.imgs.length?l.imgs.slice(0,5):[])}' data-idx="0">
+        <img id="lci-img-${l.id}" src="${l.imgs&&l.imgs[0]?l.imgs[0]:'https://picsum.photos/id/1029/800/500'}" alt="${l.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.src='https://picsum.photos/id/1029/800/500'">
+        ${l.imgs&&l.imgs.length>1?'<button onclick="event.stopPropagation();slideCard2(this,-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)">&#8249;</button><button onclick="event.stopPropagation();slideCard2(this,1)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)">&#8250;</button>':''}
         <div class="badges">
           <span class="badge-v">✓ Verified</span>
-          ${l.type==='Studio'?'<span class="tag t" style="font-size:.62rem;padding:2px 6px">Studio</span>':''}
         </div>
-        <button class="fav-btn" onclick="event.stopPropagation();toggleFav(this,${l.id})">${favs.has(l.id)?'❤️':'🤍'}</button>
+        <button class="fav-btn" data-favid="${l.id}" onclick="event.stopPropagation();toggleFav(this.dataset.favid,this)">${favs.has(l.id)?'❤️':'🤍'}</button>
       </div>
       <div class="lcard-body">
         <div class="lcard-title">${l.title}</div>
@@ -6457,6 +6464,209 @@ async function sendAdminSupport() {
 
   openAdminConvo(_adminSupportConvo);
 }
+
+
+// ══════════════════════════════════════
+// CARD PHOTO SWIPE v2 (simpler)
+// ══════════════════════════════════════
+function slideCard2(btn, dir) {
+  var card = btn.closest('[data-imgs]');
+  if (!card) return;
+  var imgs;
+  try { imgs = JSON.parse(card.dataset.imgs || '[]'); } catch(e) { return; }
+  if (!imgs.length) return;
+  var cur = parseInt(card.dataset.idx || 0);
+  var next = (cur + dir + imgs.length) % imgs.length;
+  card.dataset.idx = next;
+  var img = card.querySelector('img');
+  if (img) {
+    img.style.opacity = '0';
+    setTimeout(function() {
+      img.src = imgs[next];
+      img.style.opacity = '1';
+    }, 150);
+    img.style.transition = 'opacity .15s';
+  }
+}
+
+// ══════════════════════════════════════
+// LANGUAGE PICKER (Google Translate API)
+// ══════════════════════════════════════
+var _allLangs = [
+  {code:'en',flag:'🇦🇺',name:'English'},
+  {code:'pt',flag:'🇧🇷',name:'Português'},
+  {code:'es',flag:'🇪🇸',name:'Español'},
+  {code:'zh',flag:'🇨🇳',name:'中文'},
+  {code:'ja',flag:'🇯🇵',name:'日本語'},
+  {code:'ko',flag:'🇰🇷',name:'한국어'},
+  {code:'hi',flag:'🇮🇳',name:'हिन्दी'},
+  {code:'fr',flag:'🇫🇷',name:'Français'},
+  {code:'de',flag:'🇩🇪',name:'Deutsch'},
+  {code:'it',flag:'🇮🇹',name:'Italiano'},
+  {code:'ru',flag:'🇷🇺',name:'Русский'},
+  {code:'ar',flag:'🇸🇦',name:'العربية'},
+  {code:'fa',flag:'🇮🇷',name:'فارسی'},
+  {code:'tr',flag:'🇹🇷',name:'Türkçe'},
+  {code:'vi',flag:'🇻🇳',name:'Tiếng Việt'},
+  {code:'th',flag:'🇹🇭',name:'ภาษาไทย'},
+  {code:'tl',flag:'🇵🇭',name:'Filipino'},
+  {code:'id',flag:'🇮🇩',name:'Bahasa Indonesia'},
+  {code:'ms',flag:'🇲🇾',name:'Bahasa Melayu'},
+  {code:'nl',flag:'🇳🇱',name:'Nederlands'},
+  {code:'pl',flag:'🇵🇱',name:'Polski'},
+  {code:'uk',flag:'🇺🇦',name:'Українська'},
+  {code:'el',flag:'🇬🇷',name:'Ελληνικά'},
+  {code:'sv',flag:'🇸🇪',name:'Svenska'},
+  {code:'ro',flag:'🇷🇴',name:'Română'},
+  {code:'cs',flag:'🇨🇿',name:'Čeština'},
+];
+var _curLangCode = 'en';
+var _langPickerOpen = false;
+
+function toggleLangPicker() {
+  _langPickerOpen = !_langPickerOpen;
+  var dd = document.getElementById('langPickerDropdown');
+  if (dd) {
+    dd.style.display = _langPickerOpen ? 'block' : 'none';
+    if (_langPickerOpen) {
+      renderLangList('');
+      document.getElementById('langSearch')?.focus();
+    }
+  }
+}
+
+function filterLangList(q) {
+  renderLangList(q.toLowerCase());
+}
+
+function renderLangList(q) {
+  var list = document.getElementById('langList');
+  if (!list) return;
+  var filtered = q ? _allLangs.filter(function(l) {
+    return l.name.toLowerCase().includes(q) || l.code.includes(q);
+  }) : _allLangs;
+
+  list.innerHTML = '';
+  filtered.forEach(function(l) {
+    var isActive = l.code === _curLangCode;
+    var div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:.88rem;font-weight:' + (isActive?'700':'400');
+    if (isActive) div.style.background = 'var(--bg-l)';
+    div.innerHTML = '<span style="font-size:1.1rem">' + l.flag + '</span><span>' + l.name + '</span>' + (isActive?'<span style="margin-left:auto;color:var(--lime)">\u2713</span>':'');
+    div.dataset.code = l.code;
+    div.dataset.flag = l.flag;
+    div.dataset.name = l.name;
+    div.onclick = function() { selectLang(this.dataset.code, this.dataset.flag, this.dataset.name); };
+    div.onmouseenter = function() { this.style.background = 'var(--bg-l)'; };
+    div.onmouseleave = function() { if (this.dataset.code !== _curLangCode) this.style.background = ''; };
+    list.appendChild(div);
+  });
+}
+
+function selectLang(code, flag, name) {
+  _curLangCode = code;
+  var btn = document.getElementById('langFlag');
+  var lbl = document.getElementById('langLabel');
+  if (btn) btn.textContent = flag;
+  if (lbl) lbl.textContent = code.toUpperCase();
+  
+  toggleLangPicker();
+
+  if (code === 'en') {
+    // Remove translation
+    var existing = document.getElementById('googleTranslateScript');
+    if (existing) {
+      window.location.reload();
+      return;
+    }
+    return;
+  }
+
+  // Use Google Translate via iframe trick
+  var gtFrame = document.createElement('div');
+  gtFrame.id = 'google_translate_element';
+  gtFrame.style.display = 'none';
+  document.body.appendChild(gtFrame);
+
+  if (!document.getElementById('googleTranslateScript')) {
+    window.googleTranslateElementInit = function() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'pt,es,zh-CN,ja,ko,hi,fr,de,it,ru,ar,fa,tr,vi,th,tl,id,ms,nl,pl,uk,el,sv,ro,cs',
+        autoDisplay: false,
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    };
+    var script = document.createElement('script');
+    script.id = 'googleTranslateScript';
+    script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    document.body.appendChild(script);
+    
+    // Wait for translate widget then trigger
+    var checkInterval = setInterval(function() {
+      var sel = document.querySelector('.goog-te-combo');
+      if (sel) {
+        clearInterval(checkInterval);
+        sel.value = code === 'zh' ? 'zh-CN' : code;
+        sel.dispatchEvent(new Event('change'));
+        toast('Translating to ' + name + '...', '');
+      }
+    }, 500);
+  } else {
+    // Already loaded, just change language
+    var sel = document.querySelector('.goog-te-combo');
+    if (sel) {
+      sel.value = code === 'zh' ? 'zh-CN' : code;
+      sel.dispatchEvent(new Event('change'));
+    }
+  }
+}
+
+// Close picker when clicking outside
+document.addEventListener('click', function(e) {
+  if (_langPickerOpen && !e.target.closest('#langPickerBtn') && !e.target.closest('#langPickerDropdown')) {
+    _langPickerOpen = false;
+    var dd = document.getElementById('langPickerDropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
+// ══════════════════════════════════════
+// COOKIE CONSENT
+// ══════════════════════════════════════
+function initCookieBanner() {
+  var consent = localStorage.getItem('nm-cookie-consent');
+  if (!consent) {
+    setTimeout(function() {
+      var banner = document.getElementById('cookieBanner');
+      if (banner) banner.style.display = 'block';
+    }, 1500);
+  }
+}
+
+function acceptCookies() {
+  localStorage.setItem('nm-cookie-consent', 'all');
+  hideCookieBanner();
+}
+
+function rejectCookies() {
+  localStorage.setItem('nm-cookie-consent', 'essential');
+  hideCookieBanner();
+}
+
+function hideCookieBanner() {
+  var banner = document.getElementById('cookieBanner');
+  if (banner) {
+    banner.style.transition = 'transform .3s ease';
+    banner.style.transform = 'translateY(100%)';
+    setTimeout(function() { banner.style.display = 'none'; }, 300);
+  }
+}
+
+// Init cookie banner on load
+window.addEventListener('load', function() {
+  initCookieBanner();
+});
 
 </script>
 
