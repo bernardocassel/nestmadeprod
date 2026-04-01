@@ -776,22 +776,22 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         </div>
 
         <!-- MAP SECTION -->
-        <div class="det-section" id="mapSection">
-          <span class="slabel">📍 Location & Transport</span>
-          <div id="detMap" style="height:280px;border-radius:14px;overflow:hidden;margin-top:10px;border:1px solid var(--border)"></div>
-          <p id="detMapAddr" style="font-size:.8rem;color:var(--muted);margin-top:8px;text-align:center"></p>
-        </div>
-
-        <!-- BATHROOM & SMOKING & PETS -->
         <div class="det-section" id="detExtrasSection" style="display:none">
           <span class="slabel">🏠 Room Details</span>
           <div id="detExtras" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
         </div>
 
-        <!-- UTILITIES -->
+        <!-- BATHROOM & SMOKING & PETS -->
         <div class="det-section" id="detUtilitiesSection" style="display:none">
           <span class="slabel">⚡ What's Included</span>
           <div id="detUtilities" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        </div>
+
+        <!-- UTILITIES -->
+        <div class="det-section" id="mapSection">
+          <span class="slabel">📍 Location & Transport</span>
+          <div id="detMap" style="height:280px;border-radius:14px;overflow:hidden;margin-top:10px;border:1px solid var(--border)"></div>
+          <p id="detMapAddr" style="font-size:.8rem;color:var(--muted);margin-top:8px;text-align:center"></p>
         </div>
 
       </div>
@@ -4751,6 +4751,7 @@ async function openChatModal() {
   _chatLandlordId = CUR.landlordId;
   _chatWithUserId = CUR.landlordId;
   _chatListingId = CUR.id;
+  console.log('Opening chat with landlord:', CUR.landlordId, 'for listing:', CUR.id);
 
   // Set landlord info in header
   var chatName = document.getElementById('chatName');
@@ -4776,16 +4777,24 @@ function closeChatModal() {
 }
 
 async function loadChatMessages() {
-  if (!_supabaseClient || !currentUser || !_chatListingId) return;
+  if (!_supabaseClient || !currentUser) return;
   var msgsEl = document.getElementById('chatMessages');
+  if (!msgsEl) return;
 
-  // Get conversation between current user and landlord about this listing
-  var res = await _supabaseClient.from('messages')
+  // Get all messages between current user and the other person
+  var otherUserId = _chatWithUserId || _chatLandlordId;
+  if (!otherUserId) return;
+
+  var query = _supabaseClient.from('messages')
     .select('*, sender:profiles!sender_id(full_name, avatar_url)')
-    .eq('listing_id', _chatListingId)
-    .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
+    .or('and(sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + otherUserId + '),and(sender_id.eq.' + otherUserId + ',recipient_id.eq.' + currentUser.id + ')')
     .order('created_at', { ascending: true })
-    .limit(50);
+    .limit(100);
+
+  // Filter by listing if set
+  if (_chatListingId) query = query.eq('listing_id', _chatListingId);
+
+  var res = await query;
 
   if (res.error) {
     console.log('Messages error:', res.error);
@@ -4804,6 +4813,16 @@ async function loadChatMessages() {
 function renderChatMessages(msgs) {
   var msgsEl = document.getElementById('chatMessages');
   if (!msgsEl) return;
+  // Mark messages as read
+  var otherUserId = _chatWithUserId || _chatLandlordId;
+  if (_supabaseClient && currentUser && otherUserId) {
+    _supabaseClient.from('messages')
+      .update({ read: true })
+      .eq('recipient_id', currentUser.id)
+      .eq('sender_id', otherUserId)
+      .eq('read', false)
+      .then(function() { checkUnreadMessages(); });
+  }
   msgsEl.innerHTML = msgs.map(function(m) {
     var isMe = m.sender_id === currentUser.id;
     var name = (m.sender && m.sender.full_name) ? m.sender.full_name.split(' ')[0] : 'You';
@@ -5509,7 +5528,8 @@ function openInboxConvo(el) {
 
   _chatWithUserId = otherId;
   _chatLandlordId = otherId;
-  _chatListingId = listingId || null;
+  // Don't restrict by listing_id when opening from inbox - show all messages
+  _chatListingId = null;
 
   var chatName = document.getElementById('chatName');
   var chatAvatar = document.getElementById('chatAvatar');
@@ -6669,6 +6689,48 @@ window.addEventListener('load', function() {
 });
 
 </script>
+
+<!-- Footer -->
+<footer style="background:var(--bg-l);border-top:1px solid var(--border);padding:32px 20px;margin-top:0">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;margin-bottom:24px">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.1rem;margin-bottom:12px">Roomi<span style="color:var(--lime)">Stay</span></div>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.6">Safe student housing in Gold Coast, Australia. Verified rooms, escrow payments, digital contracts.</p>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:.82rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Platform</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <a onclick="go('s-browse')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Browse Rooms</a>
+          <a onclick="setMode('landlord')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">List My Room</a>
+          <a onclick="go('s-signup')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Sign Up Free</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:.82rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Support</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <a onclick="toggleSupportChat()" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Contact Us</a>
+          <a href="mailto:support@roomiestay.com" style="font-size:.82rem;color:var(--muted);text-decoration:none">support@roomiestay.com</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:.82rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <a onclick="go('s-terms')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Terms of Use</a>
+          <a onclick="go('s-privacy')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Privacy Policy</a>
+          <a onclick="document.getElementById('cookieBanner')&&(document.getElementById('cookieBanner').style.display='block')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Cookie Settings</a>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div style="font-size:.75rem;color:var(--muted)">© 2026 RoomiStay · Gold Coast, QLD, Australia · ABN 00 000 000 000</div>
+      <div style="display:flex;gap:12px">
+        <a onclick="go('s-privacy')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Privacy</a>
+        <a onclick="go('s-terms')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
 
 <!-- Support Chat Bubble -->
 <div id="supportBubble" onclick="toggleSupportChat()" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--lime);box-shadow:0 4px 20px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:8990;font-size:1.4rem;transition:transform .2s" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
