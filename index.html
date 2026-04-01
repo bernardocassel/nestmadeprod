@@ -2049,17 +2049,21 @@ function updateNavAvatar(user) {
   navName.textContent = firstName;
 
   // First try Google avatar from user metadata
-  var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+  var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
   if (googleAvatar) {
     navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-    // Also save to profile
+    navAvatar.style.background = 'transparent';
+    // Save to profile DB (async, non-blocking)
     if (_supabaseClient && user.id) {
       _supabaseClient.from('profiles').upsert({
         id: user.id,
         email: user.email,
         full_name: name,
         avatar_url: googleAvatar,
-      }, { onConflict: 'id', ignoreDuplicates: false }).then(function(){});
+        role: user.user_metadata?.role || 'tenant',
+      }, { onConflict: 'id' }).then(function(r) {
+        if (r.error) console.log('Profile upsert error:', r.error.message);
+      });
     }
     return;
   }
@@ -4657,11 +4661,16 @@ async function openOwnProfile() {
     btn.classList.toggle('on', langs.includes(lang));
   });
 
-  // Set avatar
+  // Set avatar - check profile DB first, then Google metadata
   var avatarEl = document.getElementById('ownAvatarPreview');
-  var firstName = (p.full_name || currentUser.email || 'U').split(' ')[0];
-  if (p.avatar_url) {
-    avatarEl.innerHTML = '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  var firstName = (p.full_name || currentUser.user_metadata?.full_name || currentUser.email || 'U').split(' ')[0];
+  var avatarUrl = p.avatar_url || currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || '';
+  if (avatarUrl) {
+    avatarEl.innerHTML = '<img src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    // Save Google avatar to profile if not already saved
+    if (!p.avatar_url && avatarUrl) {
+      _supabaseClient.from('profiles').upsert({ id: currentUser.id, email: currentUser.email, avatar_url: avatarUrl }, { onConflict: 'id' }).then(function(){});
+    }
   } else {
     avatarEl.textContent = firstName.charAt(0).toUpperCase();
     avatarEl.style.background = 'var(--lime)';
@@ -4791,8 +4800,8 @@ async function loadChatMessages() {
     .order('created_at', { ascending: true })
     .limit(100);
 
-  // Filter by listing if set
-  if (_chatListingId) query = query.eq('listing_id', _chatListingId);
+  // Only filter by listing_id if explicitly needed (disabled - show all messages between users)
+  // if (_chatListingId) query = query.eq('listing_id', _chatListingId);
 
   var res = await query;
 
@@ -4855,24 +4864,23 @@ async function sendChatMsg() {
   var msg = input ? input.value.trim() : '';
   if (!msg) return;
   if (msg.length > 1000) { toast('Message too long', ''); return; }
-  if (!_chatListingId) { toast('No listing selected', 'error'); return; }
-
-  // If landlord is messaging - use _chatWithUserId instead
-  var recipientId = _chatLandlordId;
-  if (_chatWithUserId) recipientId = _chatWithUserId; // inbox mode
-  if (!recipientId || recipientId === currentUser.id) {
-    toast('Cannot send to yourself', ''); return;
-  }
+  // Get recipient - prefer _chatWithUserId over _chatLandlordId
+  var recipientId = _chatWithUserId || _chatLandlordId;
+  if (!recipientId) { toast('No recipient selected', 'error'); return; }
+  if (recipientId === currentUser.id) { toast('Cannot message yourself', ''); return; }
 
   input.value = '';
   input.style.height = '42px';
 
-  var res = await _supabaseClient.from('messages').insert({
+  // Build message object - listing_id is optional
+  var msgData = {
     sender_id: currentUser.id,
     recipient_id: recipientId,
-    listing_id: _chatListingId,
     content: msg
-  });
+  };
+  if (_chatListingId) msgData.listing_id = _chatListingId;
+
+  var res = await _supabaseClient.from('messages').insert(msgData);
 
   if (res.error) {
     console.error('Send error:', res.error);
@@ -6657,12 +6665,23 @@ document.addEventListener('click', function(e) {
 function initCookieBanner() {
   var consent = localStorage.getItem('nm-cookie-consent');
   if (!consent) {
+    // Show after short delay so page loads first
     setTimeout(function() {
       var banner = document.getElementById('cookieBanner');
-      if (banner) banner.style.display = 'block';
-    }, 1500);
+      if (banner) {
+        banner.style.display = 'block';
+        banner.style.animation = 'slideUp .4s ease';
+      }
+    }, 800);
   }
 }
+
+// Add slideUp animation
+(function() {
+  var style = document.createElement('style');
+  style.textContent = '@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}';
+  document.head.appendChild(style);
+})();
 
 function acceptCookies() {
   localStorage.setItem('nm-cookie-consent', 'all');
@@ -6683,8 +6702,8 @@ function hideCookieBanner() {
   }
 }
 
-// Init cookie banner on load
-window.addEventListener('load', function() {
+// Init cookie banner early
+document.addEventListener('DOMContentLoaded', function() {
   initCookieBanner();
 });
 
@@ -6710,7 +6729,7 @@ window.addEventListener('load', function() {
         <div style="font-weight:700;font-size:.82rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Support</div>
         <div style="display:flex;flex-direction:column;gap:7px">
           <a onclick="toggleSupportChat()" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Contact Us</a>
-          <a href="mailto:support@roomiestay.com" style="font-size:.82rem;color:var(--muted);text-decoration:none">support@roomiestay.com</a>
+          <a href="/cdn-cgi/l/email-protection#20535550504f525460524f4f4d4945535441590e434f4d" style="font-size:.82rem;color:var(--muted);text-decoration:none"><span class="__cf_email__" data-cfemail="30434540405f424470425f5f5d5955434451491e535f5d">[email&#160;protected]</span></a>
         </div>
       </div>
       <div>
@@ -6758,5 +6777,19 @@ window.addEventListener('load', function() {
       <button onclick="supportQuickReply('How do I list my room?')" style="padding:6px 12px;background:var(--bg-m);border:1px solid var(--border);border-radius:20px;font-size:.75rem;cursor:pointer;color:var(--text)">List my room</button>
     </div>
   </div>
-  <div style="padding:10px;border-top:1px solid var(--border);display:flex;gap:8px">
-    <input id="supportInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px 12px;bor
+  <div style="padding:10px;border-top:1px solid va
+<!-- ════════ COOKIE CONSENT BANNER ════════ -->
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:2px solid var(--lime);padding:14px 20px;z-index:99999;box-shadow:0 -4px 24px rgba(0,0,0,.12)">
+  <div style="max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:240px">
+      <div style="font-weight:700;font-size:.88rem;margin-bottom:3px;color:var(--text)">🍪 We use cookies</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.5">We use essential cookies to make our platform work, plus analytics to improve your experience. By continuing, you agree to our <span onclick="go('s-privacy')" style="color:var(--lime);cursor:pointer;font-weight:600">Privacy Policy</span> and <span onclick="go('s-terms')" style="color:var(--lime);cursor:pointer;font-weight:600">Terms of Use</span>.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button onclick="rejectCookies()" style="padding:9px 18px;border:1.5px solid var(--border);border-radius:50px;background:none;color:var(--text);font-size:.82rem;font-weight:600;cursor:pointer">Essential only</button>
+      <button onclick="acceptCookies()" style="padding:9px 22px;border-radius:50px;background:var(--lime);border:none;color:#000;font-weight:700;font-size:.82rem;cursor:pointer">✓ Accept All</button>
+    </div>
+  </div>
+</div>
+
+</body>
