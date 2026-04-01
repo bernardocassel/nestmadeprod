@@ -879,6 +879,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="si" onclick="llTab('applications')"><span class="ico">📥</span>Applications<span class="badge" id="appBadge" style="display:none">0</span></div>
       <div class="si" onclick="llTab('earnings')"><span class="ico">💰</span>Earnings</div>
       <div class="si" onclick="llTab('contracts')"><span class="ico">📄</span>Contracts</div>
+      <div class="si" onclick="llTab('tenants')"><span class="ico">👥</span>My Tenants</div>
       <div class="si" onclick="llTab('add')"><span class="ico">➕</span>Add Listing</div>
       <div class="silab">Account</div>
       <div class="si"><span class="ico">🪪</span>Verified <span class="tag t" style="margin-left:auto;font-size:.58rem;padding:1px 5px">KYC ✓</span></div>
@@ -964,6 +965,30 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <button class="btn lime full" onclick="doSignup()">Create Account →</button>
       <div class="kyc-note">🪪 <span>After signup you'll verify your identity (passport + selfie) in ~5 min. Keeps everyone safe.</span></div>
       <div class="sw-mode">Already have an account? <a onclick="go('s-login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ ADMIN SUPPORT CHAT ════════════ -->
+<div id="s-admin-support" class="screen" style="background:var(--bg)">
+  <div style="max-width:900px;margin:0 auto;display:flex;height:100vh;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
+      <button class="btn ol sm" onclick="go('s-admin')">← Admin</button>
+      <div style="flex:1;font-weight:700;font-size:.95rem">💬 Support Messages</div>
+      <div id="supportUnreadCount" style="background:var(--red);color:#fff;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:10px;display:none">0</div>
+    </div>
+    <div style="display:flex;flex:1;overflow:hidden">
+      <!-- Conversation list -->
+      <div id="supportConvoList" style="width:280px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0"></div>
+      <!-- Chat area -->
+      <div style="flex:1;display:flex;flex-direction:column">
+        <div id="supportChatHeader" style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--muted);font-size:.85rem">Select a conversation</div>
+        <div id="supportChatMsgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px"></div>
+        <div id="supportChatInput" style="display:none;padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
+          <input id="supportAdminInput" type="text" placeholder="Type reply..." style="flex:1;padding:8px 14px;border:1px solid var(--border);border-radius:20px;background:var(--bg-l);color:var(--text);font-size:.88rem" onkeydown="if(event.key==='Enter')sendAdminSupport()">
+          <button onclick="sendAdminSupport()" style="width:38px;height:38px;border-radius:50%;background:var(--lime);border:none;cursor:pointer">➤</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1300,10 +1325,15 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
 <!-- ════════════ FAVORITES ════════════ -->
 <div id="s-favs" class="screen">
-  <div style="max-width:900px;margin:0 auto;padding:24px 16px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+  <div style="max-width:900px;margin:0 auto;padding:0">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50">
       <button class="btn ol sm" onclick="go('s-browse')">← Browse</button>
-      <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--text)">❤️ Saved Rooms</h1>
+      <div style="flex:1;font-weight:700;font-size:.95rem">❤️ Saved Rooms</div>
+      <button class="btn lime sm" onclick="createFavFolder()">+ New List</button>
+    </div>
+    <!-- Folders -->
+    <div id="favFolders" style="display:flex;gap:8px;padding:12px 16px;overflow-x:auto;border-bottom:1px solid var(--border)">
+      <button class="fav-folder-btn on" data-folder="all" onclick="switchFavFolder(this,'all')" style="padding:6px 14px;border-radius:20px;border:1px solid var(--lime);background:var(--lime);color:#000;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">All Saved</button>
     </div>
     <div id="favsGrid" class="list-grid"></div>
   </div>
@@ -2010,9 +2040,26 @@ function updateNavAvatar(user) {
   var name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
   var firstName = name.split(' ')[0];
   navName.textContent = firstName;
-  // Check for avatar in profile
+
+  // First try Google avatar from user metadata
+  var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+  if (googleAvatar) {
+    navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    // Also save to profile
+    if (_supabaseClient && user.id) {
+      _supabaseClient.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: name,
+        avatar_url: googleAvatar,
+      }, { onConflict: 'id', ignoreDuplicates: false }).then(function(){});
+    }
+    return;
+  }
+
+  // Then check profile DB
   if (_supabaseClient && user.id) {
-    _supabaseClient.from('profiles').select('avatar_url').eq('id', user.id).single().then(function(res) {
+    _supabaseClient.from('profiles').select('avatar_url, full_name').eq('id', user.id).single().then(function(res) {
       if (res.data && res.data.avatar_url) {
         navAvatar.innerHTML = '<img src="' + res.data.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
       } else {
@@ -2815,7 +2862,8 @@ function llTab(tab, skipPhotoClear) {
                   (tab==='contracts' && ico.includes('📄')) ||
                   (tab==='add' && ico.includes('➕')) ||
                   (tab==='reviews' && ico.includes('⭐')) ||
-                  (tab==='settings' && ico.includes('⚙️'));
+                  (tab==='settings' && ico.includes('⚙️')) ||
+                  (tab==='tenants' && ico.includes('👥'));
     if(match) i.classList.add('on');
   });
   const m = document.getElementById('llMain');
@@ -2826,6 +2874,7 @@ function llTab(tab, skipPhotoClear) {
   else if (tab==='contracts') renderContracts(m);
   else if (tab==='add') renderAddListing(m, skipPhotoClear);
   else if (tab==='reviews') renderLLReviews(m);
+  else if (tab==='tenants') renderLLTenants(m);
   else if (tab==='settings') renderLLSettings(m);
 }
 
@@ -4689,8 +4738,11 @@ var _chatSubscription = null;
 async function openChatModal() {
   if (!currentUser) { toast('Please sign in to send messages', ''); go('s-login'); return; }
   if (!CUR) return;
+  if (!CUR.landlordId) { toast('Landlord info not loaded yet', ''); return; }
+  if (CUR.landlordId === currentUser.id) { toast('This is your own listing', ''); return; }
 
   _chatLandlordId = CUR.landlordId;
+  _chatWithUserId = CUR.landlordId;
   _chatListingId = CUR.id;
 
   // Set landlord info in header
@@ -6131,6 +6183,279 @@ function slideCard(btn, dir) {
   dots.forEach(function(d, i) {
     d.style.background = i === next ? '#fff' : 'rgba(255,255,255,.5)';
   });
+}
+
+
+// ══════════════════════════════════════
+// FAVORITES FOLDERS
+// ══════════════════════════════════════
+var _favFolders = {};
+var _currentFavFolder = 'all';
+
+function loadFavFolders() {
+  try {
+    var saved = localStorage.getItem('nm-fav-folders');
+    if (saved) _favFolders = JSON.parse(saved);
+  } catch(e) { _favFolders = {}; }
+  renderFavFolders();
+}
+
+function saveFavFolders() {
+  try { localStorage.setItem('nm-fav-folders', JSON.stringify(_favFolders)); } catch(e) {}
+}
+
+function renderFavFolders() {
+  var el = document.getElementById('favFolders');
+  if (!el) return;
+  var folders = Object.keys(_favFolders);
+  el.innerHTML = '';
+
+  function makeBtn(label, folder) {
+    var btn = document.createElement('button');
+    btn.className = 'fav-folder-btn' + (folder === _currentFavFolder ? ' on' : '');
+    btn.dataset.folder = folder;
+    btn.textContent = label;
+    btn.style.cssText = 'padding:6px 14px;border-radius:20px;border:1px solid ' +
+      (folder === _currentFavFolder ? 'var(--lime);background:var(--lime);color:#000' : 'var(--border);background:none;color:var(--text)') +
+      ';font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap';
+    btn.onclick = function() { switchFavFolder(btn, folder); };
+    return btn;
+  }
+
+  el.appendChild(makeBtn('All Saved', 'all'));
+  folders.forEach(function(f) {
+    el.appendChild(makeBtn(f + ' (' + (_favFolders[f]||[]).length + ')', f));
+  });
+}
+
+function switchFavFolder(btn, folder) {
+  _currentFavFolder = folder;
+  renderFavFolders();
+  renderFavsGrid();
+}
+
+function createFavFolder() {
+  var name = prompt('Name your list (e.g. Beach Apartments, Gold Coast):');
+  if (!name || !name.trim()) return;
+  name = name.trim();
+  if (!_favFolders[name]) _favFolders[name] = [];
+  saveFavFolders();
+  _currentFavFolder = name;
+  renderFavFolders();
+  renderFavsGrid();
+}
+
+// Override renderFavsGrid to support folders
+var _origRenderFavsGrid = renderFavsGrid;
+renderFavsGrid = function() {
+  loadFavFolders();
+  var grid = document.getElementById('favsGrid');
+  if (!grid) return;
+  var all = window.CURRENT_LISTINGS || [];
+  var favList;
+  if (_currentFavFolder === 'all') {
+    favList = all.filter(function(l) { return favs.has(l.id); });
+  } else {
+    var folderIds = _favFolders[_currentFavFolder] || [];
+    favList = all.filter(function(l) { return folderIds.includes(String(l.id)); });
+  }
+
+  if (!favList.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:3rem">&#128293;</div><p style="font-weight:600;margin:12px 0 8px">No saved rooms here</p></div>';
+    return;
+  }
+
+  // Smaller horizontal cards
+  grid.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;padding:16px">' + favList.map(function(l) {
+    var img = (l.imgs && l.imgs[0]) ? l.imgs[0] : '';
+    return '<div style="display:flex;background:var(--bg-m);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;height:90px" data-lid="' + l.id + '" onclick="openDetail(this.dataset.lid)">' +
+      '<div style="width:110px;height:90px;flex-shrink:0;overflow:hidden">' +
+      (img ? '<img src="' + img + '" style="width:100%;height:100%;object-fit:cover">' : '<div style="width:100%;height:100%;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:1.5rem">🏠</div>') +
+      '</div>' +
+      '<div style="flex:1;padding:10px 12px;min-width:0;display:flex;flex-direction:column;justify-content:center">' +
+      '<div style="font-weight:700;font-size:.88rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + l.title + '</div>' +
+      '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">📍 ' + (l.suburb||'Gold Coast') + '</div>' +
+      '<div style="font-weight:800;font-size:.9rem;color:var(--lime);margin-top:4px">AU$' + l.price + '/wk</div>' +
+      '</div>' +
+      '<div style="padding:10px 10px 10px 0;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center">' +
+      '<button data-favid="' + l.id + '" onclick="event.stopPropagation();toggleFav(this.dataset.favid,this)" style="background:none;border:none;font-size:1.2rem;cursor:pointer">❤️</button>' +
+      '<button data-lid="' + l.id + '" onclick="event.stopPropagation();addToFolder(this.dataset.lid)" style="background:none;border:none;font-size:.9rem;cursor:pointer;color:var(--muted)" title="Add to list">📁</button>' +
+      '</div></div>';
+  }).join('') + '</div>';
+};
+
+function addToFolder(listingId) {
+  var folders = Object.keys(_favFolders);
+  if (!folders.length) {
+    createFavFolder();
+    return;
+  }
+  var name = prompt('Add to list:\n' + folders.map((f,i) => (i+1)+'. '+f).join('\n') + '\n\nType the list name or number:');
+  if (!name) return;
+  var target = isNaN(name) ? name.trim() : folders[parseInt(name)-1];
+  if (!target) return;
+  if (!_favFolders[target]) _favFolders[target] = [];
+  if (!_favFolders[target].includes(String(listingId))) {
+    _favFolders[target].push(String(listingId));
+    saveFavFolders();
+    toast('Added to ' + target, 'lime');
+    renderFavFolders();
+  }
+}
+
+// ══════════════════════════════════════
+// LANDLORD — MY TENANTS TAB
+// ══════════════════════════════════════
+async function renderLLTenants(m) {
+  if (!_supabaseClient || !currentUser) return;
+  m.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading tenants...</div>';
+
+  var res = await _supabaseClient.from('bookings')
+    .select('*, listings(title, suburb), tenant:profiles!tenant_id(id, full_name, avatar_url, nationality, email, bio, languages)')
+    .eq('landlord_id', currentUser.id)
+    .in('status', ['checked_in', 'paid', 'signed', 'approved', 'checked_out'])
+    .order('created_at', { ascending: false });
+
+  if (res.error || !res.data || !res.data.length) {
+    m.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)"><div style="font-size:3rem;margin-bottom:12px">👥</div><p style="font-weight:600">No tenants yet</p><p style="font-size:.85rem;margin-top:6px">Tenants who book your rooms will appear here</p></div>';
+    return;
+  }
+
+  var statusColors = { checked_in: 'var(--lime)', paid: 'var(--teal)', signed: 'var(--blue)', approved: 'var(--orange)', checked_out: 'var(--muted)' };
+  var statusLabels = { checked_in: '🏡 Living here', paid: '✅ Confirmed', signed: '✍️ Signed', approved: '👍 Approved', checked_out: '📦 Moved out' };
+
+  m.innerHTML = '<div style="padding:16px">' +
+    '<h2 style="font-family:Syne,sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:16px">👥 My Tenants (' + res.data.length + ')</h2>' +
+    res.data.map(function(b) {
+      var t = b.tenant || {};
+      var initial = (t.full_name||'T').charAt(0).toUpperCase();
+      var avatar = t.avatar_url
+        ? '<img src="' + t.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+        : '<span style="font-weight:700;color:#000">' + initial + '</span>';
+      var langs = t.languages || [];
+      if (typeof langs === 'string') { try { langs = JSON.parse(langs); } catch(e) { langs = []; } }
+      var st = b.status || 'pending';
+      var moveIn = b.move_in_date ? new Date(b.move_in_date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+
+      return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-m);border:1px solid var(--border);border-radius:14px;margin-bottom:10px">' +
+        '<div style="width:48px;height:48px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer" data-pid="' + t.id + '" onclick="openProfile(this.dataset.pid)">' + avatar + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-weight:700;font-size:.9rem;cursor:pointer" data-pid="' + t.id + '" onclick="openProfile(this.dataset.pid)">' + (t.full_name||'Tenant') + '</div>' +
+          '<div style="font-size:.72rem;color:var(--muted)">' + (t.nationality||'') + (langs.length ? ' · ' + langs.slice(0,2).join(', ') : '') + '</div>' +
+          '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">📍 ' + (b.listings&&b.listings.title||'Room') + ' · Move-in: ' + moveIn + '</div>' +
+        '</div>' +
+        '<div style="text-align:right;flex-shrink:0">' +
+          '<div style="font-size:.72rem;font-weight:700;color:' + (statusColors[st]||'var(--muted)') + ';margin-bottom:6px">' + (statusLabels[st]||st) + '</div>' +
+          '<button class="btn ol sm" style="font-size:.72rem;padding:4px 10px" data-uid="' + t.id + '" data-lid="' + (b.listing_id||'') + '" onclick="_chatWithUserId=this.dataset.uid;_chatLandlordId=this.dataset.uid;_chatListingId=this.dataset.lid;openChatFromDashboard(this)">💬 Message</button>' +
+        '</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+
+function openChatFromDashboard(btn) {
+  var uid = btn.dataset.uid;
+  var lid = btn.dataset.lid;
+  _chatWithUserId = uid;
+  _chatLandlordId = uid;
+  _chatListingId = lid || null;
+  var chatName = document.getElementById('chatName');
+  if (chatName) chatName.textContent = 'Tenant';
+  document.getElementById('chatModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  loadChatMessages();
+}
+
+// ══════════════════════════════════════
+// ADMIN SUPPORT CHAT
+// ══════════════════════════════════════
+var _adminSupportConvo = null;
+
+async function loadAdminSupportConvos() {
+  if (!_supabaseClient) return;
+  var list = document.getElementById('supportConvoList');
+  if (!list) return;
+  list.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:.85rem">Loading...</div>';
+
+  // Get all support messages
+  var res = await _supabaseClient.from('support_messages')
+    .select('*, sender:profiles!sender_id(full_name, avatar_url, email)')
+    .order('created_at', { ascending: false });
+
+  if (res.error || !res.data || !res.data.length) {
+    list.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:.85rem">No support messages yet</div>';
+    return;
+  }
+
+  // Group by user
+  var convos = {};
+  res.data.forEach(function(m) {
+    if (!convos[m.sender_id]) {
+      convos[m.sender_id] = { user: m.sender, messages: [], unread: 0 };
+    }
+    convos[m.sender_id].messages.push(m);
+    if (!m.admin_replied) convos[m.sender_id].unread++;
+  });
+
+  var keys = Object.keys(convos);
+  list.innerHTML = keys.map(function(uid) {
+    var c = convos[uid];
+    var last = c.messages[0];
+    var name = (c.user && c.user.full_name) || 'User';
+    var initial = name.charAt(0).toUpperCase();
+    var avatar = c.user && c.user.avatar_url
+      ? '<img src="' + c.user.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+      : '<span style="font-weight:700;font-size:.8rem">' + initial + '</span>';
+
+    return '<div data-uid="' + uid + '" onclick="openAdminConvo(this.dataset.uid)" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer">' +
+      '<div style="width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">' + avatar + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-weight:600;font-size:.85rem">' + name + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (last.content||'').slice(0,40) + '</div>' +
+      '</div>' +
+      (c.unread > 0 ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0"></div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+async function openAdminConvo(userId) {
+  _adminSupportConvo = userId;
+  var header = document.getElementById('supportChatHeader');
+  var msgsEl = document.getElementById('supportChatMsgs');
+  var inputEl = document.getElementById('supportChatInput');
+  if (inputEl) inputEl.style.display = 'flex';
+
+  var res = await _supabaseClient.from('support_messages')
+    .select('*')
+    .eq('sender_id', userId)
+    .order('created_at', { ascending: true });
+
+  if (!res.data) return;
+
+  if (header) header.textContent = 'Chat with user';
+  msgsEl.innerHTML = res.data.map(function(m) {
+    var isAdmin = m.is_admin_reply;
+    return '<div style="display:flex;flex-direction:' + (isAdmin?'row-reverse':'row') + '">' +
+      '<div style="max-width:75%;padding:8px 12px;border-radius:' + (isAdmin?'12px 12px 4px 12px':'12px 12px 12px 4px') + ';background:' + (isAdmin?'var(--lime)':'var(--bg-l)') + ';color:' + (isAdmin?'#000':'var(--text)') + ';font-size:.85rem">' +
+      m.content + '</div></div>';
+  }).join('');
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+async function sendAdminSupport() {
+  var input = document.getElementById('supportAdminInput');
+  var msg = input ? input.value.trim() : '';
+  if (!msg || !_adminSupportConvo || !_supabaseClient || !currentUser) return;
+  input.value = '';
+
+  await _supabaseClient.from('support_messages').insert({
+    sender_id: currentUser.id,
+    recipient_id: _adminSupportConvo,
+    content: msg,
+    is_admin_reply: true,
+  });
+
+  openAdminConvo(_adminSupportConvo);
 }
 
 </script>
