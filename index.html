@@ -438,42 +438,151 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
 <!-- ════════════ LANDING ════════════ -->
 <div id="s-land" class="screen active">
-  <div class="hero" style="max-width:1100px;margin:0 auto">
-    <div class="tag g" style="margin-bottom:18px">📍 Gold Coast, Australia · Beta</div>
-    <h1>Find your room.<br><em>Safe</em> & Simple.</h1>
-    <p>No more dodgy Facebook groups or WhatsApp scams. Verified rooms, digital contracts, escrow-protected payments.</p>
-    <div class="hero-btns">
-      <button class="btn lime" onclick="go('s-browse')">🔍 <span class="t" data-en="Browse Rooms" data-pt="Buscar Quartos">Browse Rooms</span></button>
-      <button class="btn ol" onclick="setMode('landlord')"><span class="t" data-en="List My Room" data-pt="Anunciar Quarto">List My Room</span></button>
+  <!-- HERO -->
+  <div style="padding:60px 20px 50px;text-align:center;max-width:1100px;margin:0 auto">
+    <div class="tag g" style="margin-bottom:18px;display:inline-block">📍 Gold Coast, Australia · Beta</div>
+    <h1 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:20px">Find your room.<br><em style="color:var(--lime)">Safe</em> & Simple.</h1>
+    <p style="font-size:1.05rem;color:var(--muted);max-width:560px;margin:0 auto 32px;line-height:1.7">No more dodgy Facebook groups or WhatsApp scams. Verified rooms, digital contracts, and escrow-protected payments.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn lime" style="padding:14px 32px;font-size:1rem;border-radius:50px" onclick="go('s-browse')">Browse Rooms</button>
+      <button class="btn ol" style="padding:14px 32px;font-size:1rem;border-radius:50px" onclick="setMode('landlord')">List My Room</button>
     </div>
-    <div class="hero-stats">
-      <div class="hs"><h3>47</h3><p><span class="t" data-en="Verified rooms in GC" data-pt="Quartos verificados no GC">Verified rooms in GC</span></p></div>
-      <div class="hs"><h3>AU$0</h3><p><span class="t" data-en="Bond scams on platform" data-pt="Golpes de caução na plataforma">Bond scams on platform</span></p></div>
-      <div class="hs"><h3>100%</h3><p><span class="t" data-en="Escrow protected" data-pt="Pagamentos protegidos">Escrow protected</span></p></div>
-      <div class="hs"><h3>23</h3><p><span class="t" data-en="Nationalities" data-pt="Nacionalidades">Nationalities</span></p></div>
+    <div style="display:flex;gap:24px;justify-content:center;margin-top:40px;flex-wrap:wrap">
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">47+</div><div style="font-size:.8rem;color:var(--muted)">Verified Rooms</div></div>
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">100%</div><div style="font-size:.8rem;color:var(--muted)">Escrow Protected</div></div>
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">23+</div><div style="font-size:.8rem;color:var(--muted)">Nationalities</div></div>
+      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">AU$0</div><div style="font-size:.8rem;color:var(--muted)">Bond Scams</div></div>
     </div>
   </div>
-  <div class="modes">
-    <div style="max-width:880px;margin:0 auto;text-align:center">
-      <span class="tag g" style="margin-bottom:12px">Who are you?</span>
-      <h2 style="font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800">Built for both sides</h2>
-    </div>
-    <div class="mcards">
-      <div class="mcard" onclick="go('s-browse')">
-        <div class="icon">🎓</div>
-        <h3>I'm a Student (Tenant)</h3>
-        <p>Search verified rooms, filter by housemate nationality, book visits, sign digitally and pay safely.</p>
-        <div class="arr">→</div>
+
+  <!-- HOW IT WORKS -->
+  <div style="background:var(--bg-l);padding:60px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div style="max-width:1000px;margin:0 auto">
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;text-align:center;margin-bottom:40px">Quick. Online. 100% safe.</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px">
+        <div style="padding:24px;background:var(--bg);border-radius:16px;border:1px solid var(--border)">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#000;margin-bottom:14px">1</div>
+          <h3 style="font-weight:700;margin-bottom:8px">Pick a place</h3>
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.6">Browse verified rooms, save favourites, and find your perfect home.</p>
+        </div>
+        <div style="padding:24px;background:var(--bg);border-radius:16px;border:1px solid var(--border)">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#000;margin-bottom:14px">2</div>
+          <h3 style="font-weight:700;margin-bottom:8px">Message landlord</h3>
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.6">Private chat with the landlord. Ask questions, share info — all in one place.</p>
+        </div>
+        <div style="padding:24px;background:var(--bg);border-radius:16px;border:1px solid var(--border)">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#000;margin-bottom:14px">3</div>
+          <h3 style="font-weight:700;margin-bottom:8px">Apply to rent</h3>
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.6">Submit your application and know within 48 hours if it is yours.</p>
+        </div>
+        <div style="padding:24px;background:var(--bg);border-radius:16px;border:1px solid var(--border)">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#000;margin-bottom:14px">4</div>
+          <h3 style="font-weight:700;margin-bottom:8px">Pay and move in</h3>
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.6">Your money is protected until you have moved in and checked the place out.</p>
+        </div>
       </div>
-      <div class="mcard" onclick="setMode('landlord')">
-        <div class="icon">🏠</div>
-        <h3>I Have a Room (Landlord)</h3>
-        <p>List your spare room, manage applications, sign contracts and receive payments — no more Facebook chaos.</p>
-        <div class="arr">→</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div style="padding:60px 20px;max-width:1000px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px">
+      <div>
+        <div style="font-size:2rem;margin-bottom:12px">&#128274;</div>
+        <h3 style="font-weight:800;margin-bottom:8px">Protected payments</h3>
+        <p style="font-size:.88rem;color:var(--muted);line-height:1.7">We send payment to the landlord only 48 hours after you move in. If the place is not as described, you get a full refund.</p>
+      </div>
+      <div>
+        <div style="font-size:2rem;margin-bottom:12px">&#128247;</div>
+        <h3 style="font-weight:800;margin-bottom:8px">View from anywhere</h3>
+        <p style="font-size:.88rem;color:var(--muted);line-height:1.7">High-quality photos, maps, detailed descriptions. Say goodbye to in-person viewings and hello to more free time.</p>
+      </div>
+      <div>
+        <div style="font-size:2rem;margin-bottom:12px">&#128172;</div>
+        <h3 style="font-weight:800;margin-bottom:8px">Direct chat</h3>
+        <p style="font-size:.88rem;color:var(--muted);line-height:1.7">No more calling and texting in different places. One private page for all conversations. Everyone always on the same page.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TENANT PROTECTION -->
+  <div style="background:var(--bg-l);padding:60px 20px;border-top:1px solid var(--border)">
+    <div style="max-width:900px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:36px">
+        <div style="display:inline-block;padding:6px 16px;background:rgba(200,241,53,.15);border:1px solid var(--lime);border-radius:20px;font-size:.8rem;font-weight:700;color:var(--lime);margin-bottom:12px">TENANT PROTECTION</div>
+        <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem">Protection against the unexpected</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:32px">
+        <div style="padding:20px;background:var(--bg);border-radius:14px;border:1px solid var(--border)">
+          <div style="font-size:1.4rem;margin-bottom:8px">&#128680;</div>
+          <h4 style="font-weight:700;margin-bottom:6px">Last-minute cancellations</h4>
+          <p style="font-size:.82rem;color:var(--muted);line-height:1.6">If the landlord cancels last minute, we help you find another place or a temporary hotel stay.</p>
+        </div>
+        <div style="padding:20px;background:var(--bg);border-radius:14px;border:1px solid var(--border)">
+          <div style="font-size:1.4rem;margin-bottom:8px">&#9889;</div>
+          <h4 style="font-weight:700;margin-bottom:6px">Quick support</h4>
+          <p style="font-size:.82rem;color:var(--muted);line-height:1.6">If something goes wrong with your rental, our team responds within hours to help make it right.</p>
+        </div>
+        <div style="padding:20px;background:var(--bg);border-radius:14px;border:1px solid var(--border)">
+          <div style="font-size:1.4rem;margin-bottom:8px">&#9989;</div>
+          <h4 style="font-weight:700;margin-bottom:6px">Move-in with confidence</h4>
+          <p style="font-size:.82rem;color:var(--muted);line-height:1.6">We keep your payment safe until you move in. If the place does not match the description, you get a refund.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div style="padding:60px 20px;max-width:800px;margin:0 auto">
+    <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;text-align:center;margin-bottom:40px">Your questions, answered</h2>
+    <div>
+      <div style="border-bottom:1px solid var(--border)">
+        <div onclick="toggleFaq(this)" style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;font-weight:600">How does the escrow payment work? <span>+</span></div>
+        <div style="display:none;padding:0 0 16px;font-size:.88rem;color:var(--muted);line-height:1.7">When you pay, your money goes into a secure escrow account. It is released to the landlord 48 hours after you confirm check-in. If the place is not as described, you can request a full refund within 24 hours.</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border)">
+        <div onclick="toggleFaq(this)" style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;font-weight:600">Is my personal information safe? <span>+</span></div>
+        <div style="display:none;padding:0 0 16px;font-size:.88rem;color:var(--muted);line-height:1.7">Yes. We comply with the Australian Privacy Act 1988. Your data is stored on encrypted servers in Sydney. We never sell your personal data to third parties.</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border)">
+        <div onclick="toggleFaq(this)" style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;font-weight:600">What are the fees? <span>+</span></div>
+        <div style="display:none;padding:0 0 16px;font-size:.88rem;color:var(--muted);line-height:1.7">Browsing and messaging are completely free. We charge a 5% platform fee per booking covering escrow protection, identity verification, and platform maintenance. No hidden fees.</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border)">
+        <div onclick="toggleFaq(this)" style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;font-weight:600">Can I cancel a booking? <span>+</span></div>
+        <div style="display:none;padding:0 0 16px;font-size:.88rem;color:var(--muted);line-height:1.7">Tenants can cancel before the landlord approves for a full refund. After approval, cancellation policies are agreed between tenant and landlord. Bond is released within 7 business days.</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border)">
+        <div onclick="toggleFaq(this)" style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;font-weight:600">How do I verify my identity? <span>+</span></div>
+        <div style="display:none;padding:0 0 16px;font-size:.88rem;color:var(--muted);line-height:1.7">After signing up, complete KYC in your dashboard. You need a government ID and a selfie. The process takes about 5 minutes and is powered by Stripe Identity.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA + APP DOWNLOAD -->
+  <div style="background:var(--lime);padding:60px 20px;text-align:center">
+    <h2 style="font-family:'Syne',sans-serif;font-weight:900;font-size:2rem;color:#000;margin-bottom:12px">Ready to find your room?</h2>
+    <p style="color:rgba(0,0,0,.6);margin-bottom:28px;font-size:1rem">Join thousands of international students already using RoomiStay</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:32px">
+      <button onclick="go('s-signup')" style="background:#000;color:#fff;padding:14px 32px;font-size:1rem;border-radius:50px;border:none;cursor:pointer;font-weight:700">Sign Up Free</button>
+      <button onclick="go('s-browse')" style="background:rgba(0,0,0,.12);color:#000;padding:14px 32px;font-size:1rem;border-radius:50px;border:none;cursor:pointer;font-weight:700">Browse Rooms</button>
+    </div>
+    <div style="margin-top:8px">
+      <p style="color:rgba(0,0,0,.5);font-size:.8rem;margin-bottom:12px">Get the app</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 20px;background:#000;border-radius:10px;cursor:pointer" onclick="toast('iOS app coming soon!','')">
+          <span style="font-size:1.3rem">&#63743;</span>
+          <div style="text-align:left"><div style="font-size:.6rem;color:#aaa">Download on the</div><div style="font-size:.85rem;color:#fff;font-weight:700">App Store</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 20px;background:#000;border-radius:10px;cursor:pointer" onclick="toast('Android app coming soon!','')">
+          <span style="font-size:1.3rem">&#9654;</span>
+          <div style="text-align:left"><div style="font-size:.6rem;color:#aaa">Get it on</div><div style="font-size:.85rem;color:#fff;font-weight:700">Google Play</div></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 
 <!-- ════════════ BROWSE ════════════ -->
 <div id="s-browse" class="screen">
@@ -1121,7 +1230,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <h3 style="margin:20px 0 8px">8. Governing Law</h3>
       <p>These terms are governed by the laws of Queensland, Australia. Any disputes shall be resolved in the courts of Queensland.</p>
 
-      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">Contact: legal@nestmate.com.au</p>
+      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">Contact: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e18d8486808da18f8492958c809584cf828e8ccf8094">[email&#160;protected]</a></p>
     </div>
   </div>
 </div>
@@ -1153,7 +1262,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <p>We use essential cookies for authentication only. We do not use tracking or advertising cookies.</p>
 
       <h3 style="margin:20px 0 8px">6. Contact</h3>
-      <p>For privacy requests: privacy@nestmate.com.au</p>
+      <p>For privacy requests: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="39494b504f585a4079575c4a4d54584d5c175a565417584c">[email&#160;protected]</a></p>
 
       <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">NestMate complies with the Australian Privacy Act 1988 and the Queensland Information Privacy Act 2009.</p>
     </div>
@@ -1354,7 +1463,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 <!-- TOAST -->
 <div class="toast" id="toast"><span id="tIco">✅</span><span id="tMsg">Done</span></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════
 // DATA — 8 Gold Coast listings with real Unsplash photos
 // ══════════════════════════════════════
@@ -5989,6 +6098,41 @@ function startKYC() {
   };
 }
 
+
+// ══════════════════════════════════════
+// FAQ TOGGLE
+// ══════════════════════════════════════
+function toggleFaq(el) {
+  var answer = el.nextElementSibling;
+  var icon = el.querySelector('span');
+  if (!answer) return;
+  var isOpen = answer.style.display !== 'none';
+  answer.style.display = isOpen ? 'none' : 'block';
+  if (icon) icon.textContent = isOpen ? '+' : '-';
+}
+
+// ══════════════════════════════════════
+// CARD PHOTO SLIDE
+// ══════════════════════════════════════
+function slideCard(btn, dir) {
+  var card = btn.closest('.lcard-img');
+  if (!card) return;
+  var slider = card.querySelector('.card-imgs');
+  if (!slider) return;
+  var imgs = slider.querySelectorAll('img');
+  var total = imgs.length;
+  if (total < 2) return;
+  var cur = parseInt(slider.dataset.idx || 0);
+  var next = (cur + dir + total) % total;
+  slider.dataset.idx = next;
+  slider.style.transform = 'translateX(-' + (next * 100) + '%)';
+  // Update dots
+  var dots = card.querySelectorAll('.cdot');
+  dots.forEach(function(d, i) {
+    d.style.background = i === next ? '#fff' : 'rgba(255,255,255,.5)';
+  });
+}
+
 </script>
 
 <!-- Support Chat Bubble -->
@@ -6018,10 +6162,4 @@ function startKYC() {
     </div>
   </div>
   <div style="padding:10px;border-top:1px solid var(--border);display:flex;gap:8px">
-    <input id="supportInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;background:var(--bg-l);color:var(--text);font-size:.85rem" onkeydown="if(event.key==='Enter')sendSupportMsg()">
-    <button onclick="sendSupportMsg()" style="width:36px;height:36px;border-radius:50%;background:var(--lime);border:none;cursor:pointer;font-size:1rem">➤</button>
-  </div>
-</div>
-
-</body>
-</html>
+    <input id="supportInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px 12px;bor
