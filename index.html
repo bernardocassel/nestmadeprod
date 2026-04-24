@@ -5531,6 +5531,9 @@ async function openInbox() {
   hideDropdown();
   if (!currentUser || !_supabaseClient) { toast('Please sign in', ''); return; }
   _inboxNavSource = sessionStorage.getItem('nm-screen') || 's-browse';
+  // Clear badge immediately
+  var badge = document.getElementById('dropMsgBadge');
+  if (badge) badge.style.display = 'none';
   go('s-inbox');
   loadInbox();
 }
@@ -5636,8 +5639,8 @@ async function checkUnreadMessages() {
   var count = res.count || 0;
   var badge = document.getElementById('dropMsgBadge');
   if (badge) {
-    badge.style.display = count > 0 ? 'inline' : 'none';
-    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+    badge.textContent = count > 9 ? '9+' : count;
   }
 }
 
