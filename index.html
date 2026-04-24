@@ -1068,13 +1068,20 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 </div>
 
 <!-- ════════════ MESSAGES ════════════ -->
-<div id="s-messages" class="screen" style="background:var(--bg);height:100vh;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;z-index:100">
-  <div style="display:flex;height:100%;overflow:hidden">
+<div id="s-messages" class="screen" style="background:var(--bg);height:100vh;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;display:flex;flex-direction:column">
+  <!-- TOP NAV -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0">
+    <a onclick="go(sessionStorage.getItem('nm-screen-before')||'s-browse')" style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);text-decoration:none" onmouseenter="this.style.color='var(--text)'" onmouseleave="this.style.color='var(--muted)'">
+      ← Back
+    </a>
+    <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.1rem;color:var(--text)">Nest<span style="color:var(--lime)">Mate</span></div>
+    <div style="width:60px"></div>
+  </div>
+  <div style="display:flex;flex:1;overflow:hidden">
     <!-- LEFT: conversation list -->
-    <div style="width:340px;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;height:100%">
-      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0">
-        <button class="btn ol sm" onclick="go(sessionStorage.getItem('nm-screen')||'s-browse')">←</button>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem">Messages</div>
+    <div style="width:340px;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem">💬 Messages</div>
       </div>
       <div id="conversationsList" style="flex:1;overflow-y:auto">
         <div style="text-align:center;padding:60px 20px;color:var(--muted)">
@@ -1671,6 +1678,11 @@ function go(id) {
   var navbar = document.getElementById('mainNav');
   var footer = document.querySelector('footer');
   var isFullscreen = id === 's-messages';
+  if (isFullscreen) {
+    // Save previous screen for back button
+    var prev = sessionStorage.getItem('nm-screen');
+    if (prev && prev !== 's-messages') sessionStorage.setItem('nm-screen-before', prev);
+  }
   if (navbar) navbar.style.display = isFullscreen ? 'none' : '';
   if (footer) footer.style.display = isFullscreen ? 'none' : '';
   if (id === 's-browse') loadListingsFromDB();
