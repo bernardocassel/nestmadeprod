@@ -5261,7 +5261,7 @@ async function loadAllConversations() {
   listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Loading...</div>';
 
   var res = await _supabaseClient.from('messages')
-    .select('*, listing:listings(title,photos), sender:profiles!sender_id(id,full_name,avatar_url), recipient:profiles!recipient_id(id,full_name,avatar_url)')
+    .select('*')
     .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
     .order('created_at', { ascending: false });
 
