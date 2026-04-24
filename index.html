@@ -6526,43 +6526,61 @@ async function loadAdminSupportConvos() {
   if (!list) return;
   list.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:.85rem">Loading...</div>';
 
-  // Get all support messages
   var res = await _supabaseClient.from('support_messages')
-    .select('*, sender:profiles!sender_id(full_name, avatar_url, email)')
+    .select('*')
     .order('created_at', { ascending: false });
 
-  if (res.error || !res.data || !res.data.length) {
+  if (res.error) {
+    console.error('Support error:', res.error);
+    list.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:.85rem">No support messages yet</div>';
+    return;
+  }
+  if (!res.data || !res.data.length) {
     list.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:.85rem">No support messages yet</div>';
     return;
   }
 
-  // Group by user
+  // Group by sender - only user messages
   var convos = {};
   res.data.forEach(function(m) {
-    if (!convos[m.sender_id]) {
-      convos[m.sender_id] = { user: m.sender, messages: [], unread: 0 };
+    var uid = m.sender_id;
+    if (!uid) return;
+    if (!convos[uid]) convos[uid] = { messages: [], unread: 0, lastUserMsg: null };
+    convos[uid].messages.push(m);
+    if (!m.is_admin_reply) {
+      if (!convos[uid].lastUserMsg) convos[uid].lastUserMsg = m;
+      convos[uid].unread++;
     }
-    convos[m.sender_id].messages.push(m);
-    if (!m.admin_replied) convos[m.sender_id].unread++;
   });
 
-  var keys = Object.keys(convos);
+  var keys = Object.keys(convos).filter(function(uid) { return convos[uid].lastUserMsg; });
+  if (!keys.length) {
+    list.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:.85rem">No support messages yet</div>';
+    return;
+  }
+
+  // Fetch profiles
+  var profileRes = await _supabaseClient.from('profiles').select('id, full_name, avatar_url, email').in('id', keys);
+  var profiles = {};
+  if (profileRes.data) profileRes.data.forEach(function(p) { profiles[p.id] = p; });
+
   list.innerHTML = keys.map(function(uid) {
     var c = convos[uid];
-    var last = c.messages[0];
-    var name = (c.user && c.user.full_name) || 'User';
+    var p = profiles[uid] || {};
+    var name = p.full_name || p.email || 'User';
     var initial = name.charAt(0).toUpperCase();
-    var avatar = c.user && c.user.avatar_url
-      ? '<img src="' + c.user.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+    var avatar = p.avatar_url
+      ? '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
       : '<span style="font-weight:700;font-size:.8rem">' + initial + '</span>';
-
-    return '<div data-uid="' + uid + '" onclick="openAdminConvo(this.dataset.uid)" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer">' +
+    var preview = (c.lastUserMsg.content || '').slice(0, 40);
+    var isUnread = c.unread > 0;
+    return '<div data-uid="' + uid + '" onclick="openAdminConvo(this.dataset.uid)" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;background:' + (isUnread ? 'rgba(130,192,0,.06)' : 'transparent') + '">' +
       '<div style="width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">' + avatar + '</div>' +
       '<div style="flex:1;min-width:0">' +
-        '<div style="font-weight:600;font-size:.85rem">' + name + '</div>' +
-        '<div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (last.content||'').slice(0,40) + '</div>' +
+        '<div style="font-weight:' + (isUnread ? '700' : '600') + ';font-size:.85rem">' + name + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + preview + '</div>' +
       '</div>' +
-      (c.unread > 0 ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0"></div>' : '') +
+      (isUnread ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0"></div>' : '') +
       '</div>';
   }).join('');
 }
