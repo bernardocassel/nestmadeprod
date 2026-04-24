@@ -1068,13 +1068,13 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 </div>
 
 <!-- ════════════ MESSAGES ════════════ -->
-<div id="s-messages" class="screen" style="background:var(--bg);height:100vh;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;display:flex;flex-direction:column">
+<div id="s-messages" class="screen" style="background:var(--bg);display:flex;flex-direction:column;height:100vh;overflow:hidden">
   <!-- TOP NAV -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0">
     <a onclick="go(sessionStorage.getItem('nm-screen-before')||'s-browse')" style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);text-decoration:none" onmouseenter="this.style.color='var(--text)'" onmouseleave="this.style.color='var(--muted)'">
       ← Back
     </a>
-    <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.1rem;color:var(--text)">Nest<span style="color:var(--lime)">Mate</span></div>
+    <div onclick="go('s-browse')" style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.1rem;color:var(--text);cursor:pointer">Nest<span style="color:var(--lime)">Mate</span></div>
     <div style="width:60px"></div>
   </div>
   <div style="display:flex;flex:1;overflow:hidden">
@@ -1687,8 +1687,10 @@ function go(id) {
   if (footer) footer.style.display = isFullscreen ? 'none' : '';
   if (id === 's-browse') loadListingsFromDB();
   if (id === 's-landlord') { /* dashboard loaded by goLandlord() */ }
-  // Save current screen to session storage (persists on refresh)
-  try { sessionStorage.setItem('nm-screen', id); } catch(e) {}
+  // Save current screen to session storage (but NOT messages - it's fullscreen and shouldn't restore)
+  try { 
+    if (id !== 's-messages') sessionStorage.setItem('nm-screen', id); 
+  } catch(e) {}
 }
 
 function restoreLastScreen() {
