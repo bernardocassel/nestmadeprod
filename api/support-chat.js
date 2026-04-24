@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
 
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_API_KEY) {
-    return res.status(200).json({ reply: 'Thanks for your message! Email us at support@roomiestay.com for help.' });
+    return res.status(200).json({ reply: '✅ Message received! One of our consultants will get back to you shortly.' });
   }
 
   try {
@@ -55,6 +55,6 @@ module.exports = async (req, res) => {
     return res.status(200).json({ reply });
   } catch (e) {
     console.error('Support chat error:', e);
-    return res.status(200).json({ reply: 'Thanks for your message! Email us at support@roomiestay.com for help.' });
+    return res.status(200).json({ reply: '✅ Message received! One of our consultants will get back to you shortly.' });
   }
 };
