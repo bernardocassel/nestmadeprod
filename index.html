@@ -4829,7 +4829,7 @@ async function loadChatMessages() {
   if (!otherUserId) return;
 
   var query = _supabaseClient.from('messages')
-    .select('*, sender:profiles!sender_id(full_name, avatar_url)')
+    .select('*')
     .or('and(sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + otherUserId + '),and(sender_id.eq.' + otherUserId + ',recipient_id.eq.' + currentUser.id + ')')
     .order('created_at', { ascending: true })
     .limit(100);
@@ -4861,11 +4861,11 @@ async function loadChatMessages() {
       var uid = _chatWithUserId || _chatLandlordId;
       if (!uid || !currentUser) return;
       var r = await _supabaseClient.from('messages')
-        .select('*, sender:profiles!sender_id(full_name, avatar_url)')
+        .select('*')
         .or('and(sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + uid + '),and(sender_id.eq.' + uid + ',recipient_id.eq.' + currentUser.id + ')')
         .order('created_at', { ascending: true }).limit(100);
       if (!r.error && r.data) renderChatMessages(r.data);
-    }, 5000); // refresh every 5 seconds
+    }, 5000);
   }
 }
 
