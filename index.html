@@ -2009,9 +2009,15 @@ function onUserLoggedIn(user) {
 
 function onUserLoggedOut() {
   const loginBtn = document.getElementById('signInBtn');
-  const joinBtn = navR?.querySelector('.nbtn.prim');
+  const navRight = document.getElementById('navR') || document.querySelector('.nav-r') || document.querySelector('nav');
+  const joinBtn = navRight?.querySelector('.nbtn.prim');
   if (loginBtn) loginBtn.style.display = '';
   if (joinBtn) { joinBtn.textContent = 'Join Free'; joinBtn.onclick = () => go('s-signup'); }
+  // Hide user dropdown and avatar
+  var dd = document.getElementById('userDropdown');
+  if (dd) dd.style.display = 'none';
+  var userBtn = document.getElementById('userNavBtn');
+  if (userBtn) userBtn.style.display = 'none';
 }
 
 var _dropdownTimer = null;
@@ -3886,10 +3892,17 @@ async function checkAdminRole() {
   if (!_supabaseClient || !currentUser) return;
   try {
     var res = await _supabaseClient.from('profiles').select('role').eq('id', currentUser.id).single();
-    if (res.error) return;
+    if (res.error || !res.data) {
+      // Fallback: try by email
+      var res2 = await _supabaseClient.from('profiles').select('role').eq('email', currentUser.email).single();
+      if (res2.error || !res2.data) return;
+      res = res2;
+    }
     isAdmin = res.data && res.data.role === 'admin';
     var btn = document.getElementById('adminNavBtn');
+    var dropBtn = document.getElementById('dropAdminBtn');
     if (btn) btn.style.display = isAdmin ? 'inline-block' : 'none';
+    if (dropBtn) dropBtn.style.display = isAdmin ? 'flex' : 'none';
     if (isAdmin) loadAdminPendingCount();
     console.log('Role:', res.data && res.data.role, '| Admin:', isAdmin);
   } catch(e) { console.error('checkAdminRole:', e); }
