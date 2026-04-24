@@ -989,7 +989,16 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div id="supportConvoList" style="width:280px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0"></div>
       <!-- Chat area -->
       <div style="flex:1;display:flex;flex-direction:column">
-        <div id="supportChatHeader" style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--muted);font-size:.85rem">Select a conversation</div>
+        <div id="supportChatHeader" style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          <span style="font-weight:600;color:var(--muted);font-size:.85rem;flex:1">Select a conversation</span>
+          <div id="aiToggleWrap" style="display:none;align-items:center;gap:8px;font-size:.78rem">
+            <span style="color:var(--muted)">AI</span>
+            <div id="aiToggleBtn" onclick="toggleAIMode()" style="width:36px;height:20px;border-radius:10px;background:var(--lime);cursor:pointer;position:relative;transition:background .2s">
+              <div id="aiToggleDot" style="position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#000;transition:left .2s"></div>
+            </div>
+            <span id="aiModeLabel" style="font-weight:600;color:var(--lime)">Auto</span>
+          </div>
+        </div>
         <div id="supportChatMsgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px"></div>
         <div id="supportChatInput" style="display:none;padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
           <input id="supportAdminInput" type="text" placeholder="Type reply..." style="flex:1;padding:8px 14px;border:1px solid var(--border);border-radius:20px;background:var(--bg-l);color:var(--text);font-size:.88rem" onkeydown="if(event.key==='Enter')sendAdminSupport()">
@@ -6174,7 +6183,7 @@ async function sendSupportMsg() {
 
   var msgsEl = document.getElementById('supportMessages');
 
-  // Show user message
+  // Show user message immediately
   var userDiv = document.createElement('div');
   userDiv.style.cssText = 'background:var(--lime);color:#000;padding:10px 14px;border-radius:12px 4px 12px 12px;font-size:.85rem;max-width:85%;align-self:flex-end;margin-left:auto';
   userDiv.textContent = msg;
@@ -6182,6 +6191,16 @@ async function sendSupportMsg() {
   msgsEl.scrollTop = msgsEl.scrollHeight;
 
   _supportHistory.push({ role: 'user', content: msg });
+
+  // Save user message to DB
+  if (_supabaseClient && currentUser) {
+    _supabaseClient.from('support_messages').insert({
+      sender_id: currentUser.id,
+      content: msg,
+      is_admin_reply: false,
+      is_ai_reply: false,
+    }).then(function(){});
+  }
 
   // Show typing indicator
   var typingDiv = document.createElement('div');
@@ -6195,13 +6214,31 @@ async function sendSupportMsg() {
     var res = await fetch('/api/support-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: _supportHistory })
+      body: JSON.stringify({ messages: _supportHistory, userId: currentUser ? currentUser.id : null })
     });
     var data = await res.json();
+
+    // If admin paused AI for this user, show waiting message
+    if (data.ai_paused) {
+      typingDiv.textContent = "✋ Our support team will reply shortly.";
+      typingDiv.style.color = 'var(--text)';
+      return;
+    }
+
     var reply = data.reply || 'Thanks for your message! Our team will get back to you soon.';
     typingDiv.textContent = reply;
     typingDiv.style.color = 'var(--text)';
     _supportHistory.push({ role: 'assistant', content: reply });
+
+    // Save AI reply to DB
+    if (_supabaseClient && currentUser) {
+      _supabaseClient.from('support_messages').insert({
+        sender_id: currentUser.id,
+        content: reply,
+        is_admin_reply: true,
+        is_ai_reply: true,
+      }).then(function(){});
+    }
   } catch(e) {
     typingDiv.textContent = 'Thanks for your message! Email us at support@roomiestay.com for help.';
   }
@@ -6460,6 +6497,26 @@ function openChatFromDashboard(btn) {
 // ADMIN SUPPORT CHAT
 // ══════════════════════════════════════
 var _adminSupportConvo = null;
+var _aiModeActive = true; // AI responds by default
+
+function toggleAIMode() {
+  _aiModeActive = !_aiModeActive;
+  var btn = document.getElementById('aiToggleBtn');
+  var dot = document.getElementById('aiToggleDot');
+  var label = document.getElementById('aiModeLabel');
+  var input = document.getElementById('supportAdminInput');
+  if (_aiModeActive) {
+    if (btn) btn.style.background = 'var(--lime)';
+    if (dot) dot.style.left = '3px';
+    if (label) { label.textContent = 'Auto'; label.style.color = 'var(--lime)'; }
+    if (input) input.placeholder = 'AI is responding automatically...';
+  } else {
+    if (btn) btn.style.background = 'var(--muted)';
+    if (dot) dot.style.left = '19px';
+    if (label) { label.textContent = 'Manual'; label.style.color = 'var(--text)'; }
+    if (input) input.placeholder = 'Type your reply as admin...';
+  }
+}
 
 async function loadAdminSupportConvos() {
   if (!_supabaseClient) return;
@@ -6513,7 +6570,9 @@ async function openAdminConvo(userId) {
   var header = document.getElementById('supportChatHeader');
   var msgsEl = document.getElementById('supportChatMsgs');
   var inputEl = document.getElementById('supportChatInput');
+  var aiWrap = document.getElementById('aiToggleWrap');
   if (inputEl) inputEl.style.display = 'flex';
+  if (aiWrap) aiWrap.style.display = 'flex';
 
   var res = await _supabaseClient.from('support_messages')
     .select('*')
@@ -6522,12 +6581,25 @@ async function openAdminConvo(userId) {
 
   if (!res.data) return;
 
-  if (header) header.textContent = 'Chat with user';
+  // Get user name
+  var profileRes = await _supabaseClient.from('profiles').select('full_name, email').eq('id', userId).single();
+  var userName = (profileRes.data && profileRes.data.full_name) || (profileRes.data && profileRes.data.email) || 'User';
+  var headerTitle = document.querySelector('#supportChatHeader span');
+  if (headerTitle) headerTitle.textContent = '💬 ' + userName;
+
+  // Update AI toggle state
+  var input = document.getElementById('supportAdminInput');
+  if (input) input.placeholder = _aiModeActive ? 'AI is responding automatically...' : 'Type your reply as admin...';
+
   msgsEl.innerHTML = res.data.map(function(m) {
     var isAdmin = m.is_admin_reply;
-    return '<div style="display:flex;flex-direction:' + (isAdmin?'row-reverse':'row') + '">' +
-      '<div style="max-width:75%;padding:8px 12px;border-radius:' + (isAdmin?'12px 12px 4px 12px':'12px 12px 12px 4px') + ';background:' + (isAdmin?'var(--lime)':'var(--bg-l)') + ';color:' + (isAdmin?'#000':'var(--text)') + ';font-size:.85rem">' +
-      m.content + '</div></div>';
+    var time = new Date(m.created_at).toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
+    var label = isAdmin ? (m.is_ai_reply ? '🤖 AI' : '👤 Admin') : '👤 User';
+    return '<div style="display:flex;flex-direction:' + (isAdmin?'row-reverse':'row') + ';gap:6px;margin-bottom:4px">' +
+      '<div>' +
+      '<div style="font-size:.65rem;color:var(--muted);margin-bottom:2px;text-align:' + (isAdmin?'right':'left') + '">' + label + ' · ' + time + '</div>' +
+      '<div style="max-width:75%;padding:8px 12px;border-radius:' + (isAdmin?'12px 12px 4px 12px':'12px 12px 12px 4px') + ';background:' + (isAdmin ? (m.is_ai_reply ? '#e8f5e9' : 'var(--lime)') : 'var(--bg-l)') + ';color:' + (isAdmin?'#000':'var(--text)') + ';font-size:.85rem">' +
+      m.content + '</div></div></div>';
   }).join('');
   msgsEl.scrollTop = msgsEl.scrollHeight;
 }
@@ -6539,11 +6611,18 @@ async function sendAdminSupport() {
   input.value = '';
 
   await _supabaseClient.from('support_messages').insert({
-    sender_id: currentUser.id,
-    recipient_id: _adminSupportConvo,
+    sender_id: _adminSupportConvo,
     content: msg,
     is_admin_reply: true,
+    is_ai_reply: false,
   });
+
+  // Auto-pause AI when admin manually replies
+  if (_aiModeActive) {
+    _aiModeActive = false;
+    toggleAIMode();
+    toast('🤖 AI paused — you are now in manual mode', 'lime');
+  }
 
   openAdminConvo(_adminSupportConvo);
 }
