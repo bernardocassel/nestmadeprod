@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: blob: https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://*.openstreetmap.org https://js.stripe.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://translate.googleapis.com https://translate-pa.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com https://translate.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src * data: blob:; frame-src https://*.openstreetmap.org https://js.stripe.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com https://translate.googleapis.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NestMate — Find Your Room in Gold Coast</title>
 <!-- v1774026145 -->
@@ -5533,50 +5533,54 @@ async function loadInbox() {
   if (!list) return;
   list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Loading...</div>';
 
-  // Get all conversations (unique sender/recipient pairs)
+  // Get all messages - simple query without complex joins
   var res = await _supabaseClient.from('messages')
-    .select('*, listing:listings(title, suburb), sender:profiles!sender_id(id, full_name, avatar_url), recipient:profiles!recipient_id(id, full_name, avatar_url)')
+    .select('*')
     .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(200);
 
   if (res.error || !res.data || !res.data.length) {
-    list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:12px">💬</div><p style="font-weight:600">No messages yet</p><p style="font-size:.85rem;margin-top:6px">Messages from tenants will appear here</p></div>';
+    list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:12px">💬</div><p style="font-weight:600">No messages yet</p><p style="font-size:.85rem;margin-top:6px">Browse rooms and message a landlord!</p></div>';
     return;
   }
 
-  // Group by conversation (listing_id + other_user_id)
-  var convos = {};
+  // Group by conversation partner
+  var convMap = {};
   res.data.forEach(function(m) {
-    var otherId = m.sender_id === currentUser.id ? m.recipient_id : m.sender_id;
-    var key = (m.listing_id || 'general') + '_' + otherId;
-    if (!convos[key]) {
-      var other = m.sender_id === currentUser.id ? m.recipient : m.sender;
-      convos[key] = { key: key, other: other, listing: m.listing, lastMsg: m, unread: 0, otherId: otherId, listingId: m.listing_id };
+    var partnerId = m.sender_id === currentUser.id ? m.recipient_id : m.sender_id;
+    if (!convMap[partnerId]) {
+      convMap[partnerId] = { lastMsg: m, unread: 0, partnerId: partnerId };
     }
-    if (!m.read && m.recipient_id === currentUser.id) convos[key].unread++;
+    if (!m.read && m.recipient_id === currentUser.id) convMap[partnerId].unread++;
   });
 
-  var keys = Object.keys(convos);
-  list.innerHTML = keys.map(function(k) {
-    var c = convos[k];
-    var other = c.other || {};
-    var name = other.full_name || 'User';
+  // Load partner profiles
+  var partnerIds = Object.keys(convMap);
+  var profileRes = await _supabaseClient.from('profiles')
+    .select('id, full_name, avatar_url')
+    .in('id', partnerIds);
+  var profiles = {};
+  if (profileRes.data) profileRes.data.forEach(function(p) { profiles[p.id] = p; });
+
+  var keys = Object.keys(convMap);
+  list.innerHTML = keys.map(function(pid) {
+    var c = convMap[pid];
+    var p = profiles[pid] || {};
+    var name = p.full_name || 'User';
     var initial = name.charAt(0).toUpperCase();
-    var avatar = other.avatar_url
-      ? '<img src="' + other.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+    var avatar = p.avatar_url
+      ? '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
       : '<span style="font-weight:700;color:#000">' + initial + '</span>';
-    var listing = c.listing ? (c.listing.title || 'Room') : 'General';
     var time = new Date(c.lastMsg.created_at).toLocaleDateString('en-AU', {day:'numeric', month:'short'});
     var preview = (c.lastMsg.content || '').slice(0, 60) + (c.lastMsg.content && c.lastMsg.content.length > 60 ? '...' : '');
     var isUnread = c.unread > 0;
-
-    return '<div data-ouid="' + c.otherId + '" data-lid="' + (c.listingId||'') + '" data-oname="' + name + '" data-oav="' + (other.avatar_url||'') + '" onclick="openInboxConvo(this)" style="display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--border);cursor:pointer" class="inbox-row">' +
+    return '<div onclick="openInboxConvo(this)" data-ouid="' + pid + '" data-oname="' + name + '" data-oav="' + (p.avatar_url||'') + '" style="display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--border);cursor:pointer" class="inbox-row">' +
       '<div style="width:46px;height:46px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">' + avatar + '</div>' +
       '<div style="flex:1;min-width:0">' +
       '<div style="display:flex;justify-content:space-between;align-items:center">' +
-      '<span style="font-weight:' + (isUnread?'700':'600') + ';font-size:.9rem;color:var(--text)">' + name + '</span>' +
+      '<span style="font-weight:' + (isUnread?'700':'600') + ';font-size:.9rem">' + name + '</span>' +
       '<span style="font-size:.72rem;color:var(--muted)">' + time + '</span></div>' +
-      '<div style="font-size:.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + listing + '</div>' +
       '<div style="font-size:.82rem;color:' + (isUnread?'var(--text)':'var(--muted)') + ';font-weight:' + (isUnread?'600':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + preview + '</div>' +
       '</div>' +
       (isUnread ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--lime);flex-shrink:0"></div>' : '') +
