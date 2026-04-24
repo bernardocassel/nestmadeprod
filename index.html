@@ -50,6 +50,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 .screen{display:none;min-height:100vh;animation:fadeIn .3s ease}
+.messages-screen.active{display:flex!important}
 .screen.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -1068,7 +1069,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 </div>
 
 <!-- ════════════ MESSAGES ════════════ -->
-<div id="s-messages" class="screen" style="background:var(--bg);display:flex;flex-direction:column;height:100vh;overflow:hidden">
+<div id="s-messages" class="screen messages-screen" style="background:var(--bg);flex-direction:column;height:100vh;overflow:hidden">
   <!-- TOP NAV -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0">
     <a onclick="go(sessionStorage.getItem('nm-screen-before')||'s-browse')" style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);text-decoration:none" onmouseenter="this.style.color='var(--text)'" onmouseleave="this.style.color='var(--muted)'">
