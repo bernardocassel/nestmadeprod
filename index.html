@@ -1069,38 +1069,52 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
 <!-- ════════════ MESSAGES ════════════ -->
 <div id="s-messages" class="screen" style="background:var(--bg)">
-  <div style="max-width:700px;margin:0 auto;padding:0;display:flex;flex-direction:column;height:100vh">
-    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
-      <button class="btn ol sm" onclick="go(sessionStorage.getItem('nm-screen')||'s-browse')">← Back</button>
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--text)">💬 Messages</div>
-      <div id="msgUnreadBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:20px;height:20px;font-size:.7rem;font-weight:700;display:none;align-items:center;justify-content:center;margin-left:4px"></div>
+  <div style="display:flex;height:100vh;overflow:hidden">
+    <!-- LEFT: conversation list -->
+    <div style="width:340px;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <button class="btn ol sm" onclick="go(sessionStorage.getItem('nm-screen')||'s-browse')">←</button>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem">Messages</div>
+      </div>
+      <div id="conversationsList" style="flex:1;overflow-y:auto">
+        <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+          <div style="font-size:2.5rem;margin-bottom:12px">💬</div>
+          <p>No messages yet</p>
+        </div>
+      </div>
     </div>
-    <!-- Conversation list -->
-    <div id="conversationsList" style="flex:1;overflow-y:auto;padding:8px 0">
-      <div style="text-align:center;padding:60px 20px;color:var(--muted)">
-        <div style="font-size:2.5rem;margin-bottom:12px">💬</div>
-        <p>No messages yet</p>
-        <p style="font-size:.82rem;margin-top:6px">Browse rooms and message a landlord to get started</p>
+    <!-- CENTER: active conversation -->
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div id="convHeader" style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--bg)">
+        <div id="convAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;overflow:hidden">?</div>
+        <div style="flex:1">
+          <div id="convName" style="font-weight:700;font-size:.95rem">Select a conversation</div>
+          <div id="convRoom" style="font-size:.75rem;color:var(--muted)"></div>
+        </div>
+      </div>
+      <div id="convMessages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="text-align:center;color:var(--muted);padding:60px 20px;font-size:.9rem">Select a conversation to start messaging</div>
+      </div>
+      <div id="convInputWrap" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;background:var(--bg)">
+        <textarea id="convInput" placeholder="Write a message..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:.88rem;background:var(--bg-l);color:var(--text);font-family:inherit;max-height:120px;min-height:44px" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendConvMsg()}"></textarea>
+        <button onclick="sendConvMsg()" style="width:44px;height:44px;border-radius:50%;background:var(--lime);border:none;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">➤</button>
+      </div>
+    </div>
+    <!-- RIGHT: listing/booking details -->
+    <div id="convDetailPanel" style="width:320px;border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700;font-size:.9rem">Details</div>
+        <button onclick="document.getElementById('convDetailPanel').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+      </div>
+      <div id="convDetailContent" style="padding:16px;color:var(--muted);font-size:.85rem;text-align:center;padding-top:40px">
+        Select a conversation to see details
       </div>
     </div>
   </div>
 </div>
 
-<!-- ════════════ CONVERSATION ════════════ -->
-<div id="s-conversation" class="screen" style="background:var(--bg)">
-  <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;height:100vh">
-    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50">
-      <button class="btn ol sm" onclick="go('s-messages');loadAllConversations()">← Messages</button>
-      <div id="convAvatar" style="width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;overflow:hidden">?</div>
-      <div style="flex:1"><div id="convName" style="font-weight:700;font-size:.92rem;color:var(--text)">...</div><div id="convRoom" style="font-size:.72rem;color:var(--muted)"></div></div>
-    </div>
-    <div id="convMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;background:var(--bg)">
-      <textarea id="convInput" placeholder="Type a message..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:.88rem;background:var(--bg-l);color:var(--text);font-family:inherit;max-height:100px;min-height:42px" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendConvMsg()}"></textarea>
-      <button onclick="sendConvMsg()" style="width:42px;height:42px;border-radius:50%;background:var(--lime);border:none;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">➤</button>
-    </div>
-  </div>
-</div>
+<!-- s-conversation kept for back-compat but hidden -->
+<div id="s-conversation" class="screen" style="display:none!important"></div>
 
 <!-- ════════════ OWN PROFILE ════════════ -->
 <div id="s-own-profile" class="screen" style="background:var(--bg)">
@@ -5290,7 +5304,7 @@ async function loadAllConversations() {
     var preview = c.lastMsg.content.slice(0, 60) + (c.lastMsg.content.length > 60 ? '...' : '');
     var time = new Date(c.lastMsg.created_at).toLocaleDateString('en-AU', {day:'numeric',month:'short'});
     var unreadBadge = c.unread > 0 ? '<span style="background:var(--red);color:#fff;border-radius:50%;width:20px;height:20px;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + c.unread + '</span>' : '';
-    return '<div data-pid="' + c.partnerId + '" data-lid="' + (c.listingId||'') + '" onclick="openConversation(this.dataset.pid,this.dataset.lid)" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)" class="conv-item">' +
+    return '<div data-pid="' + c.partnerId + '" data-lid="' + (c.listingId||'') + '" onclick="openConversation(this.dataset.pid,this.dataset.lid)" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s" class="conv-row" onmouseenter="this.style.background=\'var(--bg-l)\'" onmouseleave="if(!this.classList.contains(\'active\'))this.style.background=\'\'">' +
       '<div style="width:46px;height:46px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">' + avatar + '</div>' +
       '<div style="flex:1;min-width:0">' +
       '<div style="display:flex;justify-content:space-between;align-items:center">' +
@@ -5306,7 +5320,17 @@ async function openConversation(partnerId, listingId) {
   if (!partnerId) return;
   _convPartnerId = partnerId;
   _convListingId = listingId || null;
-  go('s-conversation');
+
+  // Don't navigate away - stay on s-messages, update center panel
+  if (document.getElementById('s-messages').style.display !== 'none') {
+    // We're in 3-col layout — highlight selected convo
+    document.querySelectorAll('.conv-row').forEach(function(el) { el.style.background = ''; });
+    var activeRow = document.querySelector('.conv-row[data-pid="' + partnerId + '"]');
+    if (activeRow) activeRow.style.background = 'var(--bg-l)';
+  } else {
+    go('s-messages');
+    setTimeout(function() { loadAllConversations(); }, 100);
+  }
 
   // Load partner info
   var pRes = await _supabaseClient.from('profiles').select('full_name, avatar_url').eq('id', partnerId).single();
@@ -5319,9 +5343,34 @@ async function openConversation(partnerId, listingId) {
     if (p.avatar_url) convAvatarEl.innerHTML = '<img src="' + p.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
     else convAvatarEl.textContent = (p.full_name || '?').charAt(0).toUpperCase();
   }
-  if (convRoomEl && listingId) {
-    var lRes = await _supabaseClient.from('listings').select('title').eq('id', listingId).single();
-    if (lRes.data) convRoomEl.textContent = '🏠 ' + lRes.data.title;
+
+  // Load listing details for right panel
+  if (listingId) {
+    var lRes = await _supabaseClient.from('listings').select('id, title, suburb, price_weekly, photos, bond_amount').eq('id', listingId).single();
+    if (lRes.data) {
+      var l = lRes.data;
+      if (convRoomEl) convRoomEl.textContent = '🏠 ' + l.title;
+      var photos = l.photos;
+      if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
+      var photo = (photos && photos[0]) ? '<img src="' + photos[0] + '" style="width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:12px">' : '';
+      var detailContent = document.getElementById('convDetailContent');
+      var detailPanel = document.getElementById('convDetailPanel');
+      if (detailPanel) detailPanel.style.display = 'flex';
+      if (detailContent) detailContent.innerHTML = photo +
+        '<div style="font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:4px">' + l.title + '</div>' +
+        '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px">📍 ' + (l.suburb||'') + '</div>' +
+        '<div style="background:var(--bg-l);border-radius:10px;padding:12px;font-size:.82rem">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Weekly rent</span><span style="font-weight:700">AU$' + l.price_weekly + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Bond</span><span style="font-weight:700">AU$' + (l.bond_amount||0) + '</span></div>' +
+        '</div>' +
+        '<button onclick="go(\'s-detail\')" class="btn lime full" style="margin-top:12px;font-size:.82rem">View Listing →</button>';
+    }
+  } else {
+    if (convRoomEl) convRoomEl.textContent = 'Direct message';
+    var detailContent = document.getElementById('convDetailContent');
+    var detailPanel = document.getElementById('convDetailPanel');
+    if (detailPanel) detailPanel.style.display = 'flex';
+    if (detailContent) detailContent.innerHTML = '<div style="padding-top:20px;color:var(--muted);font-size:.85rem;text-align:center">Direct message</div>';
   }
 
   loadConversationMessages();
