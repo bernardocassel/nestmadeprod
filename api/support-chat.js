@@ -6,9 +6,27 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { messages } = req.body;
+  const { messages, userId } = req.body;
   if (!messages || !messages.length) {
     return res.status(400).json({ error: 'No messages provided' });
+  }
+
+  // Check if AI is paused for this user (admin replied manually recently)
+  if (userId) {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      try {
+        const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/support_messages?sender_id=eq.${userId}&is_admin_reply=eq.true&is_ai_reply=eq.false&order=created_at.desc&limit=1`, {
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const checkData = await checkRes.json();
+        if (checkData && checkData.length > 0) {
+          // Admin has replied manually — AI is paused
+          return res.status(200).json({ ai_paused: true });
+        }
+      } catch(e) { /* continue */ }
+    }
   }
 
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
