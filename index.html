@@ -463,7 +463,59 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </div>
   </div>
 
-  <!-- HOW IT WORKS -->
+  <!-- SEARCH BAR -->
+  <div style="padding:0 20px 50px;max-width:900px;margin:0 auto">
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:8px;display:flex;align-items:center;gap:0;box-shadow:0 4px 24px rgba(0,0,0,.08);flex-wrap:wrap">
+      <div style="flex:1;min-width:160px;padding:10px 20px;border-right:1px solid var(--border)">
+        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Suburb</div>
+        <select id="landSuburb" style="background:none;border:none;font-size:.92rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
+          <option value="">All suburbs</option>
+          <option>Surfers Paradise</option>
+          <option>Broadbeach</option>
+          <option>Burleigh Heads</option>
+          <option>Southport</option>
+          <option>Robina</option>
+          <option>Varsity Lakes</option>
+          <option>Bundall</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:140px;padding:10px 20px;border-right:1px solid var(--border)">
+        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Room type</div>
+        <select id="landType" style="background:none;border:none;font-size:.92rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
+          <option value="">Any type</option>
+          <option value="private">Private room</option>
+          <option value="shared">Shared room</option>
+          <option value="entire">Entire place</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:130px;padding:10px 20px">
+        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Max price/wk</div>
+        <select id="landPrice" style="background:none;border:none;font-size:.92rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
+          <option value="">Any price</option>
+          <option value="200">Up to AU$200</option>
+          <option value="300">Up to AU$300</option>
+          <option value="400">Up to AU$400</option>
+          <option value="500">Up to AU$500</option>
+        </select>
+      </div>
+      <button onclick="landingSearch()" style="margin:4px;padding:14px 28px;background:var(--lime);border:none;border-radius:14px;font-weight:700;font-size:.92rem;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px">
+        🔍 Search Rooms
+      </button>
+    </div>
+  </div>
+
+  <!-- PREVIEW LISTINGS -->
+  <div style="padding:0 20px 60px;max-width:1200px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem">🏠 Available rooms in Gold Coast</h2>
+      <button onclick="go('s-browse')" style="font-size:.85rem;color:var(--lime);background:none;border:none;cursor:pointer;font-weight:600">See all →</button>
+    </div>
+    <div id="landingListings" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px">
+      <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1">Loading rooms...</div>
+    </div>
+  </div>
+
+
   <div style="background:var(--bg-l);padding:60px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
     <div style="max-width:1000px;margin:0 auto">
       <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;text-align:center;margin-bottom:40px">Quick. Online. 100% safe.</h2>
@@ -1951,6 +2003,7 @@ function initSupabase() {
     stripe = window.Stripe ? window.Stripe(STRIPE_KEY) : null;
     console.log('✅ NestMate: Supabase connected!');
     checkSession();
+    setTimeout(loadLandingListings, 500);
   } catch(e) {
     console.error('Supabase init error:', e);
     setTimeout(initSupabase, 500);
@@ -2396,6 +2449,85 @@ function simulatePaymentFallback() {
 
 // Init - only once
 var _initDone = false;
+// ══════════════════════════════════════
+// LANDING PAGE LISTINGS PREVIEW
+// ══════════════════════════════════════
+async function loadLandingListings(filters) {
+  var el = document.getElementById('landingListings');
+  if (!el || !_supabaseClient) return;
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1">Loading rooms...</div>';
+
+  var query = _supabaseClient.from('listings')
+    .select('id,title,suburb,price_weekly,room_type,photos,bathroom,pets,smoking,rating_avg,min_weeks')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (filters) {
+    if (filters.suburb) query = query.eq('suburb', filters.suburb);
+    if (filters.type) query = query.eq('room_type', filters.type);
+    if (filters.price) query = query.lte('price_weekly', parseInt(filters.price));
+  }
+
+  var res = await query;
+  if (res.error || !res.data || !res.data.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1">No rooms found — <a onclick="go(\'s-browse\')" style="color:var(--lime);cursor:pointer">see all listings</a></div>';
+    return;
+  }
+
+  el.innerHTML = res.data.map(function(l) {
+    var photos = l.photos;
+    if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
+    var photo = (photos && photos[0]) ? photos[0] : '';
+    var stars = l.rating_avg ? '★ ' + parseFloat(l.rating_avg).toFixed(1) : '★ New';
+    var typeLabel = l.room_type === 'private' ? '🛏 Private' : l.room_type === 'shared' ? '🛏 Shared' : '🏠 Entire';
+    return '<div onclick="openListingFromLanding(\'' + l.id + '\')" style="border-radius:18px;overflow:hidden;background:var(--bg);border:1px solid var(--border);cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseenter="this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 32px rgba(0,0,0,.1)\'" onmouseleave="this.style.transform=\'\';this.style.boxShadow=\'\'">' +
+      (photo ? '<img src="' + photo + '" style="width:100%;height:180px;object-fit:cover">' : '<div style="width:100%;height:180px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:2rem">🏠</div>') +
+      '<div style="padding:14px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
+      '<div style="font-weight:700;font-size:.92rem;color:var(--text)">' + (l.title||'Room') + '</div>' +
+      '<div style="font-size:.75rem;color:var(--muted)">' + stars + '</div></div>' +
+      '<div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">📍 ' + (l.suburb||'Gold Coast') + ' · ' + typeLabel + '</div>' +
+      '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.05rem;color:var(--lime)">AU$' + l.price_weekly + '<span style="font-size:.72rem;font-weight:400;color:var(--muted)">/wk</span></div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function openListingFromLanding(id) {
+  go('s-browse');
+  setTimeout(function() {
+    var card = document.querySelector('[data-id="' + id + '"]');
+    if (card) card.click();
+    else loadListingsFromDB();
+  }, 300);
+}
+
+function landingSearch() {
+  var suburb = document.getElementById('landSuburb')?.value;
+  var type = document.getElementById('landType')?.value;
+  var price = document.getElementById('landPrice')?.value;
+
+  // If all empty, go to browse
+  if (!suburb && !type && !price) { go('s-browse'); return; }
+
+  // Apply filters and go to browse
+  go('s-browse');
+  setTimeout(function() {
+    if (suburb) {
+      var suburbFilter = document.getElementById('filterSuburb');
+      if (suburbFilter) { suburbFilter.value = suburb; applyFilters && applyFilters(); }
+    }
+    if (type) {
+      var typeBtn = document.querySelector('[data-type="' + type + '"]');
+      if (typeBtn) typeBtn.click();
+    }
+    if (price) {
+      var maxPrice = document.getElementById('maxPrice');
+      if (maxPrice) { maxPrice.value = price; applyFilters && applyFilters(); }
+    }
+  }, 400);
+}
+
 function safeInit() {
   if (_initDone) return;
   _initDone = true;
