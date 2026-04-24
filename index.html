@@ -1025,6 +1025,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="si" id="adm-si-users" onclick="admTab('users')"><span class="ico">👥</span>All Users</div>
       <div class="silab">Platform</div>
       <div class="si" id="adm-si-bookings" onclick="admTab('bookings')"><span class="ico">📅</span>All Bookings</div>
+      <div class="si" id="adm-si-support" onclick="go('s-admin-support');loadAdminSupportConvos()"><span class="ico">💬</span>Support Messages</div>
       <div class="si" onclick="go('s-browse')"><span class="ico">←</span>Back to Site</div>
     </div>
     <div class="ll-main" id="admMain" style="background:var(--bg)"></div>
@@ -6875,7 +6876,11 @@ function hideCookieBanner() {}
       <button onclick="supportQuickReply('How do I list my room?')" style="padding:6px 12px;background:var(--bg-m);border:1px solid var(--border);border-radius:20px;font-size:.75rem;cursor:pointer;color:var(--text)">List my room</button>
     </div>
   </div>
-  <div style="padding:10px;border-top:1px solid va
+  <div style="padding:10px;border-top:1px solid var(--border);display:flex;gap:8px">
+    <input id="supportInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px 14px;border:1px solid var(--border);border-radius:20px;background:var(--bg-l);color:var(--text);font-size:.85rem;outline:none" onkeydown="if(event.key==='Enter')sendSupportMsg()">
+    <button onclick="sendSupportMsg()" style="width:36px;height:36px;border-radius:50%;background:var(--lime);border:none;cursor:pointer;font-size:1rem;flex-shrink:0">➤</button>
+  </div>
+</div>
 
 </body>
 <!-- deploy Fri Apr 24 10:09:43 UTC 2026 -->
