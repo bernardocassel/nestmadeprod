@@ -446,29 +446,25 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
 <!-- ════════════ LANDING ════════════ -->
 <div id="s-land" class="screen active">
-  <!-- HERO -->
-  <div style="padding:60px 20px 50px;text-align:center;max-width:1100px;margin:0 auto">
-    <div class="tag g" style="margin-bottom:18px;display:inline-block">📍 Gold Coast, Australia · Beta</div>
-    <h1 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:20px">Find your room.<br><em style="color:var(--lime)">Safe</em> & Simple.</h1>
-    <p style="font-size:1.05rem;color:var(--muted);max-width:560px;margin:0 auto 32px;line-height:1.7">No more dodgy Facebook groups or WhatsApp scams. Verified rooms, digital contracts, and escrow-protected payments.</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <button class="btn lime" style="padding:14px 32px;font-size:1rem;border-radius:50px" onclick="go('s-browse')">Browse Rooms</button>
-      <button class="btn ol" style="padding:14px 32px;font-size:1rem;border-radius:50px" onclick="setMode('landlord')">List My Room</button>
-    </div>
-    <div style="display:flex;gap:24px;justify-content:center;margin-top:40px;flex-wrap:wrap">
-      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">47+</div><div style="font-size:.8rem;color:var(--muted)">Verified Rooms</div></div>
-      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">100%</div><div style="font-size:.8rem;color:var(--muted)">Escrow Protected</div></div>
-      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">23+</div><div style="font-size:.8rem;color:var(--muted)">Nationalities</div></div>
-      <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">AU$0</div><div style="font-size:.8rem;color:var(--muted)">Bond Scams</div></div>
+  <!-- HERO COMPACTO -->
+  <div style="padding:32px 20px 20px;text-align:center;max-width:1100px;margin:0 auto">
+    <div class="tag g" style="margin-bottom:10px;display:inline-block;font-size:.72rem">📍 Gold Coast, Australia · Beta</div>
+    <h1 style="font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:10px">Find your room. <em style="color:var(--lime)">Safe</em> & Simple.</h1>
+    <p style="font-size:.9rem;color:var(--muted);max-width:500px;margin:0 auto 16px;line-height:1.5">Verified rooms, digital contracts, escrow-protected payments. No Facebook scams.</p>
+    <div style="display:flex;gap:24px;justify-content:center;margin-bottom:20px;flex-wrap:wrap">
+      <div style="text-align:center"><span style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.3rem;color:var(--lime)">47+</span> <span style="font-size:.78rem;color:var(--muted)">Verified Rooms</span></div>
+      <div style="text-align:center"><span style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.3rem;color:var(--lime)">100%</span> <span style="font-size:.78rem;color:var(--muted)">Escrow</span></div>
+      <div style="text-align:center"><span style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.3rem;color:var(--lime)">23+</span> <span style="font-size:.78rem;color:var(--muted)">Nationalities</span></div>
+      <div style="text-align:center"><span style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.3rem;color:var(--lime)">AU$0</span> <span style="font-size:.78rem;color:var(--muted)">Bond Scams</span></div>
     </div>
   </div>
 
   <!-- SEARCH BAR -->
-  <div style="padding:0 20px 50px;max-width:900px;margin:0 auto">
-    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:8px;display:flex;align-items:center;gap:0;box-shadow:0 4px 24px rgba(0,0,0,.08);flex-wrap:wrap">
-      <div style="flex:1;min-width:160px;padding:10px 20px;border-right:1px solid var(--border)">
-        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Suburb</div>
-        <select id="landSuburb" style="background:none;border:none;font-size:.92rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
+  <div style="padding:0 20px 24px;max-width:900px;margin:0 auto">
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:6px;display:flex;align-items:center;gap:0;box-shadow:0 4px 24px rgba(0,0,0,.08);flex-wrap:wrap">
+      <div style="flex:1;min-width:130px;padding:8px 16px;border-right:1px solid var(--border)">
+        <div style="font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Suburb</div>
+        <select id="landSuburb" style="background:none;border:none;font-size:.88rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
           <option value="">All suburbs</option>
           <option>Surfers Paradise</option>
           <option>Broadbeach</option>
@@ -479,18 +475,18 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <option>Bundall</option>
         </select>
       </div>
-      <div style="flex:1;min-width:140px;padding:10px 20px;border-right:1px solid var(--border)">
-        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Room type</div>
-        <select id="landType" style="background:none;border:none;font-size:.92rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
+      <div style="flex:1;min-width:120px;padding:8px 16px;border-right:1px solid var(--border)">
+        <div style="font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Room type</div>
+        <select id="landType" style="background:none;border:none;font-size:.88rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
           <option value="">Any type</option>
           <option value="private">Private room</option>
           <option value="shared">Shared room</option>
           <option value="entire">Entire place</option>
         </select>
       </div>
-      <div style="flex:1;min-width:130px;padding:10px 20px">
-        <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Max price/wk</div>
-        <select id="landPrice" style="background:none;border:none;font-size:.92rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
+      <div style="flex:1;min-width:110px;padding:8px 16px">
+        <div style="font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Max price/wk</div>
+        <select id="landPrice" style="background:none;border:none;font-size:.88rem;font-weight:600;color:var(--text);width:100%;outline:none;cursor:pointer">
           <option value="">Any price</option>
           <option value="200">Up to AU$200</option>
           <option value="300">Up to AU$300</option>
@@ -498,19 +494,19 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <option value="500">Up to AU$500</option>
         </select>
       </div>
-      <button onclick="landingSearch()" style="margin:4px;padding:14px 28px;background:var(--lime);border:none;border-radius:14px;font-weight:700;font-size:.92rem;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px">
+      <button onclick="landingSearch()" style="margin:3px;padding:12px 22px;background:var(--lime);border:none;border-radius:14px;font-weight:700;font-size:.88rem;cursor:pointer;white-space:nowrap">
         🔍 Search Rooms
       </button>
     </div>
   </div>
 
   <!-- PREVIEW LISTINGS -->
-  <div style="padding:0 20px 60px;max-width:1200px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem">🏠 Available rooms in Gold Coast</h2>
-      <button onclick="go('s-browse')" style="font-size:.85rem;color:var(--lime);background:none;border:none;cursor:pointer;font-weight:600">See all →</button>
+  <div style="padding:0 20px 40px;max-width:1200px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem">🏠 Available rooms in Gold Coast</h2>
+      <button onclick="go('s-browse')" style="font-size:.82rem;color:var(--lime);background:none;border:none;cursor:pointer;font-weight:600">See all →</button>
     </div>
-    <div id="landingListings" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px">
+    <div id="landingListings" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
       <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1">Loading rooms...</div>
     </div>
   </div>
@@ -2458,10 +2454,10 @@ async function loadLandingListings(filters) {
   el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1">Loading rooms...</div>';
 
   var query = _supabaseClient.from('listings')
-    .select('id,title,suburb,price_weekly,room_type,photos,bathroom,pets,smoking,rating_avg,min_weeks')
+    .select('id,title,suburb,price_weekly,room_type,photos,bathroom,pets,smoking,min_weeks,profiles!landlord_id(rating_avg)')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
-    .limit(8);
+    .limit(50);
 
   if (filters) {
     if (filters.suburb) query = query.eq('suburb', filters.suburb);
@@ -2479,7 +2475,8 @@ async function loadLandingListings(filters) {
     var photos = l.photos;
     if (typeof photos === 'string') { try { photos = JSON.parse(photos); } catch(e) { photos = []; } }
     var photo = (photos && photos[0]) ? photos[0] : '';
-    var stars = l.rating_avg ? '★ ' + parseFloat(l.rating_avg).toFixed(1) : '★ New';
+    var rating = l.profiles?.rating_avg || 0;
+    var stars = rating ? '★ ' + parseFloat(rating).toFixed(1) : '★ New';
     var typeLabel = l.room_type === 'private' ? '🛏 Private' : l.room_type === 'shared' ? '🛏 Shared' : '🏠 Entire';
     return '<div onclick="openListingFromLanding(\'' + l.id + '\')" style="border-radius:18px;overflow:hidden;background:var(--bg);border:1px solid var(--border);cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseenter="this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 32px rgba(0,0,0,.1)\'" onmouseleave="this.style.transform=\'\';this.style.boxShadow=\'\'">' +
       (photo ? '<img src="' + photo + '" style="width:100%;height:180px;object-fit:cover">' : '<div style="width:100%;height:180px;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:2rem">🏠</div>') +
