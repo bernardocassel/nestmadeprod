@@ -6241,7 +6241,8 @@ async function sendSupportMsg() {
       }).then(function(){});
     }
   } catch(e) {
-    typingDiv.textContent = 'Thanks for your message! Email us at support@roomiestay.com for help.';
+    typingDiv.textContent = '✅ Message received! One of our consultants will get back to you shortly.';
+    typingDiv.style.color = 'var(--text)';
   }
   msgsEl.scrollTop = msgsEl.scrollHeight;
 }
