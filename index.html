@@ -1952,6 +1952,7 @@ function onUserLoggedIn(user) {
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
   setTimeout(checkAdminRole, 500);
   setTimeout(checkUnreadMessages, 1000);
+  setInterval(checkUnreadMessages, 15000); // Poll every 15s
 
   // If returning from tab switch, don't navigate at all
   if (_returningToTab) return;
@@ -2048,37 +2049,43 @@ function updateNavAvatar(user) {
   var firstName = name.split(' ')[0];
   navName.textContent = firstName;
 
-  // First try Google avatar from user metadata
-  var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
-  if (googleAvatar) {
-    navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  // If user saved a local avatar this session, use it
+  if (user._localAvatarUrl) {
+    navAvatar.innerHTML = '<img src="' + user._localAvatarUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
     navAvatar.style.background = 'transparent';
-    // Save to profile DB (async, non-blocking)
-    if (_supabaseClient && user.id) {
-      _supabaseClient.from('profiles').upsert({
-        id: user.id,
-        email: user.email,
-        full_name: name,
-        avatar_url: googleAvatar,
-        role: user.user_metadata?.role || 'tenant',
-      }, { onConflict: 'id' }).then(function(r) {
-        if (r.error) console.log('Profile upsert error:', r.error.message);
-      });
-    }
     return;
   }
 
-  // Then check profile DB
+  // Always check DB first (uploaded avatar takes priority over Google)
   if (_supabaseClient && user.id) {
     _supabaseClient.from('profiles').select('avatar_url, full_name').eq('id', user.id).single().then(function(res) {
       if (res.data && res.data.avatar_url) {
         navAvatar.innerHTML = '<img src="' + res.data.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+        navAvatar.style.background = 'transparent';
+        if (res.data.full_name) navName.textContent = res.data.full_name.split(' ')[0];
       } else {
-        navAvatar.textContent = firstName.charAt(0).toUpperCase();
+        // Fallback to Google avatar
+        var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
+        if (googleAvatar) {
+          navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+          navAvatar.style.background = 'transparent';
+          // Save Google avatar to DB
+          _supabaseClient.from('profiles').upsert({
+            id: user.id, email: user.email, full_name: name,
+            avatar_url: googleAvatar, role: user.user_metadata?.role || 'tenant',
+          }, { onConflict: 'id' }).then(function(){});
+        } else {
+          navAvatar.textContent = firstName.charAt(0).toUpperCase();
+        }
       }
     });
   } else {
-    navAvatar.textContent = firstName.charAt(0).toUpperCase();
+    var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
+    if (googleAvatar) {
+      navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    } else {
+      navAvatar.textContent = firstName.charAt(0).toUpperCase();
+    }
   }
 }
 
@@ -2173,8 +2180,14 @@ async function signUpWithEmail(email, password, fullName, role, nationality, bio
 
 // LOGOUT
 async function doLogout() {
-  await _supabaseClient?.auth.signOut();
+  try {
+    currentUser = null;
+    isAdmin = false;
+    onUserLoggedOut();
+    await _supabaseClient?.auth.signOut();
+  } catch(e) { console.error('Logout error:', e); }
   go('s-land');
+  setTimeout(function(){ location.reload(); }, 300);
 }
 
 // Função legada mantida para compatibilidade
@@ -2316,8 +2329,12 @@ async function saveListing(data) {
 // STRIPE — Criar pagamento real
 // ══════════════════════════════════════
 async function createRealPayment(bookingId, amount) {
+  // Admins bypass payment for testing
+  if (isAdmin) {
+    console.log('Admin bypass: skipping payment');
+    return { success: true, simulated: true };
+  }
   // For now use simulation - Stripe Elements UI needs to be added for real cards
-  // The /api/create-payment-intent endpoint is ready on the server
   console.log('Payment for booking:', bookingId, 'Amount:', amount);
   return simulatePaymentFallback();
 }
@@ -4727,10 +4744,13 @@ async function saveOwnProfile() {
 
   toast('✅ Profile saved!', 'lime');
 
-  // Update navbar avatar
+  // Update navbar avatar immediately
   if (_pendingAvatarBase64) {
     var navAv = document.getElementById('navAvatar');
     if (navAv) navAv.innerHTML = '<img src="' + _pendingAvatarBase64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    // Also update currentUser metadata so it persists in session
+    if (currentUser) currentUser._localAvatarUrl = _pendingAvatarBase64;
+    _pendingAvatarBase64 = null;
   }
   var navName = document.getElementById('navName');
   if (navName && name) navName.textContent = name.split(' ')[0];
@@ -4783,6 +4803,7 @@ function closeChatModal() {
   document.getElementById('chatModal').style.display = 'none';
   document.body.style.overflow = '';
   if (_chatSubscription) { _chatSubscription.unsubscribe(); _chatSubscription = null; }
+  if (window._chatPollInterval) { clearInterval(window._chatPollInterval); window._chatPollInterval = null; }
 }
 
 async function loadChatMessages() {
@@ -4800,9 +4821,6 @@ async function loadChatMessages() {
     .order('created_at', { ascending: true })
     .limit(100);
 
-  // Only filter by listing_id if explicitly needed (disabled - show all messages between users)
-  // if (_chatListingId) query = query.eq('listing_id', _chatListingId);
-
   var res = await query;
 
   if (res.error) {
@@ -4817,6 +4835,25 @@ async function loadChatMessages() {
   }
 
   renderChatMessages(res.data);
+
+  // Start polling for new messages while chat is open
+  if (!window._chatPollInterval) {
+    window._chatPollInterval = setInterval(async function() {
+      var modal = document.getElementById('chatModal');
+      if (!modal || modal.style.display === 'none') {
+        clearInterval(window._chatPollInterval);
+        window._chatPollInterval = null;
+        return;
+      }
+      var uid = _chatWithUserId || _chatLandlordId;
+      if (!uid || !currentUser) return;
+      var r = await _supabaseClient.from('messages')
+        .select('*, sender:profiles!sender_id(full_name, avatar_url)')
+        .or('and(sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + uid + '),and(sender_id.eq.' + uid + ',recipient_id.eq.' + currentUser.id + ')')
+        .order('created_at', { ascending: true }).limit(100);
+      if (!r.error && r.data) renderChatMessages(r.data);
+    }, 5000); // refresh every 5 seconds
+  }
 }
 
 function renderChatMessages(msgs) {
@@ -5276,10 +5313,16 @@ async function loadConversationMessages() {
     .or('sender_id.eq.' + currentUser.id + ',recipient_id.eq.' + currentUser.id)
     .order('created_at', { ascending: true });
 
-  if (_convListingId) query = query.eq('listing_id', _convListingId);
+  // Only filter by listing if opened from listing detail (not from inbox)
+  if (_convListingId && !_convFromInbox) query = query.eq('listing_id', _convListingId);
 
   var res = await query;
-  if (res.error || !res.data) { msgsEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">No messages yet</div>'; return; }
+  if (res.error) { 
+    console.error('loadConversationMessages error:', res.error);
+    msgsEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">Error loading messages. Please try again.</div>'; 
+    return; 
+  }
+  if (!res.data) { msgsEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">No messages yet</div>'; return; }
 
   // Filter to this conversation
   var msgs = res.data.filter(function(m) {
