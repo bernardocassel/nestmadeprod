@@ -384,46 +384,39 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   .stats-row{grid-template-columns:repeat(2,1fr)}
   .form-grid{grid-template-columns:1fr}
 
-  /* ── Navbar mobile ── */
-  nav{padding:10px 16px;gap:8px}
-  .logo{font-size:1.1rem}
-  .nav-r{gap:4px}
-  .mode-sw{gap:1px}
-  .msw{padding:5px 10px;font-size:.72rem}
-  .msw span{display:none}
-  .msw::before{font-size:.9rem}
-  #msw-tenant::before{content:'🔍'}
-  #msw-landlord::before{content:'🏠'}
-  #langPickerBtn{padding:5px 8px;font-size:.75rem}
-  #langLabel{display:none}
-  .nbtn{padding:6px 12px;font-size:.78rem}
-  #themeToggle{display:none !important}
-  #signInBtn{padding:6px 12px;font-size:.78rem}
-  #joinFreeBtn{padding:6px 12px;font-size:.78rem}
-  #adminNavBtn{padding:5px 10px;font-size:.72rem}
-  #userAvatarBtn{padding:4px 10px 4px 4px;font-size:.78rem}
-  #navAvatar{width:26px;height:26px}
+  /* ── Navbar mobile — limpo tipo Airbnb ── */
+  nav{padding:12px 16px}
+  .logo{font-size:1.15rem}
+
+  /* Esconde tudo no nav-r exceto avatar/signin/join e hamburguer */
+  .nav-r > *{display:none !important}
+  .nav-r #signInBtn{display:flex !important}
+  .nav-r #joinFreeBtn{display:flex !important}
+  .nav-r #userMenuWrap{display:flex !important}
+  .nav-r #mobileMenuBtn{display:flex !important}
+
+  /* Botões sign in/join menores */
+  #signInBtn{padding:7px 14px;font-size:.82rem}
+  #joinFreeBtn{padding:7px 14px;font-size:.82rem}
+
+  /* Avatar sem nome */
+  #navName{display:none}
+  #userAvatarBtn{padding:4px;border-radius:50%;gap:0}
+  #navAvatar{width:34px;height:34px;font-size:.85rem}
+
+  /* Menu mobile overlay */
+  #mobileMenuOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999}
+  #mobileMenuOverlay.open{display:block}
+  #mobileMenuDrawer{position:fixed;top:0;right:0;bottom:0;width:280px;background:var(--bg);z-index:1000;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto;padding:0 0 40px}
+  #mobileMenuDrawer.open{transform:translateX(0)}
+  #mobileMenuBtn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:1.1rem}
 
   /* ── Landing page mobile ── */
-  #s-land .hero, #s-land > div:first-child{padding:40px 16px 32px}
-  #s-land h1{font-size:clamp(2rem,8vw,3rem) !important;line-height:1.05 !important}
-  #s-land p{font-size:.95rem !important;margin:12px auto 24px !important}
+  #s-land > div:first-child{padding:36px 16px 28px}
+  #s-land h1{font-size:clamp(2rem,9vw,3rem) !important;line-height:1.05 !important;text-align:left !important}
+  #s-land p{font-size:.95rem !important;margin:12px 0 24px !important;text-align:left !important}
 
-  /* ── Browse search bar mobile ── */
-  #s-browse > div > div[style*="display:flex"][style*="gap"]{
-    flex-direction:column;
-    gap:8px !important;
-    padding:12px 16px !important;
-  }
-
-  /* ── Detail page mobile ── */
-  .det-actions{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--bg);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:8px}
-  .det-actions .btn{flex:1;justify-content:center}
-
-  /* ── Cards mobile ── */
-  .card{border-radius:14px}
-
-  /* ── Modals mobile ── */
+  /* ── Modals mobile — sobem como gaveta ── */
   #videoTourModal > div,
   #inPersonModal > div,
   #bookingModal > div{
@@ -436,49 +429,20 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     max-height:92vh !important;
     overflow-y:auto !important;
   }
-  #videoTourModal,
-  #inPersonModal,
-  #bookingModal{
-    align-items:flex-end !important;
-    padding:0 !important;
-  }
+  #videoTourModal,#inPersonModal,#bookingModal{align-items:flex-end !important;padding:0 !important}
 
   /* ── Messages screen mobile ── */
-  #s-messages > div:first-child{padding:10px 12px}
-  #s-messages > div:first-child > div:first-child{gap:8px}
-  #s-messages > div:first-child > div:last-child{gap:6px}
-  #s-messages > div:first-child span[id="msgNavName"]{display:none}
   #convDetailPanel{display:none !important}
+  #s-messages > div:first-child{padding:10px 14px}
+  #msgNavName{display:none}
+  #s-messages > div:first-child button[onclick*="goToOwnProfile"]{padding:4px;border-radius:50%;gap:0}
 
-  /* ── Conversation list mobile — full width, hide center until selected ── */
-  .messages-screen > div:last-child{flex-direction:column}
-  #conversationsList-wrap{width:100% !important;border-right:none !important}
+  /* ── Landlord dashboard tabs ── */
+  .ll-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .ll-tab{white-space:nowrap;font-size:.78rem;padding:8px 12px}
 
-  /* ── Landlord dashboard mobile ── */
-  .ll-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-  .ll-tab{white-space:nowrap;font-size:.78rem;padding:8px 14px}
-
-  /* ── Profile page mobile ── */
-  #s-own-profile > div{padding:0 16px 80px !important}
-
-  /* ── Booking modal grid ── */
+  /* ── Detail page ── */
   .book-grid{grid-template-columns:1fr !important}
-
-  /* ── Detail page sticky buttons ── */
-  #detailSidebar{
-    position:fixed !important;
-    bottom:0 !important;
-    left:0 !important;
-    right:0 !important;
-    top:auto !important;
-    border-radius:20px 20px 0 0 !important;
-    padding:16px !important;
-    box-shadow:0 -4px 30px rgba(0,0,0,.12) !important;
-    z-index:50 !important;
-    max-height:50vh;
-    overflow-y:auto;
-  }
-  #detailSidebarToggle{display:flex !important}
 }
 @media(max-width:480px){
   nav{padding:8px 12px}
@@ -547,10 +511,43 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <div onclick="doLogout()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--red)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">🚪 Sign Out</div>
       </div>
     </div>
+    <!-- Hamburguer mobile (visível só no mobile via CSS) -->
+    <button id="mobileMenuBtn" onclick="openMobileMenu()" style="display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:1.1rem;flex-shrink:0">☰</button>
   </div>
 </nav>
 
-<!-- ════════════ LANDING ════════════ -->
+<!-- ════ MOBILE MENU DRAWER ════ -->
+<div id="mobileMenuOverlay" onclick="closeMobileMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999"></div>
+<div id="mobileMenuDrawer" style="position:fixed;top:0;right:0;bottom:0;width:280px;background:var(--bg);z-index:1000;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto;padding:0 0 40px;box-shadow:-4px 0 30px rgba(0,0,0,.15)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+    <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.1rem">Nest<span style="color:var(--lime)">Mate</span></div>
+    <button onclick="closeMobileMenu()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted)">✕</button>
+  </div>
+  <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+    <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Mode</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="setMode('tenant');closeMobileMenu()" style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--bg-l);font-size:.88rem;font-weight:600;cursor:pointer;color:var(--text)">🔍 Tenant</button>
+      <button onclick="setMode('landlord');closeMobileMenu()" style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--bg-l);font-size:.88rem;font-weight:600;cursor:pointer;color:var(--text)">🏠 Landlord</button>
+    </div>
+  </div>
+  <div style="padding:8px 0">
+    <div onclick="go('s-browse');closeMobileMenu()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">🏘️ Browse Rooms</div>
+    <div onclick="openFavs();closeMobileMenu()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">❤️ Saved Rooms</div>
+    <div id="mobileMessagesBtn" onclick="openMessages();closeMobileMenu()" style="display:none;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">💬 Messages</div>
+    <div id="mobileBookingsBtn" onclick="openMyBookings();closeMobileMenu()" style="display:none;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">🏠 My Bookings</div>
+    <div id="mobileProfileBtn" onclick="goToOwnProfile();closeMobileMenu()" style="display:none;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">👤 My Profile</div>
+    <div id="mobileAdminBtn" onclick="go('s-admin');admTab('pending');closeMobileMenu()" style="display:none;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--red)">⚙️ Admin Panel</div>
+  </div>
+  <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+    <span style="font-size:.88rem;font-weight:600;color:var(--text)">Dark mode</span>
+    <button onclick="toggleTheme()" style="padding:7px 16px;border-radius:50px;border:1px solid var(--border);background:var(--bg-l);font-size:.85rem;cursor:pointer;color:var(--text)">🌙 Toggle</button>
+  </div>
+  <div id="mobileSignOutBtn" style="display:none;border-top:1px solid var(--border)">
+    <div onclick="doLogout();closeMobileMenu()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--red)">🚪 Sign Out</div>
+  </div>
+</div>
+
+
 <div id="s-land" class="screen active">
   <!-- HERO COMPACTO -->
   <div style="padding:32px 20px 20px;text-align:center;max-width:1100px;margin:0 auto">
@@ -2283,6 +2280,7 @@ function onUserLoggedIn(user) {
   var wrap = document.getElementById('userMenuWrap');
   if (wrap) wrap.style.display = 'block';
   updateNavAvatar(user);
+  updateMobileMenu(user);
   toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
   setTimeout(checkAdminRole, 500);
   setTimeout(checkUnreadMessages, 1000);
@@ -7320,6 +7318,31 @@ function acceptCookies() {}
 function rejectCookies() {}
 function hideCookieBanner() {}
     // Show after short delay so page loads first
+
+// ═══ MOBILE MENU ═══
+function openMobileMenu() {
+  document.getElementById('mobileMenuOverlay').style.display = 'block';
+  document.getElementById('mobileMenuDrawer').style.transform = 'translateX(0)';
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobileMenuOverlay').style.display = 'none';
+  document.getElementById('mobileMenuDrawer').style.transform = 'translateX(100%)';
+  document.body.style.overflow = '';
+}
+function updateMobileMenu(user) {
+  var loggedIn = !!user;
+  var els = ['mobileMessagesBtn','mobileBookingsBtn','mobileProfileBtn','mobileSignOutBtn'];
+  els.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = loggedIn ? 'flex' : 'none';
+  });
+  // Admin button
+  if (isAdmin) {
+    var ab = document.getElementById('mobileAdminBtn');
+    if (ab) ab.style.display = 'flex';
+  }
+}
 
 // ═══ IN-PERSON VISIT ═══
 function requestInPersonVisit() {
