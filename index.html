@@ -388,16 +388,15 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   nav{padding:12px 16px}
   .logo{font-size:1.15rem}
 
-  /* Esconde tudo no nav-r exceto avatar/signin/join e hamburguer */
+  /* Esconde tudo no nav-r exceto avatar, signin e hamburguer */
   .nav-r > *{display:none !important}
   .nav-r #signInBtn{display:flex !important}
-  .nav-r #joinFreeBtn{display:flex !important}
   .nav-r #userMenuWrap{display:flex !important}
   .nav-r #mobileMenuBtn{display:flex !important}
+  .nav-r .nbtn.ol[onclick*="openFavs"]{display:none !important}
 
-  /* Botões sign in/join menores */
+  /* Botão sign in menor */
   #signInBtn{padding:7px 14px;font-size:.82rem}
-  #joinFreeBtn{padding:7px 14px;font-size:.82rem}
 
   /* Avatar sem nome */
   #navName{display:none}
@@ -532,6 +531,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   </div>
   <div style="padding:8px 0">
     <div onclick="go('s-browse');closeMobileMenu()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">🏘️ Browse Rooms</div>
+    <div onclick="go('s-signup');closeMobileMenu()" id="mobileJoinBtn" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--lime)">✨ Join Free</div>
     <div onclick="openFavs();closeMobileMenu()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">❤️ Saved Rooms</div>
     <div id="mobileMessagesBtn" onclick="openMessages();closeMobileMenu()" style="display:none;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">💬 Messages</div>
     <div id="mobileBookingsBtn" onclick="openMyBookings();closeMobileMenu()" style="display:none;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text)">🏠 My Bookings</div>
@@ -7337,7 +7337,8 @@ function updateMobileMenu(user) {
     var el = document.getElementById(id);
     if (el) el.style.display = loggedIn ? 'flex' : 'none';
   });
-  // Admin button
+  var joinBtn = document.getElementById('mobileJoinBtn');
+  if (joinBtn) joinBtn.style.display = loggedIn ? 'none' : 'flex';
   if (isAdmin) {
     var ab = document.getElementById('mobileAdminBtn');
     if (ab) ab.style.display = 'flex';
