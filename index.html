@@ -1120,13 +1120,20 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
 <!-- ════════════ MESSAGES ════════════ -->
 <div id="s-messages" class="screen messages-screen" style="background:var(--bg);flex-direction:column;height:100vh;overflow:hidden">
-  <!-- TOP NAV -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0">
-    <a onclick="go(sessionStorage.getItem('nm-screen-before')||'s-browse')" style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);text-decoration:none" onmouseenter="this.style.color='var(--text)'" onmouseleave="this.style.color='var(--muted)'">
-      ← Back
-    </a>
-    <div onclick="go('s-browse')" style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.1rem;color:var(--text);cursor:pointer">Nest<span style="color:var(--lime)">Mate</span></div>
-    <div style="width:60px"></div>
+  <!-- TOP NAV — full navbar -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;gap:12px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <a onclick="go(sessionStorage.getItem('nm-screen-before')||'s-browse')" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:.85rem;color:var(--muted);text-decoration:none;white-space:nowrap" onmouseenter="this.style.color='var(--text)'" onmouseleave="this.style.color='var(--muted)'">← Back</a>
+      <div onclick="go('s-browse')" style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.1rem;color:var(--text);cursor:pointer">Nest<span style="color:var(--lime)">Mate</span></div>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem">💬 Messages</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button onclick="toggleTheme()" style="background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center">🌙</button>
+      <button onclick="goToOwnProfile()" style="display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:50px;background:var(--lime);border:none;cursor:pointer;font-weight:700;font-size:.85rem;color:#000">
+        <div id="msgNavAvatar" style="width:28px;height:28px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--lime);overflow:hidden;flex-shrink:0">?</div>
+        <span id="msgNavName">...</span>
+      </button>
+    </div>
   </div>
   <div style="display:flex;flex:1;overflow:hidden">
     <!-- LEFT: conversation list -->
@@ -2271,15 +2278,28 @@ function goToOwnProfile() {
 function updateNavAvatar(user) {
   var navAvatar = document.getElementById('navAvatar');
   var navName = document.getElementById('navName');
+  var msgAvatar = document.getElementById('msgNavAvatar');
+  var msgName = document.getElementById('msgNavName');
   if (!navAvatar || !navName) return;
   var name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
   var firstName = name.split(' ')[0];
   navName.textContent = firstName;
+  if (msgName) msgName.textContent = firstName;
+
+  function setAvatarImg(src) {
+    var img = '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    navAvatar.innerHTML = img;
+    navAvatar.style.background = 'transparent';
+    if (msgAvatar) { msgAvatar.innerHTML = img; msgAvatar.style.background = 'transparent'; }
+  }
+  function setAvatarInitial(letter) {
+    navAvatar.textContent = letter;
+    if (msgAvatar) msgAvatar.textContent = letter;
+  }
 
   // If user saved a local avatar this session, use it
   if (user._localAvatarUrl) {
-    navAvatar.innerHTML = '<img src="' + user._localAvatarUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-    navAvatar.style.background = 'transparent';
+    setAvatarImg(user._localAvatarUrl);
     return;
   }
 
@@ -2287,29 +2307,31 @@ function updateNavAvatar(user) {
   if (_supabaseClient && user.id) {
     _supabaseClient.from('profiles').select('avatar_url, full_name').eq('id', user.id).single().then(function(res) {
       if (res.data && res.data.avatar_url) {
-        navAvatar.innerHTML = '<img src="' + res.data.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-        navAvatar.style.background = 'transparent';
-        if (res.data.full_name) navName.textContent = res.data.full_name.split(' ')[0];
+        setAvatarImg(res.data.avatar_url);
+        if (res.data.full_name) {
+          var fn = res.data.full_name.split(' ')[0];
+          navName.textContent = fn;
+          if (msgName) msgName.textContent = fn;
+        }
       } else {
         // Fallback to Google avatar
         var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
         if (googleAvatar) {
-          navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-          navAvatar.style.background = 'transparent';
+          setAvatarImg(googleAvatar);
           // Save Google avatar to DB
           _supabaseClient.from('profiles').upsert({
             id: user.id, email: user.email, full_name: name,
             avatar_url: googleAvatar, role: user.user_metadata?.role || 'tenant',
           }, { onConflict: 'id' }).then(function(){});
         } else {
-          navAvatar.textContent = firstName.charAt(0).toUpperCase();
+          setAvatarInitial(firstName.charAt(0).toUpperCase());
         }
       }
     });
   } else {
     var googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
     if (googleAvatar) {
-      navAvatar.innerHTML = '<img src="' + googleAvatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+      setAvatarImg(googleAvatar);
     } else {
       navAvatar.textContent = firstName.charAt(0).toUpperCase();
     }
@@ -5682,9 +5704,53 @@ async function loadConversationMessages() {
   msgsEl.innerHTML = msgs.map(function(m) {
     var isMe = m.sender_id === currentUser.id;
     var time = new Date(m.created_at).toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
+    var content = m.content || '';
+
+    // Render special cards for video tour and in-person visit
+    var cardHtml = '';
+    if (content.startsWith('📹 Video call started!')) {
+      var hostLink = content.match(/https:\/\/bripp\.whereby\.com[^\s]*/)?.[0] || '';
+      cardHtml = '<div style="background:' + (isMe?'rgba(0,0,0,.15)':'var(--bg)') + ';border:1px solid rgba(0,212,170,.3);border-radius:14px;padding:14px;min-width:220px">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
+        '<span style="font-size:1.4rem">📹</span>' +
+        '<div><div style="font-weight:700;font-size:.88rem">Video Call Started</div>' +
+        '<div style="font-size:.72rem;color:' + (isMe?'rgba(0,0,0,.6)':'var(--muted)') + '">Click to join the call</div></div></div>' +
+        (hostLink ? '<a href="' + hostLink + '" target="_blank" style="display:block;text-align:center;padding:8px 14px;background:var(--teal,#00d4aa);color:#000;border-radius:10px;font-weight:700;font-size:.82rem;text-decoration:none">Join Call →</a>' : '') +
+        '</div>';
+    } else if (content.startsWith('🏠 In-Person Visit Request')) {
+      var lines = content.split('\n');
+      var dateStr = (lines[1]||'').replace('📅 Date: ','');
+      var people = (lines[2]||'').replace('👥 Visitors: ','');
+      var note = lines[3] ? (lines[3]).replace('💬 Note: ','') : '';
+      cardHtml = '<div style="background:' + (isMe?'rgba(0,0,0,.15)':'var(--bg)') + ';border:1px solid rgba(245,158,11,.3);border-radius:14px;padding:14px;min-width:220px">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
+        '<span style="font-size:1.4rem">🏠</span>' +
+        '<div><div style="font-weight:700;font-size:.88rem">In-Person Visit Request</div>' +
+        '<div style="font-size:.72rem;color:' + (isMe?'rgba(0,0,0,.6)':'var(--muted)') + '">Awaiting confirmation</div></div></div>' +
+        '<div style="font-size:.8rem;display:flex;flex-direction:column;gap:4px">' +
+        '<div>📅 <strong>' + dateStr + '</strong></div>' +
+        '<div>👥 ' + people + '</div>' +
+        (note ? '<div>💬 ' + note + '</div>' : '') +
+        '</div></div>';
+    } else if (content.startsWith('Video Tour Request')) {
+      var dateMatch = content.match(/Date: ([^|]+)/)?.[1]?.trim() || '';
+      var linkMatch = content.match(/https:\/\/bripp\.whereby\.com[^\s|]*/)?.[0] || '';
+      cardHtml = '<div style="background:' + (isMe?'rgba(0,0,0,.15)':'var(--bg)') + ';border:1px solid rgba(0,212,170,.3);border-radius:14px;padding:14px;min-width:220px">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
+        '<span style="font-size:1.4rem">📅</span>' +
+        '<div><div style="font-weight:700;font-size:.88rem">Video Tour Request</div>' +
+        '<div style="font-size:.72rem;color:' + (isMe?'rgba(0,0,0,.6)':'var(--muted)') + '">' + dateMatch + '</div></div></div>' +
+        (linkMatch ? '<a href="' + linkMatch + '" target="_blank" style="display:block;text-align:center;padding:8px 14px;background:var(--teal,#00d4aa);color:#000;border-radius:10px;font-weight:700;font-size:.82rem;text-decoration:none">Join Tour →</a>' : '') +
+        '</div>';
+    }
+
+    var bubble = cardHtml ||
+      ('<div style="max-width:75%;padding:10px 14px;border-radius:' + (isMe?'16px 16px 4px 16px':'16px 16px 16px 4px') + ';background:' + (isMe?'var(--lime)':'var(--bg-l)') + ';color:' + (isMe?'#000':'var(--text)') + ';font-size:.88rem;line-height:1.4">' +
+      content.replace(/\n/g,'<br>') + '</div>');
+
     return '<div style="display:flex;flex-direction:' + (isMe?'row-reverse':'row') + ';align-items:flex-end;gap:8px">' +
-      '<div style="max-width:75%;padding:10px 14px;border-radius:' + (isMe?'16px 16px 4px 16px':'16px 16px 16px 4px') + ';background:' + (isMe?'var(--lime)':'var(--bg-l)') + ';color:' + (isMe?'#000':'var(--text)') + ';font-size:.88rem;line-height:1.4">' +
-      m.content + '<div style="font-size:.65rem;color:' + (isMe?'rgba(0,0,0,.5)':'var(--muted)') + ';margin-top:4px;text-align:right">' + time + '</div></div></div>';
+      bubble +
+      '<div style="font-size:.65rem;color:var(--muted);white-space:nowrap;margin-bottom:4px">' + time + '</div></div>';
   }).join('');
   msgsEl.scrollTop = msgsEl.scrollHeight;
 
