@@ -383,8 +383,114 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   .det-layout,.det-gallery{grid-template-columns:1fr}
   .stats-row{grid-template-columns:repeat(2,1fr)}
   .form-grid{grid-template-columns:1fr}
+
+  /* ── Navbar mobile ── */
+  nav{padding:10px 16px;gap:8px}
+  .logo{font-size:1.1rem}
+  .nav-r{gap:4px}
+  .mode-sw{gap:1px}
+  .msw{padding:5px 10px;font-size:.72rem}
+  .msw span{display:none}
+  .msw::before{font-size:.9rem}
+  #msw-tenant::before{content:'🔍'}
+  #msw-landlord::before{content:'🏠'}
+  #langPickerBtn{padding:5px 8px;font-size:.75rem}
+  #langLabel{display:none}
+  .nbtn{padding:6px 12px;font-size:.78rem}
+  #themeToggle{display:none !important}
+  #signInBtn{padding:6px 12px;font-size:.78rem}
+  #joinFreeBtn{padding:6px 12px;font-size:.78rem}
+  #adminNavBtn{padding:5px 10px;font-size:.72rem}
+  #userAvatarBtn{padding:4px 10px 4px 4px;font-size:.78rem}
+  #navAvatar{width:26px;height:26px}
+
+  /* ── Landing page mobile ── */
+  #s-land .hero, #s-land > div:first-child{padding:40px 16px 32px}
+  #s-land h1{font-size:clamp(2rem,8vw,3rem) !important;line-height:1.05 !important}
+  #s-land p{font-size:.95rem !important;margin:12px auto 24px !important}
+
+  /* ── Browse search bar mobile ── */
+  #s-browse > div > div[style*="display:flex"][style*="gap"]{
+    flex-direction:column;
+    gap:8px !important;
+    padding:12px 16px !important;
+  }
+
+  /* ── Detail page mobile ── */
+  .det-actions{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--bg);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:8px}
+  .det-actions .btn{flex:1;justify-content:center}
+
+  /* ── Cards mobile ── */
+  .card{border-radius:14px}
+
+  /* ── Modals mobile ── */
+  #videoTourModal > div,
+  #inPersonModal > div,
+  #bookingModal > div{
+    max-width:100% !important;
+    border-radius:20px 20px 0 0 !important;
+    position:fixed !important;
+    bottom:0 !important;
+    left:0 !important;
+    right:0 !important;
+    max-height:92vh !important;
+    overflow-y:auto !important;
+  }
+  #videoTourModal,
+  #inPersonModal,
+  #bookingModal{
+    align-items:flex-end !important;
+    padding:0 !important;
+  }
+
+  /* ── Messages screen mobile ── */
+  #s-messages > div:first-child{padding:10px 12px}
+  #s-messages > div:first-child > div:first-child{gap:8px}
+  #s-messages > div:first-child > div:last-child{gap:6px}
+  #s-messages > div:first-child span[id="msgNavName"]{display:none}
+  #convDetailPanel{display:none !important}
+
+  /* ── Conversation list mobile — full width, hide center until selected ── */
+  .messages-screen > div:last-child{flex-direction:column}
+  #conversationsList-wrap{width:100% !important;border-right:none !important}
+
+  /* ── Landlord dashboard mobile ── */
+  .ll-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .ll-tab{white-space:nowrap;font-size:.78rem;padding:8px 14px}
+
+  /* ── Profile page mobile ── */
+  #s-own-profile > div{padding:0 16px 80px !important}
+
+  /* ── Booking modal grid ── */
+  .book-grid{grid-template-columns:1fr !important}
+
+  /* ── Detail page sticky buttons ── */
+  #detailSidebar{
+    position:fixed !important;
+    bottom:0 !important;
+    left:0 !important;
+    right:0 !important;
+    top:auto !important;
+    border-radius:20px 20px 0 0 !important;
+    padding:16px !important;
+    box-shadow:0 -4px 30px rgba(0,0,0,.12) !important;
+    z-index:50 !important;
+    max-height:50vh;
+    overflow-y:auto;
+  }
+  #detailSidebarToggle{display:flex !important}
 }
-.leaflet-container{font-family:inherit}
+@media(max-width:480px){
+  nav{padding:8px 12px}
+  .logo{font-size:1rem}
+  .msw{padding:5px 8px}
+  #langPickerBtn span:first-child{font-size:.85rem}
+  #navAvatar{width:24px;height:24px;font-size:.7rem}
+  #userAvatarBtn{padding:3px 8px 3px 3px;gap:5px}
+  #s-land h1{font-size:clamp(1.8rem,9vw,2.5rem) !important}
+  .hero-btns{flex-direction:column;align-items:stretch}
+  .hero-btns .btn{text-align:center;justify-content:center}
+}
 .transport-pin{background:var(--blue);color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
 .extra-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;font-size:.82rem;font-weight:600;background:var(--bg-l);border:1px solid var(--border);color:var(--text)}
 .util-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;font-size:.82rem;font-weight:600}
@@ -418,7 +524,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     </div>
 
     <!-- Dark mode toggle -->
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode" style="flex-shrink:0">
       <span id="themeIcon">🌙</span>
     </button>
     <button class="nbtn ol" onclick="openFavs()" title="Saved rooms" style="padding:7px 12px">❤️</button>
