@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: blob: https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://*.openstreetmap.org https://js.stripe.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: blob: https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://*.openstreetmap.org https://js.stripe.com https://*.whereby.com https://whereby.com https://bripp.whereby.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com https://*.whereby.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NestMate — Find Your Room in Gold Coast</title>
 <!-- v1774026145 -->
@@ -1467,7 +1467,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
     <!-- Active call area (hidden until started) -->
     <div id="videoCallArea" style="display:none;background:#000;position:relative">
-      <iframe id="videoCallFrame" allow="camera;microphone;fullscreen;display-capture" style="width:100%;height:360px;border:none"></iframe>
+      <iframe id="videoCallFrame" allow="camera;microphone;fullscreen;display-capture;autoplay" allowfullscreen style="width:100%;height:360px;border:none"></iframe>
       <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:10px">
         <button onclick="toggleMic()" id="micBtn" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.1rem;cursor:pointer">🎤</button>
         <button onclick="toggleCam()" id="camBtn" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.1rem;cursor:pointer">📹</button>
@@ -1521,7 +1521,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       </div>
 
       <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:14px">
-        Video tours use <strong>Jitsi Meet</strong> — free, no download required
+        Video tours use <strong>Whereby</strong> — free, no download required
       </p>
     </div>
   </div>
@@ -6823,21 +6823,23 @@ function closeVideoTour() {
 function startInstantCall() {
   if (!currentUser || !CUR) return;
 
-  // Generate unique room name based on listing + users
-  var roomName = 'roomiestay-' + CUR.id.slice(0, 8) + '-' + Date.now();
-  _videoTourRoom = roomName;
+  // Whereby room links
+  var wherebyParticipantUrl = 'https://bripp.whereby.com/call78f66b63-5c81-4bce-968b-03253a2ac6a8';
+  var wherebyHostUrl = 'https://bripp.whereby.com/call78f66b63-5c81-4bce-968b-03253a2ac6a8?roomKey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZWV0aW5nSWQiOiIxMjg0NzY3MTkiLCJyb29tUmVmZXJlbmNlIjp7InJvb21OYW1lIjoiL2NhbGw3OGY2NmI2My01YzgxLTRiY2UtOTY4Yi0wMzI1M2EyYWM2YTgiLCJvcmdhbml6YXRpb25JZCI6IjMzOTI1MSJ9LCJpc3MiOiJodHRwczovL2FjY291bnRzLnNydi53aGVyZWJ5LmNvbSIsImlhdCI6MTc3NzExNTA4NCwicm9vbUtleVR5cGUiOiJtZWV0aW5nSG9zdCJ9.3CxFhYMv-wfghq_AaC4t-8kTZsQ6WybHxdnc0D5X594';
 
-  // Show call area with Jitsi
+  _videoTourRoom = wherebyParticipantUrl;
+
+  // Show call area with Whereby
   document.getElementById('videoTourOptions').style.display = 'none';
   document.getElementById('videoCallArea').style.display = 'block';
 
   var frame = document.getElementById('videoCallFrame');
-  var jitsiUrl = 'https://meet.jit.si/' + roomName + '#config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.prejoinPageEnabled=false&userInfo.displayName=' + encodeURIComponent(currentUser.user_metadata?.full_name || 'Tenant');
-  frame.src = jitsiUrl;
+  // Tenant enters as participant
+  frame.src = wherebyParticipantUrl + '?embed&skipMediaPermissionPrompt';
 
-  // Send notification to landlord via message
+  // Send notification to landlord with host link
   if (_supabaseClient && CUR.landlordId && CUR.landlordId !== currentUser.id) {
-    var callMsg = '📹 Video call started! Join here: https://meet.jit.si/' + roomName;
+    var callMsg = '📹 Video call started! Join as host here: ' + wherebyHostUrl;
     _supabaseClient.from('messages').insert({
       sender_id: currentUser.id,
       recipient_id: CUR.landlordId,
@@ -6863,9 +6865,8 @@ async function scheduleVideoTour() {
   var btn = document.querySelector('#videoTourModal .btn.ol.full');
   if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
 
-  // Generate room link for scheduled tour
-  var roomName = 'roomiestay-tour-' + CUR.id.slice(0, 8);
-  var joinLink = 'https://meet.jit.si/' + roomName;
+  // Whereby room link for scheduled tour
+  var joinLink = 'https://bripp.whereby.com/call78f66b63-5c81-4bce-968b-03253a2ac6a8';
 
   // Send message to landlord with tour request
   var tourMsg = 'Video Tour Request - Date: ' + date + ' at ' + time + ' AEST. Join link: ' + joinLink + (msg ? ' Note: ' + msg : '');
@@ -6908,7 +6909,7 @@ function toggleCam() {
 
 // Also add landlord-side: join call from messages
 function joinVideoCallFromMsg(roomName) {
-  var joinUrl = 'https://meet.jit.si/' + roomName;
+  var joinUrl = 'https://bripp.whereby.com/call78f66b63-5c81-4bce-968b-03253a2ac6a8';
   window.open(joinUrl, '_blank');
 }
 
