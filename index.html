@@ -907,7 +907,8 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <div class="esc-note">🔒 <span>Bond held in <strong>escrow</strong> — released only after you confirm check-in.</span></div>
         <button class="btn lime full" onclick="openBooking()" style="margin-bottom:8px">Request this Room</button>
         <button class="btn ol full sm" onclick="openChatModal()" style="margin-bottom:8px">💬 Message Landlord</button>
-        <button class="btn ol full sm" onclick="requestVideoTour()" style="justify-content:center;border-color:var(--teal);color:var(--teal)">📹 Video Tour</button>
+        <button class="btn ol full sm" onclick="requestVideoTour()" style="justify-content:center;border-color:var(--teal);color:var(--teal);margin-bottom:8px">📹 Video Tour</button>
+        <button class="btn ol full sm" onclick="requestInPersonVisit()" style="justify-content:center;border-color:#f59e0b;color:#f59e0b">🏠 Schedule a Visit</button>
         <p style="text-align:center;margin-top:12px;font-size:.72rem;color:var(--muted)">Free cancellation 48h · No charges until accepted</p>
       </div>
 
@@ -1527,6 +1528,71 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <button class="btn ol" style="flex:1" onclick="closeEditListing()">Cancel</button>
         <button class="btn lime" style="flex:2" onclick="saveEditListing()">Save Changes →</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ IN-PERSON VISIT MODAL ════════════ -->
+<div id="inPersonModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg);border-radius:20px;max-width:500px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <!-- Header -->
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem">🏠 Schedule a Visit</div>
+        <div id="inPersonListingName" style="font-size:.8rem;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button onclick="closeInPersonModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <!-- Body -->
+    <div style="padding:24px">
+      <!-- Info box -->
+      <div style="display:flex;gap:12px;align-items:flex-start;padding:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:14px;margin-bottom:20px">
+        <span style="font-size:1.5rem">📍</span>
+        <div>
+          <div style="font-weight:700;font-size:.88rem;margin-bottom:3px">In-Person Viewing</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.5">Visit the property in person. The landlord will confirm the date and send the exact address via message.</div>
+        </div>
+      </div>
+
+      <!-- Date & Time -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">📅 Preferred Date</label>
+          <input type="date" id="visitDate" class="inp" style="padding:10px;margin:0;font-size:.88rem">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">🕐 Preferred Time</label>
+          <select id="visitTime" class="inp" style="padding:10px;margin:0;font-size:.88rem">
+            <option>09:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+            <option>12:00 PM</option><option>01:00 PM</option><option>02:00 PM</option>
+            <option>03:00 PM</option><option>04:00 PM</option><option>05:00 PM</option>
+            <option>06:00 PM</option><option>07:00 PM</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Number of people -->
+      <div style="margin-bottom:14px">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">👥 Number of Visitors</label>
+        <select id="visitPeople" class="inp" style="padding:10px;margin:0;font-size:.88rem">
+          <option value="1">Just me (1 person)</option>
+          <option value="2">2 people</option>
+          <option value="3">3 people</option>
+          <option value="4">4+ people</option>
+        </select>
+      </div>
+
+      <!-- Message -->
+      <div style="margin-bottom:20px">
+        <label style="font-size:.75rem;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">💬 Message (optional)</label>
+        <textarea id="visitMessage" class="inp" rows="2" style="resize:none;margin:0;font-size:.85rem;width:100%" placeholder="Any questions before visiting? e.g. parking, transport..."></textarea>
+      </div>
+
+      <button onclick="submitInPersonVisit()" class="btn lime full" style="font-size:.95rem">📅 Request Visit →</button>
+
+      <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:14px">
+        ✅ Free to request · Landlord confirms within 24h · No commitment
+      </p>
     </div>
   </div>
 </div>
@@ -7082,6 +7148,60 @@ function acceptCookies() {}
 function rejectCookies() {}
 function hideCookieBanner() {}
     // Show after short delay so page loads first
+
+// ═══ IN-PERSON VISIT ═══
+function requestInPersonVisit() {
+  if (!currentUser) { toast('Please sign in first',''); go('s-login'); return; }
+  if (!CUR) return;
+  var nameEl = document.getElementById('inPersonListingName');
+  if (nameEl) nameEl.textContent = CUR.title || 'Room';
+  var dateEl = document.getElementById('visitDate');
+  if (dateEl) {
+    var today = new Date().toISOString().split('T')[0];
+    dateEl.min = today;
+    // Default to tomorrow
+    var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+    dateEl.value = tomorrow.toISOString().split('T')[0];
+  }
+  document.getElementById('inPersonModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeInPersonModal() {
+  document.getElementById('inPersonModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function submitInPersonVisit() {
+  if (!currentUser || !CUR) return;
+  var date = document.getElementById('visitDate')?.value;
+  var time = document.getElementById('visitTime')?.value;
+  var people = document.getElementById('visitPeople')?.value || '1';
+  var msg = document.getElementById('visitMessage')?.value || '';
+  if (!date) { toast('Please select a date',''); return; }
+
+  var btn = document.querySelector('#inPersonModal .btn.lime.full');
+  if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
+
+  var visitMsg = '🏠 In-Person Visit Request\n📅 Date: ' + date + ' at ' + time + ' AEST\n👥 Visitors: ' + people + (msg ? '\n💬 Note: ' + msg : '') + '\n\nPlease confirm and send the address. Thank you!';
+
+  if (_supabaseClient && CUR.landlordId) {
+    var res = await _supabaseClient.from('messages').insert({
+      sender_id: currentUser.id,
+      recipient_id: CUR.landlordId,
+      listing_id: CUR.id,
+      content: visitMsg,
+    });
+    if (res.error) {
+      toast('Error: ' + res.error.message, 'error');
+    } else {
+      toast('✅ Visit request sent! Landlord will confirm within 24h', 'lime');
+      closeInPersonModal();
+    }
+  }
+
+  if (btn) { btn.textContent = '📅 Request Visit →'; btn.disabled = false; }
+}
 
 // ═══ VIDEO TOUR (Whereby) ═══
 var _videoTourRoom = null;
