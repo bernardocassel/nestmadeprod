@@ -5835,6 +5835,12 @@ async function renderLLSettings(m) {
   var res = await _supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
   var p = res.data || {};
 
+  // Load payment schedule from profile
+  var bondTiming = p.bond_timing || 'checkin';
+  var firstRentTiming = p.first_rent_timing || 'checkin';
+  var rentCycle = p.rent_cycle || 'weekly';
+  var reminderDays = String(p.reminder_days || '3');
+
   m.innerHTML = `
     <div style="padding:20px;max-width:560px">
       <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:20px">⚙️ Settings</h2>
@@ -5870,6 +5876,66 @@ async function renderLLSettings(m) {
         ${getStripeConnectHTML(p.stripe_account_id)}
       </div>
 
+      <!-- Payment Schedule -->
+      <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:6px">💳 Payment Schedule</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:14px;line-height:1.5">Define when tenants pay. You receive 95% of each payment automatically via Stripe. RoomiStay retains 5% on bond and weekly rent.</div>
+
+        <!-- Bond payment timing -->
+        <div class="fg">
+          <label class="lbl">Bond Collection</label>
+          <select class="inp" id="setBondTiming">
+            <option value="checkin">On Check-in day (default)</option>
+            <option value="7_before">7 days before Check-in</option>
+            <option value="14_before">14 days before Check-in</option>
+            <option value="30_before">30 days before Check-in</option>
+            <option value="on_approval">On booking approval</option>
+          </select>
+        </div>
+
+        <!-- First rent payment -->
+        <div class="fg">
+          <label class="lbl">First Rent Payment</label>
+          <select class="inp" id="setFirstRentTiming">
+            <option value="checkin">On Check-in day (default)</option>
+            <option value="7_before">7 days before Check-in</option>
+            <option value="14_before">14 days before Check-in</option>
+            <option value="on_approval">On booking approval</option>
+          </select>
+        </div>
+
+        <!-- Weekly payment cycle -->
+        <div class="fg">
+          <label class="lbl">Recurring Rent Cycle</label>
+          <select class="inp" id="setRentCycle">
+            <option value="weekly">Every 7 days (default)</option>
+            <option value="fortnightly">Every 14 days (fortnightly)</option>
+            <option value="monthly">Monthly (first day of month)</option>
+          </select>
+        </div>
+
+        <!-- Charge reminder days -->
+        <div class="fg">
+          <label class="lbl">Payment Reminder Email</label>
+          <select class="inp" id="setReminderDays">
+            <option value="3">3 days before due date (default)</option>
+            <option value="5">5 days before due date</option>
+            <option value="7">7 days before due date</option>
+            <option value="1">1 day before due date</option>
+            <option value="0">On due date only</option>
+          </select>
+        </div>
+
+        <!-- Platform fee info -->
+        <div style="padding:12px;background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:10px;font-size:.78rem;line-height:1.6;color:var(--muted)">
+          <strong style="color:var(--text)">Fee structure:</strong><br>
+          🏠 Bond: you receive <strong>95%</strong>, RoomiStay retains <strong>5%</strong><br>
+          💰 Weekly rent: you receive <strong>95%</strong>, RoomiStay retains <strong>5%</strong><br>
+          📧 Automatic payment reminders sent to tenants<br>
+          ✅ Funds transferred via Stripe within 24h of payment
+        </div>
+      </div>
+
       <!-- Legal links -->
       <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:20px">
         <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">📋 Legal</div>
@@ -5882,6 +5948,16 @@ async function renderLLSettings(m) {
       </div>
 
       <button class="btn lime full" onclick="saveLLSettings()">Save Settings →</button>
+    \`; // end innerHTML
+
+    // Set select values from profile data
+    var setVal = function(id, val) { var el = document.getElementById(id); if (el && val) el.value = val; };
+    setVal('setBondTiming', bondTiming);
+    setVal('setFirstRentTiming', firstRentTiming);
+    setVal('setRentCycle', rentCycle);
+    setVal('setReminderDays', reminderDays);
+
+    var dummy = \`
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
         <button class="btn ol full" onclick="doLogout()" style="color:var(--red);border-color:var(--red)">🚪 Sign Out</button>
       </div>
