@@ -1535,7 +1535,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <label style="font-size:.72rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px">Message (optional)</label>
           <textarea id="tourMessage" class="inp" rows="2" style="resize:none;margin:0;font-size:.85rem" placeholder="Any specific areas you'd like to see?"></textarea>
         </div>
-        <button onclick="scheduleVideoTour()" class="btn ol full sm">📅 Request Tour Time</button>
+        <button id="scheduleTourBtn" onclick="scheduleVideoTour()" class="btn ol full sm">📅 Request Tour Time</button>
       </div>
 
       <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:14px">
@@ -4943,11 +4943,40 @@ function renderChatMessages(msgs) {
   }
   msgsEl.innerHTML = msgs.map(function(m) {
     var isMe = m.sender_id === currentUser.id;
-    var name = (m.sender && m.sender.full_name) ? m.sender.full_name.split(' ')[0] : 'You';
     var time = new Date(m.created_at).toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
+    var msgContent = m.content || '';
+
+    // Detect VIDEO_CALL message
+    if (msgContent.startsWith('VIDEO_CALL:')) {
+      var parts = msgContent.split(':');
+      var roomName = parts[1] || '';
+      var joinUrl = parts.slice(2).join(':') || ('https://meet.jit.si/' + roomName);
+      return '<div style="display:flex;flex-direction:' + (isMe?'row-reverse':'row') + ';align-items:flex-end;gap:8px">' +
+        '<div style="max-width:85%;padding:12px 14px;border-radius:14px;background:' + (isMe?'var(--lime)':'var(--bg-l)') + ';color:' + (isMe?'#000':'var(--text)') + '">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:1.2rem">📹</span><div><div style="font-weight:700;font-size:.88rem">Video Call</div><div style="font-size:.72rem;color:' + (isMe?'rgba(0,0,0,.6)':'var(--muted)') + '">Started by ' + (isMe?'you':'them') + '</div></div></div>' +
+        '<a href="' + joinUrl + '" target="_blank" style="display:block;text-align:center;padding:8px 16px;background:' + (isMe?'rgba(0,0,0,.15)':'var(--lime)') + ';color:' + (isMe?'#000':'#000') + ';border-radius:8px;font-weight:700;font-size:.85rem;text-decoration:none">📹 Join Video Call →</a>' +
+        '<div style="font-size:.65rem;color:' + (isMe?'rgba(0,0,0,.5)':'var(--muted)') + ';margin-top:6px;text-align:right">' + time + '</div></div></div>';
+    }
+
+    // Detect VIDEO_TOUR_REQUEST message
+    if (msgContent.startsWith('VIDEO_TOUR_REQUEST:')) {
+      var parts = msgContent.split(':');
+      var roomName = parts[1] || '';
+      var joinUrl = parts[2] || ('https://meet.jit.si/' + roomName);
+      var date = parts[3] || '';
+      var tourTime = parts[4] || '';
+      var note = parts.slice(5).join(':') || '';
+      return '<div style="display:flex;flex-direction:' + (isMe?'row-reverse':'row') + ';align-items:flex-end;gap:8px">' +
+        '<div style="max-width:85%;padding:12px 14px;border-radius:14px;background:' + (isMe?'var(--lime)':'var(--bg-l)') + ';color:' + (isMe?'#000':'var(--text)') + '">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:1.2rem">📅</span><div><div style="font-weight:700;font-size:.88rem">Video Tour Request</div><div style="font-size:.72rem">' + date + ' at ' + tourTime + ' AEST</div></div></div>' +
+        (note ? '<div style="font-size:.82rem;margin-bottom:8px;font-style:italic">' + note + '</div>' : '') +
+        '<a href="' + joinUrl + '" target="_blank" style="display:block;text-align:center;padding:8px 16px;background:' + (isMe?'rgba(0,0,0,.15)':'var(--lime)') + ';color:#000;border-radius:8px;font-weight:700;font-size:.85rem;text-decoration:none">📹 Join at scheduled time →</a>' +
+        '<div style="font-size:.65rem;color:' + (isMe?'rgba(0,0,0,.5)':'var(--muted)') + ';margin-top:6px;text-align:right">' + time + '</div></div></div>';
+    }
+
     return '<div style="display:flex;flex-direction:' + (isMe?'row-reverse':'row') + ';align-items:flex-end;gap:8px">' +
       '<div style="max-width:75%;padding:10px 14px;border-radius:' + (isMe?'16px 16px 4px 16px':'16px 16px 16px 4px') + ';background:' + (isMe?'var(--lime)':'var(--bg-l)') + ';color:' + (isMe?'#000':'var(--text)') + ';font-size:.88rem;line-height:1.4">' +
-      m.content +
+      msgContent +
       '<div style="font-size:.65rem;color:' + (isMe?'rgba(0,0,0,.5)':'var(--muted)') + ';margin-top:4px;text-align:right">' + time + '</div>' +
       '</div></div>';
   }).join('');
@@ -6852,32 +6881,59 @@ function closeVideoTour() {
   if (frame) frame.src = '';
 }
 
-function startInstantCall() {
+async function startInstantCall() {
   if (!currentUser || !CUR) return;
 
-  // Generate unique room name based on listing + users
+  var landlordId = CUR.landlordId;
+  if (!landlordId) {
+    // Try to get landlord_id directly from DB
+    var res = await _supabaseClient.from('listings').select('landlord_id').eq('id', CUR.id).single();
+    landlordId = res.data?.landlord_id;
+  }
+
+  if (!landlordId) { toast('Could not find landlord info', 'error'); return; }
+  if (landlordId === currentUser.id) { toast('This is your own listing', ''); return; }
+
+  // Generate unique room name
   var roomName = 'roomiestay-' + CUR.id.slice(0, 8) + '-' + Date.now();
   _videoTourRoom = roomName;
+  var joinUrl = 'https://meet.jit.si/' + roomName;
 
-  // Show call area with Jitsi
+  // Show Jitsi iframe
   document.getElementById('videoTourOptions').style.display = 'none';
   document.getElementById('videoCallArea').style.display = 'block';
 
+  var userName = encodeURIComponent(currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Tenant');
   var frame = document.getElementById('videoCallFrame');
-  var jitsiUrl = 'https://meet.jit.si/' + roomName + '#config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.prejoinPageEnabled=false&userInfo.displayName=' + encodeURIComponent(currentUser.user_metadata?.full_name || 'Tenant');
-  frame.src = jitsiUrl;
+  frame.src = joinUrl + '#config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.prejoinPageEnabled=false&userInfo.displayName=' + userName;
 
-  // Send notification to landlord via message
-  if (_supabaseClient && CUR.landlordId && CUR.landlordId !== currentUser.id) {
-    var callMsg = '📹 Video call started! Join here: https://meet.jit.si/' + roomName;
-    _supabaseClient.from('messages').insert({
+  // Save to video_tours table and send message
+  if (_supabaseClient) {
+    // Save tour record
+    await _supabaseClient.from('video_tours').insert({
+      room_name: roomName,
+      listing_id: CUR.id,
+      tenant_id: currentUser.id,
+      landlord_id: landlordId,
+      status: 'active',
+      join_url: joinUrl,
+    }).then(function(){});
+
+    // Send message to landlord with clickable join button
+    var callMsg = 'VIDEO_CALL:' + roomName + ':' + joinUrl;
+    var res = await _supabaseClient.from('messages').insert({
       sender_id: currentUser.id,
-      recipient_id: CUR.landlordId,
+      recipient_id: landlordId,
       listing_id: CUR.id,
       content: callMsg,
-    }).then(function() {
-      console.log('Landlord notified of video call');
     });
+
+    if (res.error) {
+      console.error('Failed to notify landlord:', res.error);
+      toast('Call started but could not notify landlord: ' + res.error.message, '');
+    } else {
+      toast('📹 Call started! Landlord notified via messages', 'lime');
+    }
   }
 
   toast('📹 Call started! Landlord has been notified via message', 'lime');
@@ -6892,7 +6948,14 @@ async function scheduleVideoTour() {
 
   if (!date) { toast('Please select a date', ''); return; }
 
-  var btn = document.querySelector('#videoTourModal .btn.ol.full');
+  var landlordId = CUR.landlordId;
+  if (!landlordId) {
+    var r = await _supabaseClient.from('listings').select('landlord_id').eq('id', CUR.id).single();
+    landlordId = r.data?.landlord_id;
+  }
+  if (!landlordId) { toast('Could not find landlord info', 'error'); return; }
+
+  var btn = document.getElementById('scheduleTourBtn');
   if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
 
   // Generate room link for scheduled tour
@@ -6900,7 +6963,7 @@ async function scheduleVideoTour() {
   var joinLink = 'https://meet.jit.si/' + roomName;
 
   // Send message to landlord with tour request
-  var tourMsg = 'Video Tour Request - Date: ' + date + ' at ' + time + ' AEST. Join link: ' + joinLink + (msg ? ' Note: ' + msg : '');
+  var tourMsg = 'VIDEO_TOUR_REQUEST:' + roomName + ':' + joinLink + ':' + date + ':' + time + (msg ? ':' + msg : '');
 
   if (_supabaseClient && CUR.landlordId) {
     var res = await _supabaseClient.from('messages').insert({
@@ -6918,7 +6981,7 @@ async function scheduleVideoTour() {
     }
   }
 
-  if (btn) { btn.textContent = '📅 Request Tour Time'; btn.disabled = false; }
+  var schedBtn = document.getElementById('scheduleTourBtn'); if (schedBtn) { schedBtn.textContent = '📅 Request Tour Time'; schedBtn.disabled = false; }
 }
 
 function endVideoCall() {
