@@ -5904,14 +5904,18 @@ async function renderLLSettings(m) {
           </select>
         </div>
 
-        <!-- Weekly payment cycle -->
+        <!-- Weekly payment day -->
         <div class="fg">
-          <label class="lbl">Recurring Rent Cycle</label>
+          <label class="lbl">Weekly Rent — Day of Payment</label>
           <select class="inp" id="setRentCycle">
-            <option value="weekly">Every 7 days (default)</option>
-            <option value="fortnightly">Every 14 days (fortnightly)</option>
-            <option value="monthly">Monthly (first day of month)</option>
+            <option value="monday">Every Monday</option>
+            <option value="tuesday">Every Tuesday</option>
+            <option value="wednesday">Every Wednesday</option>
+            <option value="thursday">Every Thursday</option>
+            <option value="friday">Every Friday</option>
+            <option value="checkin_day">Same day as check-in (default)</option>
           </select>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Weekly payments are mandatory. Tenants pay every 7 days from check-in.</div>
         </div>
 
         <!-- Charge reminder days -->
