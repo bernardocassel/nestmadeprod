@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: blob: https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://*.openstreetmap.org https://js.stripe.com; connect-src 'self' https://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://api.anthropic.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://meet.jit.si; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://www.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org https://picsum.photos https://images.unsplash.com https://*.googleusercontent.com https://lh3.googleusercontent.com https://lh4.googleusercontent.com https://lh5.googleusercontent.com https://lh6.googleusercontent.com https://*.gstatic.com https://www.gstatic.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com https://api.anthropic.com https://api.stripe.com https://js.stripe.com https://translate.googleapis.com; frame-src https://*.openstreetmap.org https://js.stripe.com https://meet.jit.si https://translate.google.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NestMate — Find Your Room in Gold Coast</title>
 <!-- v1774026145 -->
@@ -1253,7 +1253,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 <div id="s-terms" class="screen" style="background:var(--bg)">
   <div style="max-width:700px;margin:0 auto;padding:0">
     <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50">
-      <button class="btn ol sm" onclick="history.back()">← Back</button>
+      <button class="btn ol sm" onclick="goBackFromLegal()">← Back</button>
       <div style="font-weight:700;font-size:.95rem">Terms of Use</div>
     </div>
     <div style="padding:24px 16px;font-size:.88rem;line-height:1.8;color:var(--text)">
@@ -1293,7 +1293,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 <div id="s-privacy" class="screen" style="background:var(--bg)">
   <div style="max-width:700px;margin:0 auto;padding:0">
     <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50">
-      <button class="btn ol sm" onclick="history.back()">← Back</button>
+      <button class="btn ol sm" onclick="goBackFromLegal()">← Back</button>
       <div style="font-weight:700;font-size:.95rem">Privacy Policy</div>
     </div>
     <div style="padding:24px 16px;font-size:.88rem;line-height:1.8;color:var(--text)">
@@ -5946,10 +5946,10 @@ async function renderLLSettings(m) {
       <!-- Legal links -->
       <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:20px">
         <div style="font-weight:700;font-size:.85rem;margin-bottom:14px">📋 Legal</div>
-        <div onclick="go('s-terms')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;cursor:pointer;border-bottom:1px solid var(--border)">
+        <div onclick="showLegal('s-terms')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;cursor:pointer;border-bottom:1px solid var(--border)">
           <span style="font-size:.85rem">Terms of Use</span><span style="color:var(--muted)">→</span>
         </div>
-        <div onclick="go('s-privacy')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;cursor:pointer">
+        <div onclick="showLegal('s-privacy')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;cursor:pointer">
           <span style="font-size:.85rem">Privacy Policy</span><span style="color:var(--muted)">→</span>
         </div>
       </div>
@@ -7234,6 +7234,18 @@ async function renderLLTransactions(m) {
   '</div>';
 }
 
+
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// LEGAL PAGES — back navigation (SPA fix)
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+var _legalNavSource = 's-land';
+function showLegal(page) {
+  _legalNavSource = sessionStorage.getItem('nm-screen') || 's-land';
+  go(page);
+}
+function goBackFromLegal() {
+  go(_legalNavSource || 's-land');
+}
 </script>
 
 <!-- Footer -->
@@ -7262,8 +7274,8 @@ async function renderLLTransactions(m) {
       <div>
         <div style="font-weight:700;font-size:.82rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Legal</div>
         <div style="display:flex;flex-direction:column;gap:7px">
-          <a onclick="go('s-terms')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Terms of Use</a>
-          <a onclick="go('s-privacy')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Privacy Policy</a>
+          <a onclick="showLegal('s-terms')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Terms of Use</a>
+          <a onclick="showLegal('s-privacy')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Privacy Policy</a>
           <a onclick="document.getElementById('cookieBanner')&&(document.getElementById('cookieBanner').style.display='block')" style="font-size:.82rem;color:var(--muted);cursor:pointer;text-decoration:none">Cookie Settings</a>
         </div>
       </div>
@@ -7271,8 +7283,8 @@ async function renderLLTransactions(m) {
     <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
       <div style="font-size:.75rem;color:var(--muted)">© 2026 RoomiStay · Gold Coast, QLD, Australia · ABN 00 000 000 000</div>
       <div style="display:flex;gap:12px">
-        <a onclick="go('s-privacy')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Privacy</a>
-        <a onclick="go('s-terms')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Terms</a>
+        <a onclick="showLegal('s-privacy')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Privacy</a>
+        <a onclick="showLegal('s-terms')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Terms</a>
       </div>
     </div>
   </div>
@@ -7310,7 +7322,7 @@ async function renderLLTransactions(m) {
   <div style="max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
     <div style="flex:1;min-width:240px">
       <div style="font-weight:700;font-size:.88rem;margin-bottom:3px;color:var(--text)">🍪 We use cookies</div>
-      <div style="font-size:.78rem;color:var(--muted);line-height:1.5">We use essential cookies to make our platform work, plus analytics to improve your experience. By continuing, you agree to our <span onclick="go('s-privacy')" style="color:var(--lime);cursor:pointer;font-weight:600">Privacy Policy</span> and <span onclick="go('s-terms')" style="color:var(--lime);cursor:pointer;font-weight:600">Terms of Use</span>.</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.5">We use essential cookies to make our platform work, plus analytics to improve your experience. By continuing, you agree to our <span onclick="showLegal('s-privacy')" style="color:var(--lime);cursor:pointer;font-weight:600">Privacy Policy</span> and <span onclick="showLegal('s-terms')" style="color:var(--lime);cursor:pointer;font-weight:600">Terms of Use</span>.</div>
     </div>
     <div style="display:flex;gap:8px;flex-shrink:0">
       <button onclick="rejectCookies()" style="padding:9px 18px;border:1.5px solid var(--border);border-radius:50px;background:none;color:var(--text);font-size:.82rem;font-weight:600;cursor:pointer">Essential only</button>
