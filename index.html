@@ -890,11 +890,12 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div class="si" onclick="llTab('earnings')"><span class="ico">💰</span>Earnings</div>
       <div class="si" onclick="llTab('contracts')"><span class="ico">📄</span>Contracts</div>
       <div class="si" onclick="llTab('tenants')"><span class="ico">👥</span>My Tenants</div>
+      <div class="si" onclick="llTab('transactions')"><span class="ico">💳</span>Transactions</div>
       <div class="si" onclick="llTab('add')"><span class="ico">➕</span>Add Listing</div>
       <div class="silab">Account</div>
-      <div class="si"><span class="ico">🪪</span>Verified <span class="tag t" style="margin-left:auto;font-size:.58rem;padding:1px 5px">KYC ✓</span></div>
-      <div class="si"><span class="ico">⭐</span>Reviews (18)</div>
-      <div class="si"><span class="ico">⚙️</span>Settings</div>
+      <div class="si" onclick="startKYC()"><span class="ico">🪪</span>Verify ID <span id="kycBadge" style="display:none;margin-left:auto;font-size:.58rem;padding:1px 5px;background:rgba(0,212,170,.15);color:var(--teal);border-radius:4px">KYC ✓</span></div>
+      <div class="si" onclick="llTab('reviews')"><span class="ico">⭐</span>Reviews</div>
+      <div class="si" onclick="llTab('settings')"><span class="ico">⚙️</span>Settings</div>
     </div>
     <div class="ll-main" id="llMain" style="background:var(--bg)"></div>
   </div>
@@ -2983,7 +2984,8 @@ function llTab(tab, skipPhotoClear) {
                   (tab==='add' && ico.includes('➕')) ||
                   (tab==='reviews' && ico.includes('⭐')) ||
                   (tab==='settings' && ico.includes('⚙️')) ||
-                  (tab==='tenants' && ico.includes('👥'));
+                  (tab==='tenants' && ico.includes('👥')) ||
+                  (tab==='transactions' && ico.includes('💳'));
     if(match) i.classList.add('on');
   });
   const m = document.getElementById('llMain');
@@ -2995,6 +2997,7 @@ function llTab(tab, skipPhotoClear) {
   else if (tab==='add') renderAddListing(m, skipPhotoClear);
   else if (tab==='reviews') renderLLReviews(m);
   else if (tab==='tenants') renderLLTenants(m);
+  else if (tab==='transactions') renderLLTransactions(m);
   else if (tab==='settings') renderLLSettings(m);
 }
 
@@ -7143,6 +7146,93 @@ async function doResetPassword() {
     });
   }
 })();
+
+
+// ══════════════════════════════════════
+// LANDLORD — TRANSACTIONS TAB
+// ══════════════════════════════════════
+async function renderLLTransactions(m) {
+  if (!_supabaseClient || !currentUser) return;
+  m.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading transactions...</div>';
+
+  // Get payment schedules for this landlord
+  var res = await _supabaseClient.from('payment_schedules')
+    .select('*, booking:bookings(move_in_date, listings(title, suburb)), tenant:profiles!tenant_id(full_name, avatar_url)')
+    .eq('landlord_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  // Also get profile for Stripe account status
+  var profRes = await _supabaseClient.from('profiles').select('stripe_account_id').eq('id', currentUser.id).single();
+  var hasStripe = !!(profRes.data && profRes.data.stripe_account_id);
+
+  var payments = res.data || [];
+
+  // Calculate totals
+  var totalEarned = payments.filter(p => p.status === 'paid').reduce((s, p) => s + (p.landlord_amount || 0), 0);
+  var totalPending = payments.filter(p => p.status === 'pending').reduce((s, p) => s + (p.landlord_amount || 0), 0);
+  var platformTotal = payments.filter(p => p.status === 'paid').reduce((s, p) => s + (p.platform_fee || 0), 0);
+
+  var typeLabels = { bond: '🔒 Bond', first_rent: '🏠 First Rent', weekly_rent: '💰 Weekly Rent' };
+  var statusColors = { paid: 'var(--teal)', pending: 'var(--orange)', failed: 'var(--red)', cancelled: 'var(--muted)' };
+  var statusLabels = { paid: '✅ Paid', pending: '⏳ Pending', failed: '❌ Failed', cancelled: 'Cancelled' };
+
+  m.innerHTML = '<div style="padding:16px">' +
+
+    // Stripe Connect status banner
+    (!hasStripe ? '<div style="padding:16px;background:rgba(255,71,87,.06);border:1.5px solid rgba(255,71,87,.2);border-radius:12px;margin-bottom:16px;display:flex;align-items:center;gap:12px">' +
+      '<span style="font-size:1.5rem">⚠️</span>' +
+      '<div style="flex:1"><div style="font-weight:700;font-size:.9rem">Bank account not connected</div><div style="font-size:.78rem;color:var(--muted)">Connect your bank account to receive payments automatically</div></div>' +
+      '<button class="btn lime sm" onclick="stripeConnectOnboard()">Connect Bank →</button></div>' : '') +
+
+    // Stats row
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">' +
+      '<div style="padding:14px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);text-align:center">' +
+        '<div style="font-size:1.4rem;font-weight:800;color:var(--lime)">AU$' + totalEarned.toFixed(2) + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted)">Total Earned</div></div>' +
+      '<div style="padding:14px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);text-align:center">' +
+        '<div style="font-size:1.4rem;font-weight:800;color:var(--orange)">AU$' + totalPending.toFixed(2) + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted)">Pending</div></div>' +
+      '<div style="padding:14px;background:var(--bg-m);border-radius:12px;border:1px solid var(--border);text-align:center">' +
+        '<div style="font-size:1.4rem;font-weight:800;color:var(--muted)">AU$' + platformTotal.toFixed(2) + '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted)">Platform Fee (5%)</div></div>' +
+    '</div>' +
+
+    // Stripe dashboard link
+    (hasStripe ? '<a href="https://dashboard.stripe.com/express" target="_blank" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg-m);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;text-decoration:none;color:var(--text)">' +
+      '<span style="font-size:1.2rem">🏦</span>' +
+      '<div style="flex:1"><div style="font-weight:600;font-size:.88rem">View Stripe Dashboard</div><div style="font-size:.72rem;color:var(--muted)">See payouts, bank transfers and detailed reports</div></div>' +
+      '<span style="color:var(--muted)">→</span></a>' : '') +
+
+    // Transaction list
+    '<div style="font-weight:700;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Transaction History</div>' +
+
+    (payments.length === 0 ?
+      '<div style="padding:40px;text-align:center;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:10px">💳</div><p>No transactions yet</p><p style="font-size:.82rem">Transactions appear here once tenants make payments</p></div>' :
+      payments.map(function(p) {
+        var t = p.tenant || {};
+        var b = p.booking || {};
+        var listing = b.listings || {};
+        var initial = (t.full_name || 'T').charAt(0).toUpperCase();
+        var date = new Date(p.due_date || p.created_at).toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+        return '<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-m);border:1px solid var(--border);border-radius:12px;margin-bottom:8px">' +
+          '<div style="width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#000;overflow:hidden;flex-shrink:0">' +
+          (t.avatar_url ? '<img src="'+t.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : initial) +
+          '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:600;font-size:.85rem">' + (typeLabels[p.charge_type] || p.charge_type) + '</div>' +
+            '<div style="font-size:.72rem;color:var(--muted)">' + (t.full_name || 'Tenant') + ' · ' + (listing.title || 'Room') + ' · ' + date + '</div>' +
+          '</div>' +
+          '<div style="text-align:right;flex-shrink:0">' +
+            '<div style="font-weight:800;font-size:.9rem;color:var(--lime)">AU$' + (p.landlord_amount || 0).toFixed(2) + '</div>' +
+            '<div style="font-size:.68rem;color:var(--muted)">+AU$' + (p.platform_fee || 0).toFixed(2) + ' fee</div>' +
+            '<div style="font-size:.7rem;font-weight:700;color:' + (statusColors[p.status] || 'var(--muted)') + '">' + (statusLabels[p.status] || p.status) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('')
+    ) +
+  '</div>';
+}
 
 </script>
 
