@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://api.anthropic.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://meet.jit.si; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://www.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org https://picsum.photos https://images.unsplash.com https://*.googleusercontent.com https://lh3.googleusercontent.com https://lh4.googleusercontent.com https://lh5.googleusercontent.com https://lh6.googleusercontent.com https://*.gstatic.com https://www.gstatic.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com https://api.anthropic.com https://api.stripe.com https://js.stripe.com https://translate.googleapis.com; frame-src https://*.openstreetmap.org https://js.stripe.com https://meet.jit.si https://translate.google.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NestMate — Find Your Room in Gold Coast</title>
+<title>Bripp — Find Your Room in Gold Coast</title>
 <!-- v1774026145 -->
-<!-- ═══ NESTMATE CONFIG — substitua com suas credenciais reais ═══ -->
+<!-- ═══ BRIPP CONFIG — substitua com suas credenciais reais ═══ -->
 <script>
-  window.NESTMATE_CONFIG = {
+  window.BRIPP_CONFIG = {
     SUPABASE_URL: 'https://ihsteworauuydakhrkws.supabase.co',
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imloc3Rld29yYXV1eWRha2hya3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTQzMzQsImV4cCI6MjA4OTQzMDMzNH0.EeW_LVJJXCUhRmwox8VQLg0sSnJ8BNFgtQYYDysbNJg',
     STRIPE_KEY: 'pk_live_51TCUnxJiXVz8DVfLBuyZxoBGh5FwfGUB7lF6kCMjoQJB2yexreIndQnRYVhMw7FyuyvR5wOhWMhhLyDgi1SJ1Zsy00rX4yGAnG',
@@ -397,7 +397,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
 <!-- NAV -->
 <nav>
-  <div class="logo" onclick="go('s-land')">Nest<span>Mate</span></div>
+  <div class="logo" onclick="go('s-land')" style="display:flex;align-items:center;gap:7px"><svg width="26" height="30" viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="20" y1="0" x2="70" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#8B3CF7"/><stop offset="100%" stop-color="#3B6EF5"/></linearGradient></defs><path d="M22 5 C22 5 22 52 22 58 C22 72 32 82 46 82 L50 90 L54 82 C68 82 78 72 78 58 C78 44 68 34 54 34 C54 34 54 5 22 5 Z" fill="url(#bg)"/><circle cx="50" cy="56" r="13" fill="white" fill-opacity="0.9"/></svg><span style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--text)">Bripp</span></div>
   <div class="nav-r">
     <!-- Language selector -->
     <div style="position:relative">
@@ -459,6 +459,63 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">100%</div><div style="font-size:.8rem;color:var(--muted)">Escrow Protected</div></div>
       <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">23+</div><div style="font-size:.8rem;color:var(--muted)">Nationalities</div></div>
       <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.8rem;color:var(--lime)">AU$0</div><div style="font-size:.8rem;color:var(--muted)">Bond Scams</div></div>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR + FEATURED ROOMS -->
+  <div style="max-width:1100px;margin:0 auto;padding:0 20px 60px">
+    <!-- Search Bar -->
+    <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:16px;padding:20px 24px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;box-shadow:var(--shadow);margin-bottom:40px">
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">SUBURB</div>
+        <select id="homeSuburb" style="width:100%;border:none;background:transparent;font-size:.95rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;cursor:pointer">
+          <option value="">All suburbs</option>
+          <option value="Surfers Paradise">Surfers Paradise</option>
+          <option value="Broadbeach">Broadbeach</option>
+          <option value="Burleigh Heads">Burleigh Heads</option>
+          <option value="Southport">Southport</option>
+          <option value="Robina">Robina</option>
+          <option value="Varsity Lakes">Varsity Lakes</option>
+          <option value="Miami">Miami</option>
+          <option value="Tugun">Tugun</option>
+        </select>
+      </div>
+      <div style="width:1px;height:36px;background:var(--border);flex-shrink:0"></div>
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">ROOM TYPE</div>
+        <select id="homeType" style="width:100%;border:none;background:transparent;font-size:.95rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;cursor:pointer">
+          <option value="">Any type</option>
+          <option value="Private">Private</option>
+          <option value="Shared">Shared</option>
+          <option value="Studio">Studio</option>
+          <option value="Entire Place">Entire Place</option>
+        </select>
+      </div>
+      <div style="width:1px;height:36px;background:var(--border);flex-shrink:0"></div>
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">MAX PRICE/WK</div>
+        <select id="homePrice" style="width:100%;border:none;background:transparent;font-size:.95rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;cursor:pointer">
+          <option value="">Any price</option>
+          <option value="200">AU$200</option>
+          <option value="300">AU$300</option>
+          <option value="400">AU$400</option>
+          <option value="500">AU$500</option>
+          <option value="700">AU$700</option>
+        </select>
+      </div>
+      <button onclick="homeSearch()" style="background:var(--lime);color:#000;border:none;border-radius:12px;padding:12px 28px;font-weight:700;font-size:.95rem;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px">🔍 Search Rooms</button>
+    </div>
+
+    <!-- Featured Listings -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem">🏠 Available rooms in Gold Coast</h2>
+      <a onclick="go('s-browse')" style="color:var(--lime);font-weight:700;font-size:.9rem;cursor:pointer">See all →</a>
+    </div>
+    <div id="homeFeaturedGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">
+      <div style="grid-column:span 3;text-align:center;padding:40px;color:var(--muted)">
+        <div style="font-size:2rem;margin-bottom:12px">🏠</div>
+        <p>Loading rooms...</p>
+      </div>
     </div>
   </div>
 
@@ -569,7 +626,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   <!-- CTA + APP DOWNLOAD -->
   <div style="background:var(--lime);padding:60px 20px;text-align:center">
     <h2 style="font-family:'Syne',sans-serif;font-weight:900;font-size:2rem;color:#000;margin-bottom:12px">Ready to find your room?</h2>
-    <p style="color:rgba(0,0,0,.6);margin-bottom:28px;font-size:1rem">Join thousands of international students already using RoomiStay</p>
+    <p style="color:rgba(0,0,0,.6);margin-bottom:28px;font-size:1rem">Join thousands of international students already using Bripp</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:32px">
       <button onclick="go('s-signup')" style="background:#000;color:#fff;padding:14px 32px;font-size:1rem;border-radius:50px;border:none;cursor:pointer;font-weight:700">Sign Up Free</button>
       <button onclick="go('s-browse')" style="background:rgba(0,0,0,.12);color:#000;padding:14px 32px;font-size:1rem;border-radius:50px;border:none;cursor:pointer;font-weight:700">Browse Rooms</button>
@@ -873,7 +930,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <button class="btn full" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.3)" id="admRevReject" onclick="admDetailAction('reject')">❌ Reject — Return to Landlord</button>
           <button class="btn full sm" style="background:transparent;color:var(--muted);border:1px solid var(--border)" id="admRevDelete" onclick="admDetailAction('delete')">🗑 Delete Permanently</button>
         </div>
-        <p style="text-align:center;margin-top:14px;font-size:.72rem;color:var(--muted)">Only visible to NestMate admins</p>
+        <p style="text-align:center;margin-top:14px;font-size:.72rem;color:var(--muted)">Only visible to Bripp admins</p>
       </div>
     </div>
   </div>
@@ -924,7 +981,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
   <div class="auth-wrap">
     <div class="auth-card">
       <h2>Welcome back</h2>
-      <p class="auth-sub">Sign in to NestMate</p>
+      <p class="auth-sub">Sign in to Bripp</p>
       <div class="soc-btns">
         <button class="soc-btn" onclick="toast('Apple Sign In em breve','')">🍎 Apple</button>
         <button class="soc-btn" onclick="loginWithGoogle()">G Google</button>
@@ -943,7 +1000,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 <div id="s-signup" class="screen">
   <div class="auth-wrap">
     <div class="auth-card">
-      <h2>Join NestMate</h2>
+      <h2>Join Bripp</h2>
       <p class="auth-sub">Find your room or list yours</p>
       <div class="soc-btns">
         <button class="soc-btn" onclick="toast('Apple Sign In em breve','')">🍎 Apple</button>
@@ -1028,7 +1085,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <div class="sidebar">
       <div style="padding:12px 11px;margin-bottom:16px;background:rgba(255,71,87,.08);border-radius:10px;border:1px solid rgba(255,71,87,.2)">
         <div style="font-size:.7rem;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase">Admin Panel</div>
-        <div style="font-size:.75rem;color:var(--muted);margin-top:2px">NestMate HQ</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Bripp HQ</div>
       </div>
       <div class="silab">Listings</div>
       <div class="si on" id="adm-si-pending" onclick="admTab('pending')"><span class="ico">⏳</span>Pending Review<span class="badge" id="admPendingBadge" style="display:none">0</span></div>
@@ -1257,14 +1314,14 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <div style="font-weight:700;font-size:.95rem">Terms of Use</div>
     </div>
     <div style="padding:24px 16px;font-size:.88rem;line-height:1.8;color:var(--text)">
-      <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;margin-bottom:8px">NestMate Terms of Use</h2>
+      <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;margin-bottom:8px">Bripp Terms of Use</h2>
       <p style="color:var(--muted);margin-bottom:24px">Last updated: March 2026</p>
 
       <h3 style="margin-bottom:8px">1. Acceptance</h3>
-      <p>By using NestMate you agree to these terms. NestMate is a platform connecting students and landlords in Gold Coast, Australia.</p>
+      <p>By using Bripp you agree to these terms. Bripp is a platform connecting students and landlords in Gold Coast, Australia.</p>
 
       <h3 style="margin:20px 0 8px">2. Platform Role</h3>
-      <p>NestMate is a marketplace platform. We do not own, manage, or control any properties listed. All rental agreements are between tenants and landlords directly.</p>
+      <p>Bripp is a marketplace platform. We do not own, manage, or control any properties listed. All rental agreements are between tenants and landlords directly.</p>
 
       <h3 style="margin:20px 0 8px">3. Escrow Payments</h3>
       <p>Payments are held in escrow and released to landlords only after the tenant confirms check-in. If an issue arises within 24 hours of check-in, the tenant may request a full refund.</p>
@@ -1273,13 +1330,13 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <p>Users must provide accurate information, maintain respectful communication, and comply with Australian tenancy laws. Fraudulent listings or bookings will result in immediate account termination.</p>
 
       <h3 style="margin:20px 0 8px">5. Fees</h3>
-      <p>NestMate charges a 5% platform fee on each booking, deducted from the total amount. This covers escrow protection, identity verification, and platform maintenance.</p>
+      <p>Bripp charges a 5% platform fee on each booking, deducted from the total amount. This covers escrow protection, identity verification, and platform maintenance.</p>
 
       <h3 style="margin:20px 0 8px">6. Cancellation</h3>
       <p>Tenants may cancel before landlord approval for a full refund. After approval, cancellation policies are agreed between parties. Bond is released within 7 business days after check-out confirmation.</p>
 
       <h3 style="margin:20px 0 8px">7. Liability</h3>
-      <p>NestMate is not liable for disputes between users, property damage, or losses arising from the use of the platform beyond the escrow amount held.</p>
+      <p>Bripp is not liable for disputes between users, property damage, or losses arising from the use of the platform beyond the escrow amount held.</p>
 
       <h3 style="margin:20px 0 8px">8. Governing Law</h3>
       <p>These terms are governed by the laws of Queensland, Australia. Any disputes shall be resolved in the courts of Queensland.</p>
@@ -1318,7 +1375,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <h3 style="margin:20px 0 8px">6. Contact</h3>
       <p>For privacy requests: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="39494b504f585a4079575c4a4d54584d5c175a565417584c">[email&#160;protected]</a></p>
 
-      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">NestMate complies with the Australian Privacy Act 1988 and the Queensland Information Privacy Act 2009.</p>
+      <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem">Bripp complies with the Australian Privacy Act 1988 and the Queensland Information Privacy Act 2009.</p>
     </div>
   </div>
 </div>
@@ -1640,7 +1697,7 @@ const LISTINGS = [
     vibe:'Social', gender:'Mixed', bond:540, fee:40,
     desc:'Affordable and vibrant shared house in Southport with 4 Latin American students. Big living room, backyard BBQ, very social atmosphere. Close to Griffith University. The house loves football, music and weekend beach trips!',
     hm:[{flag:'🇧🇷',name:'Pedro',from:'Floripa',em:'🏄'},{flag:'🇨🇴',name:'Valentina',from:'Bogotá',em:'🎸'},{flag:'🇲🇽',name:'Carlos',from:'CDMX',em:'🍳'},{flag:'🇧🇷',name:'Fernanda',from:'SP',em:'📚'}],
-    revs:[{name:'Sofia L.',cc:'🇦🇷',txt:'Best house I have lived in! Super fun group, felt like home. NestMate contract made it official and easy.',stars:5},{name:'Diego R.',cc:'🇧🇷',txt:'Finding a house with other Brazilians was exactly what I needed. The nationality filter is genius!',stars:5}],
+    revs:[{name:'Sofia L.',cc:'🇦🇷',txt:'Best house I have lived in! Super fun group, felt like home. Bripp contract made it official and easy.',stars:5},{name:'Diego R.',cc:'🇧🇷',txt:'Finding a house with other Brazilians was exactly what I needed. The nationality filter is genius!',stars:5}],
     imgs:['data:image/jpeg;base64,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','https://picsum.photos/id/1082/400/300','https://picsum.photos/id/1083/400/300','https://picsum.photos/id/1084/400/300','https://picsum.photos/id/1086/400/300']
   },
   {
@@ -1668,7 +1725,7 @@ const LISTINGS = [
     vibe:'Study', gender:'Mixed', bond:380, fee:28,
     desc:'Budget-friendly shared room perfect for Bond University and Griffith students. House is focused on study, everyone here is a student. Very quiet, fast internet, close to Bond University and Robina Town Centre.',
     hm:[{flag:'🇮🇳',name:'Arjun',from:'Mumbai',em:'👨‍💻'},{flag:'🇵🇭',name:'Maria',from:'Manila',em:'👩‍🔬'},{flag:'🇻🇳',name:'Linh',from:'Hanoi',em:'📖'},{flag:'🇹🇭',name:'Som',from:'Bangkok',em:'🎓'}],
-    revs:[{name:'Priya S.',cc:'🇮🇳',txt:'Great value for money. Very studious atmosphere, quiet hours respected. Bond returned 100% on time via NestMate.',stars:4},{name:'Kiet N.',cc:'🇻🇳',txt:'Close to uni, cheap, safe. The platform made me feel protected before arriving in Australia.',stars:5}],
+    revs:[{name:'Priya S.',cc:'🇮🇳',txt:'Great value for money. Very studious atmosphere, quiet hours respected. Bond returned 100% on time via Bripp.',stars:4},{name:'Kiet N.',cc:'🇻🇳',txt:'Close to uni, cheap, safe. The platform made me feel protected before arriving in Australia.',stars:5}],
     imgs:['data:image/jpeg;base64,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','https://picsum.photos/id/120/400/300','https://picsum.photos/id/121/400/300','https://picsum.photos/id/122/400/300','https://picsum.photos/id/123/400/300']
   },
   {
@@ -1682,7 +1739,7 @@ const LISTINGS = [
     vibe:'Social', gender:'Mixed', bond:620, fee:46,
     desc:'Casual beach house in Coolangatta, 2 minutes walk to Snapper Rocks surf spot! International and relaxed house with French, German and Japanese housemates. Perfect for surf lovers and beach people.',
     hm:[{flag:'🇫🇷',name:'Mathieu',from:'Paris',em:'🏄'},{flag:'🇩🇪',name:'Nina',from:'Berlin',em:'🤸'},{flag:'🇯🇵',name:'Kenji',from:'Osaka',em:'🎵'}],
-    revs:[{name:'James R.',cc:'🇬🇧',txt:'Woke up, surfed, came home, repeat. Dream life. NestMate video tour convinced me before I arrived.',stars:5},{name:'Luisa M.',cc:'🇨🇴',txt:'Amazing location, chill vibe, great international housemates. Love the nationality filter!',stars:5}],
+    revs:[{name:'James R.',cc:'🇬🇧',txt:'Woke up, surfed, came home, repeat. Dream life. Bripp video tour convinced me before I arrived.',stars:5},{name:'Luisa M.',cc:'🇨🇴',txt:'Amazing location, chill vibe, great international housemates. Love the nationality filter!',stars:5}],
     imgs:['data:image/jpeg;base64,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','https://picsum.photos/id/139/400/300','https://picsum.photos/id/145/400/300','https://picsum.photos/id/146/400/300','https://picsum.photos/id/148/400/300']
   },
   {
@@ -1696,7 +1753,7 @@ const LISTINGS = [
     vibe:'Quiet', gender:'Mixed', bond:580, fee:43,
     desc:'Fully Korean household — perfect for Korean students or anyone who wants to immerse in Korean culture. Fully equipped Korean kitchen (rice cooker, kimchi fridge, Korean pantry). Close to Korean grocery stores.',
     hm:[{flag:'🇰🇷',name:'Jiyeon',from:'Busan',em:'👩‍🍳'},{flag:'🇰🇷',name:'Minho',from:'Seoul',em:'🎮'},{flag:'🇰🇷',name:'Sooji',from:'Incheon',em:'💄'}],
-    revs:[{name:'Hyunwoo P.',cc:'🇰🇷',txt:'Finally a house that feels like home! Korean food, Korean TV, Korean friends. Nationality filter on NestMate is amazing.',stars:5},{name:'Aiko T.',cc:'🇯🇵',txt:'I wanted to improve my Korean and this house was perfect. NestMate process was flawless.',stars:5}],
+    revs:[{name:'Hyunwoo P.',cc:'🇰🇷',txt:'Finally a house that feels like home! Korean food, Korean TV, Korean friends. Nationality filter on Bripp is amazing.',stars:5},{name:'Aiko T.',cc:'🇯🇵',txt:'I wanted to improve my Korean and this house was perfect. Bripp process was flawless.',stars:5}],
     imgs:['data:image/jpeg;base64,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','https://picsum.photos/id/165/400/300','https://picsum.photos/id/166/400/300','https://picsum.photos/id/167/400/300','https://picsum.photos/id/168/400/300']
   },
   {
@@ -1710,7 +1767,7 @@ const LISTINGS = [
     vibe:'Social', gender:'Mixed', bond:460, fee:34,
     desc:'Great value room near Helensvale G:link station — easy access to the whole Gold Coast. Super diverse international house, everyone from a different country. Budget-friendly for Griffith students or English courses.',
     hm:[{flag:'🇧🇷',name:'Rafael',from:'Belo Horizonte',em:'⚽'},{flag:'🇨🇳',name:'Wei',from:'Beijing',em:'🎮'},{flag:'🇮🇳',name:'Deepa',from:'Chennai',em:'🎨'}],
-    revs:[{name:'Andrés C.',cc:'🇨🇴',txt:'Best budget option in GC. Clean, well located. NestMate contract protected me from any misunderstanding.',stars:4},{name:'Li X.',cc:'🇨🇳',txt:'Safe, affordable, good location. Escrow for bond gave me peace of mind coming from overseas.',stars:5}],
+    revs:[{name:'Andrés C.',cc:'🇨🇴',txt:'Best budget option in GC. Clean, well located. Bripp contract protected me from any misunderstanding.',stars:4},{name:'Li X.',cc:'🇨🇳',txt:'Safe, affordable, good location. Escrow for bond gave me peace of mind coming from overseas.',stars:5}],
     imgs:['data:image/jpeg;base64,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','https://picsum.photos/id/176/400/300','https://picsum.photos/id/177/400/300','https://picsum.photos/id/178/400/300','https://picsum.photos/id/179/400/300']
   }
 ];
@@ -1740,6 +1797,7 @@ function go(id) {
   el.classList.add('active');
   window.scrollTo(0, 0);
   if (id === 's-browse') loadListingsFromDB();
+  if (id === 's-land') loadHomeFeatured();
   if (id === 's-landlord') { /* dashboard loaded by goLandlord() */ }
   // Save current screen to session storage (persists on refresh)
   try { sessionStorage.setItem('nm-screen', id); } catch(e) {}
@@ -1824,7 +1882,7 @@ function renderFirstTimeLandlord(m) {
   m.innerHTML = `
     <div style="max-width:600px;margin:0 auto;padding:24px 16px">
       <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:4px">Welcome, ${name}! 👋</h1>
-      <p style="color:var(--muted);font-size:.88rem;margin-bottom:24px">Follow these steps to start earning with RoomiStay</p>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:24px">Follow these steps to start earning with Bripp</p>
 
       <!-- Step by step guide -->
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px">
@@ -1877,7 +1935,7 @@ function renderFirstTimeLandlord(m) {
           <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-m);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--muted);flex-shrink:0">6</div>
           <div style="flex:1">
             <div style="font-weight:700;font-size:.9rem">🎉 Get paid!</div>
-            <div style="font-size:.78rem;color:var(--muted)">Money is released to your account 24h after tenant confirms check-in. RoomiStay takes 5% — you keep 95%.</div>
+            <div style="font-size:.78rem;color:var(--muted)">Money is released to your account 24h after tenant confirms check-in. Bripp takes 5% — you keep 95%.</div>
           </div>
         </div>
       </div>
@@ -1917,7 +1975,7 @@ async function renderRealDashboard(m, listings) {
     <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:4px;color:var(--text)">
       Good morning, ${name} 👋
     </h1>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your NestMate dashboard.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:22px">Here's your Bripp dashboard.</p>
     
     <div class="stats-row">
       <div class="stat-card">
@@ -1936,7 +1994,7 @@ async function renderRealDashboard(m, listings) {
         <div class="ico">💰</div>
         <div class="sval">AU$${earnings.toLocaleString()}</div>
         <div class="slabel">Total earned</div>
-        <div class="sdelta">Via NestMate escrow</div>
+        <div class="sdelta">Via Bripp escrow</div>
       </div>
       <div class="stat-card">
         <div class="ico">⭐</div>
@@ -1985,10 +2043,10 @@ let currentUser = null;
 let stripe = null;
 
 function initSupabase() {
-  const { SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_KEY } = window.NESTMATE_CONFIG;
+  const { SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_KEY } = window.BRIPP_CONFIG;
   // Only skip if still has placeholder value
   if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-    console.warn('⚠️ NestMate: Configure as credenciais em NESTMATE_CONFIG');
+    console.warn('⚠️ Bripp: Configure as credenciais em BRIPP_CONFIG');
     return;
   }
   try {
@@ -2000,8 +2058,9 @@ function initSupabase() {
     }
     _supabaseClient = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     stripe = window.Stripe ? window.Stripe(STRIPE_KEY) : null;
-    console.log('✅ NestMate: Supabase connected!');
+    console.log('✅ Bripp: Supabase connected!');
     checkSession();
+    loadHomeFeatured();
   } catch(e) {
     console.error('Supabase init error:', e);
     setTimeout(initSupabase, 500);
@@ -2222,7 +2281,7 @@ async function loginWithFacebook() {
   }
   const { error } = await _supabaseClient.auth.signInWithOAuth({
     provider: 'facebook',
-    options: { redirectTo: window.NESTMATE_CONFIG.APP_URL }
+    options: { redirectTo: window.BRIPP_CONFIG.APP_URL }
   });
   if (error) toast('Erro ao conectar com Facebook: ' + error.message, 'error');
 }
@@ -2261,7 +2320,7 @@ async function signUpWithEmail(email, password, fullName, role, nationality, bio
     email, password,
     options: {
       data: { full_name: fullName, role, nationality, bio: bio||'', languages: languages||[] },
-      emailRedirectTo: window.NESTMATE_CONFIG.APP_URL
+      emailRedirectTo: window.BRIPP_CONFIG.APP_URL
     }
   });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
@@ -2312,6 +2371,94 @@ async function doLogin() {
     return;
   }
   toast('✅ Welcome back!', 'lime');
+}
+
+// ══════════════════════════════════════
+// HOME — Search + Featured Rooms
+// ══════════════════════════════════════
+function homeSearch() {
+  const suburb = document.getElementById('homeSuburb')?.value || '';
+  const type = document.getElementById('homeType')?.value || '';
+  const price = document.getElementById('homePrice')?.value || '';
+  // Go to browse with filters pre-set
+  go('s-browse');
+  setTimeout(() => {
+    if (suburb && document.getElementById('srchInp')) {
+      document.getElementById('srchInp').value = suburb;
+    }
+    if (price) {
+      maxPr = parseInt(price);
+      const sl = document.getElementById('priceRange');
+      if (sl) sl.value = price;
+      const pv = document.getElementById('priceV');
+      if (pv) pv.textContent = 'AU$' + price;
+    }
+    if (type) {
+      document.querySelectorAll('#typeChips .chip').forEach(c => {
+        c.classList.remove('on');
+        if (c.textContent.trim() === type) c.classList.add('on');
+      });
+    }
+    filterAll();
+  }, 300);
+}
+
+async function loadHomeFeatured() {
+  const grid = document.getElementById('homeFeaturedGrid');
+  if (!grid) return;
+  if (!_supabaseClient) {
+    grid.innerHTML = '<div style="grid-column:span 3;text-align:center;padding:40px;color:var(--muted)"><div style="font-size:2rem;margin-bottom:12px">🏠</div><p>No rooms listed yet. Be the first!</p></div>';
+    return;
+  }
+  try {
+    const { data, error } = await _supabaseClient
+      .from('listings')
+      .select('*')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(3);
+    if (error || !data || !data.length) {
+      grid.innerHTML = '<div style="grid-column:span 3;text-align:center;padding:40px;color:var(--muted)"><div style="font-size:2rem;margin-bottom:12px">🏠</div><p>No rooms listed yet.</p></div>';
+      return;
+    }
+    const mapped = data.map(r => ({
+      id: r.id,
+      title: r.title || 'Room in Gold Coast',
+      suburb: r.suburb || 'Gold Coast',
+      type: r.room_type || 'Private',
+      price: r.price_per_week || 0,
+      imgs: r.photos ? (Array.isArray(r.photos) ? r.photos : JSON.parse(r.photos)) : [],
+      rating: r.avg_rating || 5.0,
+      reviews: r.review_count || 0,
+      nats: r.preferred_nationalities ? (Array.isArray(r.preferred_nationalities) ? r.preferred_nationalities : JSON.parse(r.preferred_nationalities)) : [],
+      minWeeks: r.min_stay_weeks || 1,
+      maxMonths: r.max_stay_months || 12,
+      isNew: (Date.now() - new Date(r.created_at).getTime()) < 7 * 24 * 3600 * 1000
+    }));
+    grid.innerHTML = mapped.map(l => {
+      const img = l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500';
+      return `<div class="lcard" onclick="openDetail('${l.id}')">
+        <div class="lcard-img">
+          <img src="${img}" alt="${l.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.src='https://picsum.photos/id/1029/800/500'">
+          <div class="badges"><span class="badge-v">✓ Verified</span>${l.isNew ? '<span class="badge-v" style="background:var(--lime);color:#000">★ New</span>' : ''}</div>
+          <button class="fav-btn" data-favid="${l.id}" onclick="event.stopPropagation();toggleFav(this.dataset.favid,this)">${favs.has(l.id)?'❤️':'🤍'}</button>
+        </div>
+        <div class="lcard-body">
+          <div class="lcard-title">${l.title}</div>
+          <div class="lcard-meta">
+            <span>📍 ${l.suburb}</span>
+            <span>🛏 ${l.type}</span>
+          </div>
+          <div class="lcard-foot" style="margin-top:8px">
+            <div class="price">AU$${l.price}<small>/wk</small></div>
+            <div class="rating"><span class="s">★</span>${l.rating}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:span 3;text-align:center;padding:40px;color:var(--muted)"><p>Could not load rooms.</p></div>';
+  }
 }
 
 // ══════════════════════════════════════
@@ -2550,7 +2697,7 @@ function renderListings(list) {
   if (!list.length) {
     const isEmpty = !window.CURRENT_LISTINGS || window.CURRENT_LISTINGS.length === 0;
     document.getElementById('listGrid').innerHTML = isEmpty
-      ? '<div style="grid-column:span 3;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:16px">🏠</div><h3 style="font-family:Syne,sans-serif;margin-bottom:8px;color:var(--text)">No rooms listed yet</h3><p>Be the first to list a room on NestMate Gold Coast!</p></div>'
+      ? '<div style="grid-column:span 3;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:16px">🏠</div><h3 style="font-family:Syne,sans-serif;margin-bottom:8px;color:var(--text)">No rooms listed yet</h3><p>Be the first to list a room on Bripp Gold Coast!</p></div>'
       : '<div style="grid-column:span 3;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:3rem;margin-bottom:14px">🔍</div><p>No rooms match your filters. Try adjusting!</p></div>';
     return;
   }
@@ -2780,7 +2927,7 @@ function calcPB() {
     '<div style="border-top:1px solid var(--border);margin:14px 0 10px"></div>' +
     '<div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:6px"><span>AU$' + CUR.price + '/wk x ' + label + '</span><span>AU$' + rent + '</span></div>' +
     '<div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:6px"><span>&#128274; Bond (escrow)</span><span>AU$' + (CUR.bond||0) + '</span></div>' +
-    '<div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:10px"><span>NestMate fee</span><span>AU$' + (CUR.fee||0) + '</span></div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:10px"><span>Bripp fee</span><span>AU$' + (CUR.fee||0) + '</span></div>' +
     '<div style="display:flex;justify-content:space-between;font-weight:700;font-size:.95rem"><span>' + totalLabel + '</span><span style="color:var(--lime)">AU$' + total + '</span></div>';
 }
 
@@ -2823,18 +2970,18 @@ function renderStep() {
     mc.innerHTML = `
       <p style="color:var(--muted);font-size:.84rem;margin-bottom:12px">Please read and accept the lease agreement.</p>
       <div class="terms-box">
-        <h4>NestMate Sublease Agreement</h4>
+        <h4>Bripp Sublease Agreement</h4>
         <p><strong>Property:</strong> ${l.title}, ${l.suburb}, Gold Coast QLD, Australia.</p>
-        <p><strong>Rent:</strong> AU$${l.price}/week, payable weekly in advance via NestMate. Late payments incur AU$25 admin fee after 3 days.</p>
+        <p><strong>Rent:</strong> AU$${l.price}/week, payable weekly in advance via Bripp. Late payments incur AU$25 admin fee after 3 days.</p>
         <p><strong>Duration:</strong> ${weeks} week${weeks>1?'s':''} — from ${mIn} to ${mOut}. Minimum stay: ${l.minWeeks} week${l.minWeeks>1?'s':''}. Maximum: ${l.maxMonths} months. No daily rental.</p>
-        <p><strong>Bond:</strong> AU$${l.bond} held in escrow by NestMate. Released within 14 days of lease end, minus documented damages.</p>
+        <p><strong>Bond:</strong> AU$${l.bond} held in escrow by Bripp. Released within 14 days of lease end, minus documented damages.</p>
         <p><strong>Escrow:</strong> Payments held until you confirm check-in. If property doesn't match listing, full refund within 24h of arrival.</p>
         <p><strong>Cancellation:</strong> Free up to 48h before move-in. After that, 50% of first week non-refundable. Bond always fully refundable.</p>
-        <p><strong>Disputes:</strong> Mediated via NestMate process using evidence logged on platform. Resolution within 14 business days.</p>
-        <p><strong>Identity:</strong> Both parties are KYC-verified by NestMate. False identity = immediate termination + legal action.</p>
+        <p><strong>Disputes:</strong> Mediated via Bripp process using evidence logged on platform. Resolution within 14 business days.</p>
+        <p><strong>Identity:</strong> Both parties are KYC-verified by Bripp. False identity = immediate termination + legal action.</p>
         <p><strong>Law:</strong> Queensland Residential Tenancies and Rooming Accommodation Act 2008.</p>
       </div>
-      <label class="chk-row" onclick="this.querySelector('input').checked=!this.querySelector('input').checked"><input type="checkbox" id="chk1"> <span>I have read and agree to the <strong>NestMate Lease Agreement</strong> and confirm all details are correct.</span></label>
+      <label class="chk-row" onclick="this.querySelector('input').checked=!this.querySelector('input').checked"><input type="checkbox" id="chk1"> <span>I have read and agree to the <strong>Bripp Lease Agreement</strong> and confirm all details are correct.</span></label>
       <label class="chk-row" onclick="this.querySelector('input').checked=!this.querySelector('input').checked"><input type="checkbox" id="chk2"> <span>I understand my <strong>bond of AU$${l.bond}</strong> is held in escrow and released after check-in confirmation. Fully refundable if property doesn't match.</span></label>
       <button class="btn lime full" style="margin-top:12px" onclick="checkTerms()">Accept & Continue →</button>
       <button class="btn ol full sm" style="margin-top:8px" onclick="STEP=1;renderStep()">← Back</button>`;
@@ -2861,7 +3008,7 @@ function renderStep() {
       <div class="sum-box" style="margin-top:12px">
         <div class="sum-r"><span>Rent × ${weeks} weeks</span><span>AU$${l.price*weeks}</span></div>
         <div class="sum-r"><span>Bond (escrow 🔒)</span><span>AU$${l.bond}</span></div>
-        <div class="sum-r"><span>NestMate fee</span><span>AU$${l.fee}</span></div>
+        <div class="sum-r"><span>Bripp fee</span><span>AU$${l.fee}</span></div>
         <div class="sum-r"><span>Total charged today</span><span>AU$${total}</span></div>
       </div>
       <div class="sim-note">🔒 Your payment is protected by Stripe — the most trusted payment gateway in Australia.</div>
@@ -2936,7 +3083,7 @@ async function simulatePay(total) {
               type: 'booking_received',
               bookingId: booking.id,
               landlordId: CUR.landlordId,
-              appUrl: window.NESTMATE_CONFIG.APP_URL,
+              appUrl: window.BRIPP_CONFIG.APP_URL,
             })
           }).catch(e => console.log('Email failed (non-critical):', e));
         }
@@ -3062,7 +3209,7 @@ async function renderEarnings(m) {
     m.innerHTML = header + `
       <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
         <div class="stat-card"><div class="ico">📅</div><div class="sval">AU$${thisMonth.toFixed(2)}</div><div class="slabel">This month</div></div>
-        <div class="stat-card"><div class="ico">💰</div><div class="sval">AU$${totalEarned.toFixed(2)}</div><div class="slabel">Total earned</div><div class="sdelta">Via NestMate escrow</div></div>
+        <div class="stat-card"><div class="ico">💰</div><div class="sval">AU$${totalEarned.toFixed(2)}</div><div class="slabel">Total earned</div><div class="sdelta">Via Bripp escrow</div></div>
         <div class="stat-card"><div class="ico">🔒</div><div class="sval">AU$${inEscrow.toFixed(2)}</div><div class="slabel">In escrow (bonds)</div><div class="sdelta">Released after check-in</div></div>
       </div>
       ${!payments || payments.length === 0 ? '<div style="text-align:center;padding:40px;background:var(--bg-l);border-radius:14px;border:1px dashed var(--border)"><div style="font-size:2.5rem;margin-bottom:12px">💰</div><p style="color:var(--muted)">No payments yet. Once tenants book and pay, your earnings will appear here.</p></div>' : renderPaymentsTable(payments)}
@@ -3127,7 +3274,7 @@ async function renderLLListings(m) {
         <div style="flex:1">
           <div style="font-weight:600;font-size:.9rem;color:var(--text)">${l.title}</div>
           <div style="font-size:.76rem;color:var(--muted);margin-top:2px">📍 ${l.suburb} · AU$${l.price_weekly}/wk · Bond AU$${l.bond_amount}</div>
-          ${st === 'pending_review' ? '<div style="font-size:.72rem;color:var(--orange);margin-top:3px">⏳ Under review by NestMate team — usually within 24h</div>' : ''}
+          ${st === 'pending_review' ? '<div style="font-size:.72rem;color:var(--orange);margin-top:3px">⏳ Under review by Bripp team — usually within 24h</div>' : ''}
         </div>
         <span class="s-badge ${statusClass[st] || 's-vacant'}"><span class="s-dot"></span>${statusLabel[st] || st}</span>
         <div style="display:flex;gap:7px">
@@ -3282,7 +3429,7 @@ function renderAddListing(m, skipClear) {
           <p style="margin-top:6px;font-size:.75rem">First photo will be the cover</p>
           <span class="req-badge">⚠️ Listing without photos will not be published</span>
         </div>
-        <div id="photoWarn" class="photo-min-warn">⚠️ Adicione pelo menos 3 fotos para publicar este quarto. Anúncios sem fotos geram desconfiança e não serão aprovados pela equipe NestMate.</div>
+        <div id="photoWarn" class="photo-min-warn">⚠️ Adicione pelo menos 3 fotos para publicar este quarto. Anúncios sem fotos geram desconfiança e não serão aprovados pela equipe Bripp.</div>
         <div class="photo-previews" id="photoPreviews"></div>
         <div class="upload-progress" id="uploadProg" style="display:none"></div>
       </div>
@@ -3301,7 +3448,7 @@ function renderAddListing(m, skipClear) {
       <div class="fg" style="margin-top:14px">
         <label class="lbl">Rental Duration Allowed</label>
         <div style="background:rgba(200,241,53,.04);border:1px solid rgba(200,241,53,.15);border-radius:12px;padding:14px">
-          <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px">⚠️ NestMate não aceita aluguel por diária. Mínimo: 1 semana.</p>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px">⚠️ Bripp não aceita aluguel por diária. Mínimo: 1 semana.</p>
           <div class="form-grid" style="gap:12px">
             <div class="fg" style="margin:0">
               <label class="lbl">Mínimo</label>
@@ -3371,7 +3518,7 @@ function renderAddListing(m, skipClear) {
       </div>
 
       <div style="margin-top:20px;padding:14px;background:rgba(200,241,53,.05);border:1px solid rgba(200,241,53,.15);border-radius:12px;font-size:.8rem;color:var(--muted)">
-        <strong style="color:var(--lime)">📸 Nota sobre as fotos:</strong> Após cadastro, a equipe NestMate verifica as fotos com timestamp e geolocalização para garantir que representam o estado real do quarto. Listagens com fotos manipuladas serão removidas imediatamente.
+        <strong style="color:var(--lime)">📸 Nota sobre as fotos:</strong> Após cadastro, a equipe Bripp verifica as fotos com timestamp e geolocalização para garantir que representam o estado real do quarto. Listagens com fotos manipuladas serão removidas imediatamente.
       </div>
 
       <!-- HOUSEMATES IN FORM -->
@@ -3728,7 +3875,7 @@ const TRANSLATIONS = {
     'Free cancellation 48h · No charges until accepted':'Free cancellation 48h · No charges until accepted',
     'Back to listings':'Back to listings',
     'Sign In':'Sign In','Join Free':'Join Free',
-    'Welcome back':'Welcome back','Sign in to NestMate':'Sign in to NestMate',
+    'Welcome back':'Welcome back','Sign in to Bripp':'Sign in to Bripp',
     'No account?':'No account?','Already have an account?':'Already have an account?',
     'Create Account →':'Create Account →',
     'Good morning':'Good morning',
@@ -3757,7 +3904,7 @@ const TRANSLATIONS = {
     'Free cancellation 48h · No charges until accepted':'Cancelamento grátis em 48h · Sem cobrança até aprovação',
     'Back to listings':'Voltar às listagens',
     'Sign In':'Entrar','Join Free':'Cadastrar Grátis',
-    'Welcome back':'Bem-vindo de volta','Sign in to NestMate':'Entre no NestMate',
+    'Welcome back':'Bem-vindo de volta','Sign in to Bripp':'Entre no Bripp',
     'No account?':'Não tem conta?','Already have an account?':'Já tem uma conta?',
     'Create Account →':'Criar Conta →',
     'Good morning':'Bom dia',
@@ -5882,7 +6029,7 @@ async function renderLLSettings(m) {
       <!-- Payment Schedule -->
       <div style="background:var(--bg-m);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
         <div style="font-weight:700;font-size:.85rem;margin-bottom:6px">💳 Payment Schedule</div>
-        <div style="font-size:.75rem;color:var(--muted);margin-bottom:14px;line-height:1.5">Define when tenants pay. You receive 95% of each payment automatically via Stripe. RoomiStay retains 5% on bond and weekly rent.</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:14px;line-height:1.5">Define when tenants pay. You receive 95% of each payment automatically via Stripe. Bripp retains 5% on bond and weekly rent.</div>
 
         <!-- Bond payment timing -->
         <div class="fg">
@@ -5936,8 +6083,8 @@ async function renderLLSettings(m) {
         <!-- Platform fee info -->
         <div style="padding:12px;background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.2);border-radius:10px;font-size:.78rem;line-height:1.6;color:var(--muted)">
           <strong style="color:var(--text)">Fee structure:</strong><br>
-          🏠 Bond: you receive <strong>95%</strong>, RoomiStay retains <strong>5%</strong><br>
-          💰 Weekly rent: you receive <strong>95%</strong>, RoomiStay retains <strong>5%</strong><br>
+          🏠 Bond: you receive <strong>95%</strong>, Bripp retains <strong>5%</strong><br>
+          💰 Weekly rent: you receive <strong>95%</strong>, Bripp retains <strong>5%</strong><br>
           📧 Automatic payment reminders sent to tenants<br>
           ✅ Funds transferred via Stripe within 24h of payment
         </div>
@@ -6017,7 +6164,7 @@ function getStripeConnectHTML(accountId) {
   }
   return '<div style="padding:12px;background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.15);border-radius:10px;margin-bottom:14px;font-size:.82rem;color:var(--muted)">' +
     '⚠️ Connect a bank account to receive payments from tenants.</div>' +
-    '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px;line-height:1.5">NestMate uses <strong>Stripe</strong> to securely handle payouts. Your bank details are handled entirely by Stripe.</div>' +
+    '<div style="font-size:.8rem;color:var(--muted);margin-bottom:12px;line-height:1.5">Bripp uses <strong>Stripe</strong> to securely handle payouts. Your bank details are handled entirely by Stripe.</div>' +
     '<button class="btn lime full" onclick="stripeConnectOnboard()" style="display:flex;align-items:center;justify-content:center;gap:8px">🏦 Connect Bank Account via Stripe</button>' +
     '<p style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:8px">Takes ~5 minutes · Secured by Stripe</p>';
 }
@@ -6072,7 +6219,7 @@ async function doForgotPassword() {
   if (!email) { toast('Enter your email first', ''); return; }
   if (!_supabaseClient) return;
   const { error } = await _supabaseClient.auth.resetPasswordForEmail(email, {
-    redirectTo: window.NESTMATE_CONFIG.APP_URL + '?reset=true',
+    redirectTo: window.BRIPP_CONFIG.APP_URL + '?reset=true',
   });
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   toast('✅ Reset link sent to ' + email, 'lime');
@@ -6358,7 +6505,7 @@ async function sendSupportMsg() {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
-        system: 'You are a helpful support agent for RoomiStay, a student room rental platform in Gold Coast, Australia. Keep responses short, friendly, and helpful. Key info: escrow protects payments, 5% platform fee, KYC required, landlords get paid 24h after tenant check-in.',
+        system: 'You are a helpful support agent for Bripp, a student room rental platform in Gold Coast, Australia. Keep responses short, friendly, and helpful. Key info: escrow protects payments, 5% platform fee, KYC required, landlords get paid 24h after tenant check-in.',
         messages: _supportHistory,
       })
     });
@@ -7281,7 +7428,7 @@ function goBackFromLegal() {
       </div>
     </div>
     <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <div style="font-size:.75rem;color:var(--muted)">© 2026 RoomiStay · Gold Coast, QLD, Australia · ABN 00 000 000 000</div>
+      <div style="font-size:.75rem;color:var(--muted)">© 2026 Bripp · Gold Coast, QLD, Australia · ABN 00 000 000 000</div>
       <div style="display:flex;gap:12px">
         <a onclick="showLegal('s-privacy')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Privacy</a>
         <a onclick="showLegal('s-terms')" style="font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none">Terms</a>
@@ -7301,14 +7448,14 @@ function goBackFromLegal() {
   <div style="padding:16px;background:var(--lime);display:flex;align-items:center;gap:10px">
     <div style="width:36px;height:36px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🏠</div>
     <div>
-      <div style="font-weight:700;font-size:.9rem;color:#000">RoomiStay Support</div>
+      <div style="font-weight:700;font-size:.9rem;color:#000">Bripp Support</div>
       <div style="font-size:.72rem;color:rgba(0,0,0,.6)">Usually replies in minutes</div>
     </div>
     <button onclick="toggleSupportChat()" style="margin-left:auto;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#000">✕</button>
   </div>
   <div id="supportMessages" style="flex:1;overflow-y:auto;padding:16px;min-height:200px;max-height:300px;display:flex;flex-direction:column;gap:10px">
     <div style="background:var(--bg-l);padding:10px 14px;border-radius:12px;border-radius:4px 12px 12px 12px;font-size:.85rem;max-width:85%">
-      👋 Hi! Welcome to RoomiStay. How can we help you today?
+      👋 Hi! Welcome to Bripp. How can we help you today?
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
       <button onclick="supportQuickReply('How does escrow work?')" style="padding:6px 12px;background:var(--bg-m);border:1px solid var(--border);border-radius:20px;font-size:.75rem;cursor:pointer;color:var(--text)">How does escrow work?</button>
