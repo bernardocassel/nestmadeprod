@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://api.anthropic.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://meet.jit.si; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://www.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org https://picsum.photos https://images.unsplash.com https://*.googleusercontent.com https://lh3.googleusercontent.com https://lh4.googleusercontent.com https://lh5.googleusercontent.com https://lh6.googleusercontent.com https://*.gstatic.com https://www.gstatic.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com https://api.anthropic.com https://api.stripe.com https://js.stripe.com https://translate.googleapis.com; frame-src https://*.openstreetmap.org https://js.stripe.com https://meet.jit.si https://translate.google.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com https://*.openstreetmap.org https://overpass-api.de https://nominatim.openstreetmap.org https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://api.anthropic.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://meet.jit.si; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://www.gstatic.com https://translate.googleapis.com; img-src 'self' data: blob: https://*.supabase.co https://*.openstreetmap.org https://*.tile.openstreetmap.org https://nominatim.openstreetmap.org https://picsum.photos https://images.unsplash.com https://*.googleusercontent.com https://lh3.googleusercontent.com https://lh4.googleusercontent.com https://lh5.googleusercontent.com https://lh6.googleusercontent.com https://*.gstatic.com https://www.gstatic.com https://translate.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://overpass-api.de https://nominatim.openstreetmap.org https://api.resend.com https://api.anthropic.com https://api.stripe.com https://js.stripe.com https://translate.googleapis.com https://translate.google.com; frame-src https://*.openstreetmap.org https://js.stripe.com https://meet.jit.si https://translate.google.com https://translate.googleapis.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bripp — Find Your Room in Gold Coast</title>
 <!-- v1774026145 -->
@@ -391,7 +391,28 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 .util-shared{background:rgba(255,107,53,.08);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
 
 .conv-item:hover{background:var(--bg-l)}
-.inbox-row:hover{background:var(--bg-l)}</style>
+.inbox-row:hover{background:var(--bg-l)}
+
+/* ── THEME TOGGLE BUTTON ── */
+.theme-toggle{width:34px;height:34px;border-radius:50%;background:var(--bg-l);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;transition:all .2s;padding:0}
+.theme-toggle:hover{border-color:var(--lime)}
+
+/* ── MOBILE NAV ── */
+#mobileMenuBtn{display:none;padding:7px 10px;background:var(--bg-l);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:1.1rem}
+#mobileDrawer{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5)}
+#mobileDrawerPanel{position:absolute;right:0;top:0;bottom:0;width:280px;background:var(--bg-m);padding:20px 16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;box-shadow:-4px 0 30px rgba(0,0,0,.2)}
+#mobileDrawerPanel .md-close{align-self:flex-end;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);padding:0}
+#mobileDrawerPanel .md-user{display:flex;align-items:center;gap:10px;padding:14px;background:var(--bg-l);border-radius:12px;margin-bottom:4px}
+#mobileDrawerPanel .md-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:.9rem;font-weight:600;color:var(--text);border:1px solid var(--border);background:var(--bg)}
+#mobileDrawerPanel .md-item:hover{border-color:var(--lime);color:var(--lime)}
+#mobileDrawerPanel .md-item.prim{background:var(--lime);color:#000;border-color:var(--lime)}
+@media(max-width:768px){
+  #mobileMenuBtn{display:flex;align-items:center;justify-content:center}
+  .nav-r > *:not(#mobileMenuBtn):not(.mode-sw){display:none!important}
+  .mode-sw{display:none!important}
+  /* Keep support bubble above message icon on mobile */
+  #supportBubble{bottom:84px!important}
+}</style>
 </head>
 <body>
 
@@ -440,8 +461,47 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <div onclick="doLogout()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--red)" onmouseenter="this.style.background='var(--bg-l)'" onmouseleave="this.style.background=''">🚪 Sign Out</div>
       </div>
     </div>
+    <!-- Mobile hamburger -->
+    <button id="mobileMenuBtn" onclick="openMobileDrawer()">☰</button>
   </div>
 </nav>
+
+<!-- ════════════ MOBILE DRAWER ════════════ -->
+<div id="mobileDrawer" onclick="closeMobileDrawer(event)">
+  <div id="mobileDrawerPanel">
+    <button class="md-close" onclick="closeMobileDrawer()">✕</button>
+    <!-- User info (when logged in) -->
+    <div id="mdUserInfo" style="display:none" class="md-user">
+      <div id="mdAvatar" style="width:42px;height:42px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;overflow:hidden;flex-shrink:0">?</div>
+      <div>
+        <div id="mdName" style="font-weight:700;font-size:.9rem;color:var(--text)">User</div>
+        <div style="font-size:.72rem;color:var(--muted)">Logged in</div>
+      </div>
+    </div>
+    <!-- Auth buttons (when logged out) -->
+    <div id="mdAuthBtns" style="display:flex;flex-direction:column;gap:8px">
+      <div class="md-item prim" onclick="go('s-login');closeMobileDrawer()">🔑 Sign In</div>
+      <div class="md-item" onclick="go('s-signup');closeMobileDrawer()">✨ Join Free</div>
+    </div>
+    <!-- Menu items (always visible) -->
+    <div class="md-item" onclick="go('s-browse');closeMobileDrawer()">🔍 Browse Rooms</div>
+    <div class="md-item" onclick="setMode('landlord');closeMobileDrawer()">🏠 List My Room</div>
+    <!-- Logged-in items -->
+    <div id="mdLoggedItems" style="display:none">
+      <div class="md-item" onclick="goToOwnProfile();closeMobileDrawer()" style="margin-bottom:8px">👤 My Profile</div>
+      <div class="md-item" onclick="openMyBookings();closeMobileDrawer()" style="margin-bottom:8px">🏠 My Bookings</div>
+      <div class="md-item" onclick="openMessages();closeMobileDrawer()" style="margin-bottom:8px">💬 Messages</div>
+      <div id="mdAdminBtn" class="md-item" onclick="go('s-admin');admTab('pending');closeMobileDrawer()" style="display:none;border-color:var(--red);color:var(--red);margin-bottom:8px">⚙️ Admin Panel</div>
+    </div>
+    <!-- Theme & Language -->
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <div class="md-item" style="flex:1;justify-content:center" onclick="toggleTheme();closeMobileDrawer()"><span id="mdThemeIcon">🌙</span> Theme</div>
+    </div>
+    <div id="mdLogoutBtn" style="display:none">
+      <div class="md-item" style="color:var(--red);border-color:var(--red);margin-top:8px" onclick="doLogout();closeMobileDrawer()">🚪 Sign Out</div>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════ LANDING ════════════ -->
 <div id="s-land" class="screen active">
@@ -916,7 +976,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
         <button class="btn lime full" onclick="openBooking()" style="margin-bottom:8px">Request this Room</button>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
           <button class="btn ol sm" onclick="openChatModal()" style="justify-content:center">💬 Message</button>
-          <button class="btn ol sm" onclick="requestVideoTour()" style="justify-content:center;border-color:var(--teal);color:var(--teal)">📹 Video Tour</button>
+          <button class="btn ol sm" onclick="requestVideoTour()" style="justify-content:center;border-color:var(--teal);color:var(--teal)">🏠 Book a Tour</button>
         </div>
         <p style="text-align:center;margin-top:12px;font-size:.72rem;color:var(--muted)">Free cancellation 48h · No charges until accepted</p>
       </div>
@@ -1535,7 +1595,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
     <!-- Header -->
     <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
       <div>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem">📹 Video Tour</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem">🏠 Schedule a Tour</div>
         <div id="videoTourListingName" style="font-size:.8rem;color:var(--muted);margin-top:2px"></div>
       </div>
       <button onclick="closeVideoTour()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted)">✕</button>
@@ -1553,25 +1613,13 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
 
     <!-- Schedule / Request area -->
     <div id="videoTourOptions" style="padding:24px">
-      <!-- Option 1: Instant call -->
+      <!-- Option 1: Schedule Video Tour -->
       <div style="padding:16px;background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.2);border-radius:14px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <span style="font-size:1.4rem">⚡</span>
-          <div>
-            <div style="font-weight:700;font-size:.9rem">Instant Video Call</div>
-            <div style="font-size:.76rem;color:var(--muted)">Start a call now — if landlord is available they will join</div>
-          </div>
-        </div>
-        <button onclick="startInstantCall()" class="btn lime full sm">Start Video Call Now →</button>
-      </div>
-
-      <!-- Option 2: Schedule -->
-      <div style="padding:16px;background:var(--bg-l);border:1px solid var(--border);border-radius:14px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <span style="font-size:1.4rem">📅</span>
+          <span style="font-size:1.4rem">📹</span>
           <div>
-            <div style="font-weight:700;font-size:.9rem">Schedule a Tour</div>
-            <div style="font-size:.76rem;color:var(--muted)">Pick a date and time that works for both</div>
+            <div style="font-weight:700;font-size:.9rem">Schedule a Video Tour</div>
+            <div style="font-size:.76rem;color:var(--muted)">Meet the landlord online — no travel needed</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
@@ -1593,11 +1641,42 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
           <label style="font-size:.72rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px">Message (optional)</label>
           <textarea id="tourMessage" class="inp" rows="2" style="resize:none;margin:0;font-size:.85rem" placeholder="Any specific areas you'd like to see?"></textarea>
         </div>
-        <button id="scheduleTourBtn" onclick="scheduleVideoTour()" class="btn ol full sm">📅 Request Tour Time</button>
+        <button id="scheduleTourBtn" onclick="scheduleVideoTour()" class="btn lime full sm">📅 Request Video Tour →</button>
       </div>
 
-      <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:14px">
-        Video tours use <strong>Jitsi Meet</strong> — free, no download required
+      <!-- Option 2: In-Person Visit -->
+      <div style="padding:16px;background:var(--bg-l);border:1px solid var(--border);border-radius:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <span style="font-size:1.4rem">🏠</span>
+          <div>
+            <div style="font-weight:700;font-size:.9rem">Schedule an In-Person Visit</div>
+            <div style="font-size:.76rem;color:var(--muted)">Visit the property in person — confirm dates with the landlord</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px">Preferred Date</label>
+            <input type="date" id="visitDate" class="inp" style="padding:8px;margin:0;font-size:.85rem">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px">Preferred Time</label>
+            <select id="visitTime" class="inp" style="padding:8px;margin:0;font-size:.85rem">
+              <option>09:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+              <option>12:00 PM</option><option>01:00 PM</option><option>02:00 PM</option>
+              <option>03:00 PM</option><option>04:00 PM</option><option>05:00 PM</option>
+              <option>06:00 PM</option><option>07:00 PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg" style="margin:0 0 12px">
+          <label style="font-size:.72rem;color:var(--muted);font-weight:600;display:block;margin-bottom:4px">Message (optional)</label>
+          <textarea id="visitMessage" class="inp" rows="2" style="resize:none;margin:0;font-size:.85rem" placeholder="E.g. I can be flexible on dates..."></textarea>
+        </div>
+        <button id="scheduleVisitBtn" onclick="scheduleInPersonVisit()" class="btn ol full sm">🏠 Request In-Person Visit →</button>
+      </div>
+
+      <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:4px">
+        The landlord will confirm via <strong>Messages</strong> · Video tours use Jitsi Meet (free)
       </p>
     </div>
   </div>
@@ -2118,9 +2197,20 @@ function onUserLoggedIn(user) {
   var wrap = document.getElementById('userMenuWrap');
   if (wrap) wrap.style.display = 'block';
   updateNavAvatar(user);
-  toast('✅ Bem-vindo, ' + name.split(' ')[0] + '!', 'lime');
+  toast('👋 Welcome back, ' + name.split(' ')[0] + '!', 'lime');
   setTimeout(checkAdminRole, 500);
   setTimeout(checkUnreadMessages, 1000);
+  // Update mobile drawer
+  var mdInfo = document.getElementById('mdUserInfo');
+  var mdAuthBtns = document.getElementById('mdAuthBtns');
+  var mdLoggedItems = document.getElementById('mdLoggedItems');
+  var mdLogoutBtn = document.getElementById('mdLogoutBtn');
+  var mdName = document.getElementById('mdName');
+  if (mdInfo) mdInfo.style.display = 'flex';
+  if (mdAuthBtns) mdAuthBtns.style.display = 'none';
+  if (mdLoggedItems) mdLoggedItems.style.display = 'block';
+  if (mdLogoutBtn) mdLogoutBtn.style.display = 'block';
+  if (mdName) mdName.textContent = name.split(' ')[0];
 
   // If returning from tab switch, don't navigate at all
   if (_returningToTab) return;
@@ -2436,10 +2526,13 @@ async function loadHomeFeatured() {
       isNew: (Date.now() - new Date(r.created_at).getTime()) < 7 * 24 * 3600 * 1000
     }));
     grid.innerHTML = mapped.map(l => {
-      const img = l.imgs && l.imgs[0] ? l.imgs[0] : 'https://picsum.photos/id/1029/800/500';
+      const img = l.imgs && l.imgs[0] ? l.imgs[0] : '';
+      const imgHtml = img 
+        ? `<img src="${img}" alt="${l.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.onerror=null;this.parentNode.innerHTML='<div style=\\'width:100%;height:100%;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:2.5rem\\'>🏠</div>'">`
+        : `<div style="width:100%;height:100%;background:var(--bg-l);display:flex;align-items:center;justify-content:center;font-size:2.5rem">🏠</div>`;
       return `<div class="lcard" onclick="openDetail('${l.id}')">
         <div class="lcard-img">
-          <img src="${img}" alt="${l.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.src='https://picsum.photos/id/1029/800/500'">
+          ${imgHtml}
           <div class="badges"><span class="badge-v">✓ Verified</span>${l.isNew ? '<span class="badge-v" style="background:var(--lime);color:#000">★ New</span>' : ''}</div>
           <button class="fav-btn" data-favid="${l.id}" onclick="event.stopPropagation();toggleFav(this.dataset.favid,this)">${favs.has(l.id)?'❤️':'🤍'}</button>
         </div>
@@ -3934,8 +4027,13 @@ function setLang(lang) {
   localStorage.setItem('nm-lang', lang);
 }
 // restore saved lang
-// Language locked to English for AU beta
-LANG = 'en';
+(function() {
+  var saved = localStorage.getItem('nm-lang');
+  if (saved && saved !== 'en') {
+    // Will be re-applied after page loads
+  }
+})();
+LANG = 'en'; // Default to EN on start
 
 // ══════════════════════════════════════
 // NATIONALITY SEARCH — full list of 50 nationalities
@@ -4132,6 +4230,10 @@ async function checkAdminRole() {
     isAdmin = res.data && res.data.role === 'admin';
     var btn = document.getElementById('adminNavBtn');
     if (btn) btn.style.display = isAdmin ? 'inline-block' : 'none';
+    var dropBtn = document.getElementById('dropAdminBtn');
+    if (dropBtn) dropBtn.style.display = isAdmin ? 'flex' : 'none';
+    var mdBtn = document.getElementById('mdAdminBtn');
+    if (mdBtn) mdBtn.style.display = isAdmin ? 'flex' : 'none';
     if (isAdmin) loadAdminPendingCount();
     console.log('Role:', res.data && res.data.role, '| Admin:', isAdmin);
   } catch(e) { console.error('checkAdminRole:', e); }
@@ -7211,7 +7313,47 @@ async function scheduleVideoTour() {
     }
   }
 
-  var schedBtn = document.getElementById('scheduleTourBtn'); if (schedBtn) { schedBtn.textContent = '📅 Request Tour Time'; schedBtn.disabled = false; }
+  var schedBtn = document.getElementById('scheduleTourBtn'); if (schedBtn) { schedBtn.textContent = '📅 Request Video Tour →'; schedBtn.disabled = false; }
+}
+
+async function scheduleInPersonVisit() {
+  if (!currentUser || !CUR) return;
+
+  var date = document.getElementById('visitDate')?.value;
+  var time = document.getElementById('visitTime')?.value;
+  var msg = document.getElementById('visitMessage')?.value || '';
+
+  if (!date) { toast('Please select a date', ''); return; }
+
+  var landlordId = CUR.landlordId;
+  if (!landlordId) {
+    var r = await _supabaseClient.from('listings').select('landlord_id').eq('id', CUR.id).single();
+    landlordId = r.data?.landlord_id;
+  }
+  if (!landlordId) { toast('Could not find landlord info', 'error'); return; }
+
+  var btn = document.getElementById('scheduleVisitBtn');
+  if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
+
+  var visitMsg = '🏠 IN_PERSON_VISIT_REQUEST: I would like to visit the property in person.\n📅 Date: ' + date + '\n⏰ Time: ' + time + (msg ? '\n💬 ' + msg : '');
+
+  if (_supabaseClient && landlordId) {
+    var res = await _supabaseClient.from('messages').insert({
+      sender_id: currentUser.id,
+      recipient_id: landlordId,
+      listing_id: CUR.id,
+      content: visitMsg,
+    });
+
+    if (res.error) {
+      toast('Error: ' + res.error.message, 'error');
+    } else {
+      toast('✅ Visit request sent! Landlord will confirm via messages', 'lime');
+      closeVideoTour();
+    }
+  }
+
+  if (btn) { btn.textContent = '🏠 Request In-Person Visit →'; btn.disabled = false; }
 }
 
 function endVideoCall() {
@@ -7382,9 +7524,44 @@ async function renderLLTransactions(m) {
 }
 
 
-// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// ══════════════════════════════════════
+// MOBILE DRAWER
+// ══════════════════════════════════════
+function openMobileDrawer() {
+  var drawer = document.getElementById('mobileDrawer');
+  if (drawer) drawer.style.display = 'block';
+  // Update drawer state
+  if (currentUser) {
+    var name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
+    var mdInfo = document.getElementById('mdUserInfo');
+    var mdAuthBtns = document.getElementById('mdAuthBtns');
+    var mdLoggedItems = document.getElementById('mdLoggedItems');
+    var mdLogoutBtn = document.getElementById('mdLogoutBtn');
+    var mdName = document.getElementById('mdName');
+    var mdAvatar = document.getElementById('mdAvatar');
+    if (mdInfo) mdInfo.style.display = 'flex';
+    if (mdAuthBtns) mdAuthBtns.style.display = 'none';
+    if (mdLoggedItems) mdLoggedItems.style.display = 'block';
+    if (mdLogoutBtn) mdLogoutBtn.style.display = 'block';
+    if (mdName) mdName.textContent = name.split(' ')[0];
+    if (isAdmin) { var b = document.getElementById('mdAdminBtn'); if(b) b.style.display='flex'; }
+    // Update avatar
+    if (mdAvatar) {
+      var av = document.getElementById('navAvatar');
+      if (av) mdAvatar.innerHTML = av.innerHTML;
+    }
+  }
+}
+
+function closeMobileDrawer(e) {
+  if (e && e.target !== document.getElementById('mobileDrawer')) return;
+  var drawer = document.getElementById('mobileDrawer');
+  if (drawer) drawer.style.display = 'none';
+}
+
+// ══════════════════════════════════════
 // LEGAL PAGES — back navigation (SPA fix)
-// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// ══════════════════════════════════════
 var _legalNavSource = 's-land';
 function showLegal(page) {
   _legalNavSource = sessionStorage.getItem('nm-screen') || 's-land';
