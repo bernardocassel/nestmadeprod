@@ -2509,7 +2509,7 @@ async function loadHomeFeatured() {
     const { data, error } = await _supabaseClient
       .from('listings')
       .select('*')
-      .eq('status', 'approved')
+      .in('status', ['active', 'approved'])
       .order('created_at', { ascending: false })
       .limit(3);
     if (error || !data || !data.length) {
@@ -2521,13 +2521,13 @@ async function loadHomeFeatured() {
       title: r.title || 'Room in Gold Coast',
       suburb: r.suburb || 'Gold Coast',
       type: r.room_type || 'Private',
-      price: r.price_per_week || 0,
+      price: r.price_weekly || r.price_per_week || 0,
       imgs: r.photos ? (Array.isArray(r.photos) ? r.photos : JSON.parse(r.photos)) : [],
       rating: r.avg_rating || 5.0,
       reviews: r.review_count || 0,
       nats: r.preferred_nationalities ? (Array.isArray(r.preferred_nationalities) ? r.preferred_nationalities : JSON.parse(r.preferred_nationalities)) : [],
-      minWeeks: r.min_stay_weeks || 1,
-      maxMonths: r.max_stay_months || 12,
+      minWeeks: r.min_stay_weeks || r.min_weeks || 1,
+      maxMonths: r.max_stay_months || r.max_months || 12,
       isNew: (Date.now() - new Date(r.created_at).getTime()) < 7 * 24 * 3600 * 1000
     }));
     grid.innerHTML = mapped.map(l => {
