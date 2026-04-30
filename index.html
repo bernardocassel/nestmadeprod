@@ -12,7 +12,13 @@
     SUPABASE_URL: 'https://ihsteworauuydakhrkws.supabase.co',
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imloc3Rld29yYXV1eWRha2hya3dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTQzMzQsImV4cCI6MjA4OTQzMDMzNH0.EeW_LVJJXCUhRmwox8VQLg0sSnJ8BNFgtQYYDysbNJg',
     STRIPE_KEY: 'pk_live_51TCUnxJiXVz8DVfLBuyZxoBGh5FwfGUB7lF6kCMjoQJB2yexreIndQnRYVhMw7FyuyvR5wOhWMhhLyDgi1SJ1Zsy00rX4yGAnG',
-    APP_URL: 'https://nestmadeprod.vercel.app'
+    APP_URL: 'https://nestmadeprod.vercel.app',
+    // ══ ADMIN EMAILS — adicione os emails dos admins aqui ══
+    ADMIN_EMAILS: [
+      // adicione os emails dos administradores aqui, ex:
+      // 'seu@email.com',
+      // 'dodo@email.com',
+    ]
   };
 </script>
 
@@ -442,7 +448,7 @@ html.dark #s-land .hero .tag{background:rgba(200,241,53,0.12)}
       <span id="themeIcon">🌙</span>
     </button>
     <button class="nbtn ol" onclick="openFavs()" title="Saved rooms" style="padding:7px 12px">❤️</button>
-    <button id="adminNavBtn" style="display:none;padding:7px 14px;border-radius:50px;font-size:.78rem;font-weight:700;border:1.5px solid var(--red);color:var(--red);background:transparent;cursor:pointer" onclick="go('s-admin');admTab('pending')">⚙️ Admin</button>
+    <button id="adminNavBtn" style="display:none;padding:7px 14px;border-radius:50px;font-size:.78rem;font-weight:700;border:1.5px solid var(--red);color:var(--red);background:transparent;cursor:pointer;align-items:center;gap:5px" onclick="go('s-admin');admTab('pending')">⚙️ Admin</button>
     <button class="nbtn ol t" id="signInBtn" data-en="Sign In" data-pt="Entrar" onclick="go('s-login')">Sign In</button>
     <button class="nbtn prim t" id="joinFreeBtn" data-en="Join Free" data-pt="Cadastrar" onclick="go('s-signup')">Join Free</button>
     <!-- User menu dropdown (shown when logged in) -->
@@ -4225,18 +4231,61 @@ function admPhotoHtml(photos, large) {
 async function checkAdminRole() {
   if (!_supabaseClient || !currentUser) return;
   try {
-    var res = await _supabaseClient.from('profiles').select('role').eq('id', currentUser.id).single();
-    if (res.error) return;
-    isAdmin = res.data && res.data.role === 'admin';
-    var btn = document.getElementById('adminNavBtn');
-    if (btn) btn.style.display = isAdmin ? 'inline-block' : 'none';
-    var dropBtn = document.getElementById('dropAdminBtn');
-    if (dropBtn) dropBtn.style.display = isAdmin ? 'flex' : 'none';
-    var mdBtn = document.getElementById('mdAdminBtn');
-    if (mdBtn) mdBtn.style.display = isAdmin ? 'flex' : 'none';
+    // Check 1: Admin emails list from config (fastest, no DB query needed)
+    var configAdminEmails = (window.BRIPP_CONFIG && window.BRIPP_CONFIG.ADMIN_EMAILS) || [];
+    var emailIsAdmin = configAdminEmails.length > 0 && 
+                       configAdminEmails.map(e => e.toLowerCase()).includes((currentUser.email || '').toLowerCase());
+    
+    if (emailIsAdmin) {
+      console.log('🔑 Admin via ADMIN_EMAILS config:', currentUser.email);
+      isAdmin = true;
+      showAdminButtons(true);
+      loadAdminPendingCount();
+      return;
+    }
+
+    // Check 2: Profiles table — check role field
+    var res = await _supabaseClient.from('profiles').select('role, is_admin').eq('id', currentUser.id).single();
+    
+    console.log('🔑 checkAdminRole — profiles data:', JSON.stringify(res.data), '| error:', res.error?.message);
+
+    if (!res.error && res.data) {
+      var role = (res.data.role || '').toLowerCase();
+      var isAdminField = res.data.is_admin;
+      isAdmin = role === 'admin' || 
+                role === 'administrator' || 
+                role === 'superadmin' ||
+                isAdminField === true || 
+                isAdminField === 1;
+      console.log('🔑 Role:', JSON.stringify(res.data.role), '| is_admin:', isAdminField, '| result:', isAdmin);
+    } else {
+      // If profiles query fails, check by user_metadata role (set during signup)
+      var metaRole = (currentUser.user_metadata?.role || '').toLowerCase();
+      isAdmin = metaRole === 'admin';
+      console.log('🔑 Fallback to user_metadata.role:', metaRole, '| result:', isAdmin);
+    }
+
+    showAdminButtons(isAdmin);
     if (isAdmin) loadAdminPendingCount();
-    console.log('Role:', res.data && res.data.role, '| Admin:', isAdmin);
-  } catch(e) { console.error('checkAdminRole:', e); }
+  } catch(e) { 
+    console.error('checkAdminRole exception:', e); 
+  }
+}
+
+function showAdminButtons(show) {
+  // Nav bar admin button (desktop)
+  var btn = document.getElementById('adminNavBtn');
+  if (btn) btn.style.display = show ? 'inline-flex' : 'none';
+  
+  // Dropdown admin option
+  var dropBtn = document.getElementById('dropAdminBtn');
+  if (dropBtn) dropBtn.style.display = show ? 'flex' : 'none';
+  
+  // Mobile drawer admin option
+  var mdBtn = document.getElementById('mdAdminBtn');
+  if (mdBtn) mdBtn.style.display = show ? 'flex' : 'none';
+  
+  console.log('🔑 showAdminButtons:', show, '| adminNavBtn:', btn?.style?.display, '| dropAdminBtn:', dropBtn?.style?.display);
 }
 
 async function loadAdminPendingCount() {
